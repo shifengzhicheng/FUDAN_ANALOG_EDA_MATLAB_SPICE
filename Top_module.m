@@ -10,6 +10,7 @@ filename = 'dbmixer.sp';
     MOStype,MOSW,MOSL,...
     MOSMODEL,PLOT,SPICEOperation]=parse_netlist(filename);
 %% 根据读到的操作选择执行任务的分支
+DCnetlist=Generate_DCnetlist();
 switch SPICEOperation{1}{1}
     case '.hb'
         % 这里进入AC分析
@@ -29,4 +30,5 @@ switch SPICEOperation{1}{1}
         % 到这里需要DC电路网表
         x=caculateDC(DCnetlist,Error);
         plotport=portMapping(PLOT);
+        Values = DC(plotport,x);
 end
