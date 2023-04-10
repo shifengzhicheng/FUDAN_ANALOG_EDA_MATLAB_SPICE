@@ -11,13 +11,19 @@ filename = 'testfile\dbmixer.sp';
     MOStype,MOSW,MOSL,...
     MOSMODEL,PLOT,SPICEOperation]=parse_netlist(filename);
 %% 根据读到的操作选择执行任务的分支
-DCnetlist=Generate_DCnetlist(RLCName,RLCN1,RLCN2,RLCarg1,...
+[Name,N1,N2,dependence,Value,MOSLine,x_0]=Generate_DCnetlist(RLCName,RLCN1,RLCN2,RLCarg1,...
     SourceName,SourceN1,SourceN2,...
     Sourcetype,SourceDcValue,SourceAcValue,...
     SourceFreq,SourcePhase,...
     MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,...
     MOSMODEL);
+% Name cell,'Name'
+% N1 double
+% N2 double
+% dependence cell [cp1 cp2] or 'Name'
+% Value double
+% MOSLine double
 switch SPICEOperation{1}{1}
     case '.hb'
         % 这里进入AC分析
@@ -29,14 +35,17 @@ switch SPICEOperation{1}{1}
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长
         x=caculateDC(DCnetlist,Error);
-        plotport=portMapping(PLOT);
-        [timeseries,Values]=trans(plotport,x,transnetlist);
+        plotnv=portMapping(PLOT);
+        [timeseries,Values]=trans(plotnv,x,transnetlist);
         plot(timeseries,Values);
     case {'.dc','.DC'}
         Error = 1e-6;
         % 到这里需要DC电路网表
-        x=caculateDC(DCnetlist,Error);
-        plotport=portMapping(PLOT);
-        Values = DC(plotport,x);
-        display(Values);
+        x=caculateDC(Name,N1,N2,dependence,Value,MOSLine,Error);
+        plotnv = portMappingVoltage(PLOT);
+        % plotnv是序号，可以通过x(plotnv)得到
+        plotcurrent = portMappingCurrent(PLOT);
+        % plotcurrent得到三个端口
+        [Obj,Values] = DC(plotnv,plotcurrent,x);
+        display(Obj,Values);
 end

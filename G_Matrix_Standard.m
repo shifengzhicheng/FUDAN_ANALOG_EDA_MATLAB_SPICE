@@ -11,17 +11,20 @@
 % 电流控制电压源 (CCVS) - H
 % 电流控制电流源 (CCCS) - F
 %% 函数主体
-function [A,x,b]=G_Matrix_Standard(Name, N1, N2, arg1, arg2, arg3)
+function [A,x,b]=G_Matrix_Standard(Name, N1, N2, dependence, Value)
+
+% Name是一个cell，里面的元素应该是'Name'
+% N1与N2为double数组
+% dependence应该是一个cell，cell里面是数组[cp1 cp2]或者字符串'CdName'
+% Value是一个double数组
 
 % InputCell应该为只有线性元件的cell，于是可以遍历InputCell以获取所有的参数
 % 把参数分装到6个不同的参数组中以供直接调用
 % 先计算节点数为n
 % 将InputCell扫描一下，得到每个器件的两端节点以及节点的数目
 
-N1=str2double(N1);
-N2=str2double(N2);
 
-B = unique([N1;N2]);
+B = unique([N1,N2]);
 nodeNum = numel(B); %结点总数
 %在这里需要建立电路方程与实际节点的端口的对应关系
 % PortNum1(i)->N1(i)
@@ -46,7 +49,7 @@ for i=1:CellCount
     switch CellName(1)
         case 'R'
             % 在电路上贴电阻
-            cpValue=str2double(arg1(i));
+            cpValue=Value(i);
             % 方程贴电阻
             A(pNum1,pNum1)= A(pNum1,pNum1)+1/cpValue;
             A(pNum1,pNum2)= A(pNum1,pNum2)-1/cpValue;
@@ -55,7 +58,7 @@ for i=1:CellCount
 
         case 'I'
             % 在电路上贴电流源
-            cpValue=str2double(arg1(i));
+            cpValue=Value(i);
             % 节点的净流出与净流入电流
             b(pNum1)=b(pNum1)-cpValue;
             b(pNum2)=b(pNum2)+cpValue;
@@ -63,7 +66,7 @@ for i=1:CellCount
 
         case 'V'
             % 在电路上贴电压源
-            cpValue=str2double(arg1(i));
+            cpValue=Value(i);
             % 扩展矩阵，引入新的变量
             INum=INum+1;
             x{nodeNums+INum}=['I_' CellName];
@@ -84,9 +87,9 @@ for i=1:CellCount
             % 压控电流源 (VCCS) - G
 
             % 控制端口与增益
-            cpNum1=str2double(arg1(i))+1;
-            cpNum2=str2double(arg2(i))+1;
-            cpValue=str2double(arg3(i));
+            cpNum1=dependence{i}(1)+1;
+            cpNum2=dependence{i}(2)+1;
+            cpValue=Value(i);
 
             % 压控电流源 (VCCS) - G
             if CellName(1)== 'G'
@@ -126,9 +129,9 @@ for i=1:CellCount
             % cpIndex:Control Index
             % CdName:Control Device Name
             % cpValue: Control Value
-            CdName=arg1(i);
+            CdName=dependence{i};
             cpIndex=find(contains(Name,CdName));
-            cpValue=str2double(arg2(i));
+            cpValue=Value(i);
 
             % 电流控制电流源 (CCCS) - F
             if CellName(1)== 'F'
@@ -148,28 +151,28 @@ for i=1:CellCount
                 % 根据这里的器件是什么决定如何增添方程
                 A(nodeNums+INum,nodeNums+INum)=A(nodeNums+INum,nodeNums+INum) + 1;
                 % 要找的是Icontrol电流的方程
-                switch CdName{1}(1)
+                switch CdName(1)
                     case 'R'
                         % 如果为器件为电阻则
-                        A(nodeNums+INum,N1(cpIndex))=A(nodeNums+INum,N1(cpIndex)) - 1/str2double(arg1(cpIndex));
-                        A(nodeNums+INum,N2(cpIndex))=A(nodeNums+INum,N2(cpIndex)) + 1/str2double(arg1(cpIndex));
+                        A(nodeNums+INum,N1(cpIndex))=A(nodeNums+INum,N1(cpIndex)) - 1/Value(cpIndex);
+                        A(nodeNums+INum,N2(cpIndex))=A(nodeNums+INum,N2(cpIndex)) + 1/Value(cpIndex);
                         % 电导与电流的关系
                     case {'V','E','H'}
                         % 如果为电压源，这里应该去寻找电压源对应的电流
                         % 如果是其他源的电流，很可能在这里还没有生成，所以还需要另外的步骤去寻找这样一个电流
                         % 考虑重新引入一个队列去在这个循环之后特别处理这样的源
-                        ICdName_Index=find(contains(x, ['I_' CdName{1}]));
+                        ICdName_Index=find(contains(x, ['I_' CdName]));
                         A(nodeNums+INum, ICdName_Index) = A(nodeNums+INum, ICdName_Index) - 1;
                     case {'I','G','F'}
                         % 如果为电流源、受控电流源，则会有一个电流相等的关系
-                        ICdName_Index=find(contains(x, ['I_' CdName{1}]));
-                        if CdName == 'I'
+                        ICdName_Index=find(contains(x, ['I_' CdName]));
+                        if CdName(1) == 'I'
                             A(nodeNums+INum, ICdName_Index) = A(nodeNums+INum, ICdName_Index) - 1;
-                        elseif CdName == 'F'
+                        elseif CdName(1) == 'F'
                             % 还得找控制G,F的电流
                             IcontrolCS_Index=find(contains(x,['Icontrol_' CdName{1}]));
-                            A(nodeNums+INum, IcontrolCS_Index) = A(nodeNums+INum, IcontrolCS_Index) - str2double(arg2(cpIndex));
-                        elseif CdName == 'G'
+                            A(nodeNums+INum, IcontrolCS_Index) = A(nodeNums+INum, IcontrolCS_Index) - Value(cpIndex);
+                        elseif CdName(1) == 'G'
                             A(pNum1,cpNum1)= A(pNum1,cpNum1) - cpValue;
                             A(pNum1,cpNum2)= A(pNum1,cpNum2) + cpValue;
                         end
@@ -203,28 +206,28 @@ for i=1:CellCount
                 % 根据这里的器件是什么决定如何增添方程
                 A(k,k)=A(k,k) + 1;
                 % 第k行是新的等式
-                switch CdName{1}(1)
+                switch CdName(1)
                     case 'R'
                         % 如果为电阻则
-                        A(k,N1(cpIndex))=A(k,N1(cpIndex)) - 1/str2double(arg1(cpIndex));
-                        A(k,N2(cpIndex))=A(k,N2(cpIndex)) + 1/str2double(arg1(cpIndex));
+                        A(k,N1(cpIndex))=A(k,N1(cpIndex)) - 1/Value(cpIndex);
+                        A(k,N2(cpIndex))=A(k,N2(cpIndex)) + 1/Value(cpIndex);
                         % 电导与电流的关系
                     case {'V','E','H'}
                         % 如果为电压源，这个时候这条支路上一定会引入一个电流
                         % 如果是其他源的电流，很可能在这里还没有生成，所以还需要另外的步骤去寻找这样一个电流
                         % 考虑重新引入一个队列去在这个循环之后特别处理这样的源
-                        ICdName_Index=find(contains(x, ['I_' CdName{1}]));
+                        ICdName_Index=find(contains(x, ['I_' CdName]));
                         A(k, ICdName_Index) = A(k, ICdName_Index) - 1;
                     case {'I','G','F'}
                         % 如果为电流源、受控电流源，则会有一个电流相等的关系
-                        ICdName_Index = find(contains(x, ['I_' CdName{1}]));
-                        if CdName == 'I'
+                        ICdName_Index = find(contains(x, ['I_' CdName]));
+                        if CdName(1) == 'I'
                             A(k, ICdName_Index) = A(k, ICdName_Index) - 1;
-                        elseif CdName == 'F'
+                        elseif CdName(1) == 'F'
                             % 还得找控制G,F的电流
-                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName{1}]));
-                            A(k, IcontrolCS_Index) = A(k, IcontrolCS_Index) - str2double(arg2(cpIndex));
-                        elseif CdName == 'G'
+                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName]));
+                            A(k, IcontrolCS_Index) = A(k, IcontrolCS_Index) - Value(cpIndex);
+                        elseif CdName(1) == 'G'
                             A(pNum1,cpNum1)= A(pNum1,cpNum1) - cpValue;
                             A(pNum1,cpNum2)= A(pNum1,cpNum2) + cpValue;
                         end
