@@ -37,4 +37,5 @@ switch SPICEOperation{1}{1}
         x=caculateDC(DCnetlist,Error);
         plotport=portMapping(PLOT);
         Values = DC(plotport,x);
+        display(Values);
 end
