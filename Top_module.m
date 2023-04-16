@@ -41,7 +41,7 @@ switch SPICEOperation{1}{1}
     case {'.dc','.DC'}
         Error = 1e-6;
         % 到这里需要DC电路网表
-        x=caculateDC(Name,N1,N2,dependence,Value,MOSLine,Error);
+        x=calculateDC(MOSMODEL, MOStype, MOSW, MOSL, Name,N1,N2,dependence,Value,MOSLine,Error);
         plotnv = portMappingVoltage(PLOT);
         % plotnv是序号，可以通过x(plotnv)得到
         plotcurrent = portMappingCurrent(PLOT);
