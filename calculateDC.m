@@ -9,7 +9,7 @@
     用初始信息迭代更新MNA方程得到收敛的电路方程解
 %}
 
-function DCres = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
+function [DCres, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
     Name, N1, N2, dependence, Value, MOSLine, Error)
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
