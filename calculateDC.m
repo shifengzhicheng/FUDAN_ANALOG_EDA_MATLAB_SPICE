@@ -10,7 +10,7 @@
 %}
 
 function DCres = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
-    Name,N1,N2,dependence,Value,MOSLine, Error)
+    Name, N1, N2, dependence, Value, MOSLine, Error)
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法便是在这个A0与b0基础上贴上每轮的MOS伴随器件
