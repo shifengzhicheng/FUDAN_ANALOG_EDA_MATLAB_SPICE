@@ -62,19 +62,21 @@ C3 118 0 1e-12
 ## 项目的结构
 
 ```bash
-├── circuit                 # 电路仿真工具源码目录
-│   ├── component.m        # 电路元件类定义
-│   ├── dc_analysis.m      # 直流分析类定义
-│   ├── transient_analysis.m # 瞬态分析类定义
-│   ├── main.m             # 程序入口
-│   ├── netlist_parser.m   # 网表解析器类定义
-│   └── mosfet.py           # MOS管模型类定义
-├── examples                # 示例文件目录
-│   ├── inverter.cir        # 单个MOS管的反相器电路
-│   ├── buffer.cir          # 双MOS管的缓冲器电路
-│   ├── lc_filter.cir       # LC滤波器电路
-│   └── amplifier.cir       # 差分放大器电路
-├── README.md               # 项目说明文件
+├── picture                 	# README文档的说明图片
+├── projectfile                 # 项目要求文档
+│   ├── HSPICE简明教程(复旦大学).pdf # 电路元件类定义
+│   ├── proj1_v02_tj.pdf		# project要求文档
+├── testfile                	# 测试文件目录
+│   ├── inverter.cir       		# 单个MOS管的反相器电路
+│   ├── buffer.cir          	# 双MOS管的缓冲器电路
+│   ├── lc_filter.cir       	# LC滤波器电路
+│   └── amplifier.cir       	# 差分放大器电路
+├──
+├──
+├──
+├──
+├──
+├── README.md               	# 项目说明文件
 ```
 
 ## 使用方法说明
