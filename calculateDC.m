@@ -28,7 +28,7 @@ zp  = A1\b1;    %用z(数字)表示x(字符)的结果
 %记上轮结果为x(z)p
 
 %MOS个数，也即需更新的3个一组的数据组数
-mosNum = size(MOStype,1);
+mosNum = size(MOStype,2);
 %每个MOS得到的GM的端点信息其实已经可以看到dsg三端了 
 %% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号
 mosNodeMat = zeros(mosNum, 3);
@@ -53,17 +53,18 @@ for i = 1 : mosNum
 end
 
 %MOSW MOSL作格式修改，由str - cell改成double - mat
-MOSW = str2double(cell2mat(MOSW));
-MOSL = str2double(cell2mat(MOSL));
+MOSW = str2double(MOSW);
+MOSL = str2double(MOSL);
 
 for i = 1 : Nlimit
     %已经得到了按顺序的每个MOS管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
     for mosCount = 1 : mosNum   % 1个MOS衍生出的3个伴随器件1组
 
 %% (未完成)可能出现源漏端交换的情况，我们固定初始GDS的物理位置，源漏交换只体现在伴随器件的数值正负上
-        vd = zp(mosNodeMat(mosCount, 1));
-        vg = zp(mosNodeMat(mosCount, 2));
-        vs = zp(mosNodeMat(mosCount, 3));
+        tempz = [0; zp];
+        vd = tempz(mosNodeMat(mosCount, 1)+1);
+        vg = tempz(mosNodeMat(mosCount, 2)+1);
+        vs = tempz(mosNodeMat(mosCount, 3)+1);
 %         if vd < vs
 %             %源漏交换，此为实际交换后的vds\vgs
 %             vds = vs - vd;
