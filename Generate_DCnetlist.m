@@ -61,14 +61,22 @@ for i=1:length(SourceName)
 end
 
 %% 生成初始解
+Index = find(contains({'Vdd'},SourceName));
+Vdd = Value(Index);
+Vdd_node = SourceN1(Index);
+Gnd_node = 0;
 
-% x_0 = init_value(…………)
+% NodeInfo和DeviceInfo提取一下
+NodeInfo = 'not sure';
+DeviceInfo = 'not sure';
+
+x_0 = init_value(NodeInfo,DeviceInfo,Vdd,Vdd_node,Gnd_node);
 % 同时变更下面mos_calculator的带入电压值
 
 %% 处理mos
 
 % 从这儿开始是mos
-% MOSLine = kl+1
+MOSLine = kl+1;
 
 %处理Mos,结点顺序DGS
 %Output = cell(1,length(MOSName)*3);
