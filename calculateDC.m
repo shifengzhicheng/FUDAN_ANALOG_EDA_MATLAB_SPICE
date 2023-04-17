@@ -93,6 +93,7 @@ for i = 1 : Nlimit
     %解得新一轮的x(z)cur
     zc = Ac \ bc;
     %迭代收敛要求相邻两轮间距(Euclid范数)够小
+    DCres=[];
     if norm(zc-zp) <= Error
         disp("Convergence!");
         DCres = zc;

@@ -19,5 +19,5 @@ Value = [1, 1, 2, 2, 5, 1/g, gm, i];
 
 Error = 10e-5;
 
-res2 = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
+[res2,x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
     Name, N1, N2, dependence, Value, MOSLine, Error);

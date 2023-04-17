@@ -2,7 +2,7 @@
 % 此文件为项目搭建的顶层架构，用于梳理和切割项目实现的功能并实现模块化
 
 %% 读取文件，预处理阶段
-filename = 'testfile\dbmixer.sp';
+filename = 'testfile\dbmixerDC.sp';
 [RLCName,RLCN1,RLCN2,RLCarg1,...
     SourceName,SourceN1,SourceN2,...
     Sourcetype,SourceDcValue,SourceAcValue,...
@@ -47,6 +47,6 @@ switch SPICEOperation{1}{1}
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
-        [Obj, Values] = ValueCalc(plotnv, plotcurrent, x, x_0,Node_Map);
+        [Obj, Values] = ValueCalc(plotnv, plotcurrent, x, x_0, Node_Map);
         display(Obj, Values);
 end
