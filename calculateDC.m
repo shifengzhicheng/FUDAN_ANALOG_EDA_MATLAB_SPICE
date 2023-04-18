@@ -55,7 +55,8 @@ end
 %MOSW MOSL作格式修改，由str - cell改成double - mat
 MOSW = str2double(MOSW);
 MOSL = str2double(MOSL);
-DCres =[];
+DCres = [];
+mosCurrents = [];
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
     [zc, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, A0, b0, Name, N1, N2, dependence, Value, zp);
