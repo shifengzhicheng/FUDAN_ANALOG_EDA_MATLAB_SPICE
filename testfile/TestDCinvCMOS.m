@@ -13,8 +13,8 @@ Name = {'VDD', 'VG', 'RM1', 'GM1', 'IM1', 'RM2', 'GM2', 'IM2'};
 N1 = [1, 2, 3, 3, 3, 0, 0, 0];
 N2 = [0, 0, 1, 1, 1, 3, 3, 3];
 
-[i1, gm1, g1] = Mos_Calculater(-1, -1.8, MOSMODEL(:,1), 2, 1);  %p初始解
-[i2, gm2, g2] = Mos_Calculater(1.5, 1.5, MOSMODEL(:,2), 1, 1);  %n初始解
+[i1, gm1, g1] = Mos_Calculator(-1, -1.8, MOSMODEL(:,1), 2, 1);  %p初始解
+[i2, gm2, g2] = Mos_Calculator(1.5, 1.5, MOSMODEL(:,2), 1, 1);  %n初始解
 
 dependence = cell(1,8);
 dependence{4} = [2, 1];%pmos vgs
