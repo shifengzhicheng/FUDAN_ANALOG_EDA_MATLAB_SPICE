@@ -144,7 +144,7 @@ for i=1:CellCount
                             A(nodeNums+INum, ICdName_Index) = A(nodeNums+INum, ICdName_Index) - 1;
                         elseif CdName(1) == 'F'
                             % 还得找控制G,F的电流
-                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName{1}]));
+                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName]));
                             A(nodeNums+INum, IcontrolCS_Index) = A(nodeNums+INum, IcontrolCS_Index) - Value(cpIndex);
                         elseif CdName(1) == 'G'
                             A(pNum1,cpNum1)= A(pNum1,cpNum1) - cpValue;
