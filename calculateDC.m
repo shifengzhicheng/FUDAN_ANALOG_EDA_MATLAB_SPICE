@@ -9,7 +9,7 @@
     用初始信息迭代更新MNA方程得到收敛的电路方程解DCres
     各mos管(按网表处理后的顺序)的Ids
 %}
-
+%% 说明，x0存的是解向量的名称，mosCurrents求的是mos电流，DCres求的是电路DC解
 function [DCres, mosCurrents, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
     Name,N1,N2,dependence,Value,MOSLine, Error)
 
