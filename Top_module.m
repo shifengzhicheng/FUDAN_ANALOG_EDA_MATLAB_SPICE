@@ -42,11 +42,11 @@ switch SPICEOperation{1}{1}
     case {'.dc','.DC'}
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [x, x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
+        [x, Moscurrent, x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
             Name, N1, N2, dependence, Value, MOSLine, Error);
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
-        [Obj, Values] = ValueCalc(plotnv, plotcurrent, x, x_0, Node_Map);
+        [Obj, Values] = ValueCalc(plotnv, plotcurrent, x, Moscurrent, x_0, Node_Map);
         display(Obj, Values);
 end
