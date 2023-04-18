@@ -1,5 +1,5 @@
 %% 根据device以及端点从解中得到电流或者电压
-function [Obj,Values] = ValueCalc(plotnv,plotcurrent,x,Moscurrent,x_0,Node_Map)
+function [Obj,Values] = ValueCalc(plotnv,plotcurrent,x,x_0,Node_Map)
 % 画图对象的总数量
 tsize = size(plotnv)+size(plotcurrent);
 % 初始化
