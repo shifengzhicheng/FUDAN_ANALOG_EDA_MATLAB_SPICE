@@ -14,7 +14,7 @@
 %}
 
 function [DCres, mosCurrents, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
-    Name,N1,N2,dependence,Value,MOSLine, Error)
+    Name,N1,N2,dependence,Value,MOSLine, Error, x_0)
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法是在这个A0与b0基础上贴上每轮的MOS伴随器件 - 避免记录上一轮的伴随器件信息
@@ -26,7 +26,40 @@ disp("DCres name list: "); disp(x0);
 [A1, b1] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value); %用初始值得到的首轮A和b
 
 %% 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
-zp  = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+zp_1 = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+
+num1 = size(x_0, 1);
+num2 = size(zp_1, 1);
+
+fprintf("x_0: \n\n");
+disp(x_0);
+fprintf("zp_1: \n\n");
+disp(zp_1);
+
+num_i = num2 - num1;
+zp = zeros(num2, 1);
+for i = 1:num1
+    if zp_1(i, 1) ~= 0
+        fprintf("pass");
+        zp(i, 1) = zp_1(i, 1);
+    elseif x_0(i, 1) ~= 0
+        fprintf("pass*2");
+        zp(i, 1) = x_0(i, 1);
+    else
+        fprintf("pass*3");
+        zp(i, 1) = 0.1;  % 赋一个不为0的小值     
+    end
+end
+for i = 1:num_i
+    if zp_1(num1 + i, 1) ~= 0
+        zp(num1 + i, 1) = zp_1(num1 + i, 1);
+    else
+        zp(num1 + i, 1) = 0.005;
+    end
+end
+
+disp(zp);
+
 
 %MOS个数，也即需更新的3个一组的数据组数
 mosNum = size(MOStype,2);
