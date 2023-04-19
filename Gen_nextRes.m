@@ -12,8 +12,8 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
             %源漏交换，此为实际交换后的vds\vgs
             vds = vs - vd;
             vgs = vg - vd;
-            %用上一轮x(z)p结果的到的三端电压计算得到新的伴随器件参数(MOS合法判断在Mos_Calculater中)
-            [nextIeq, nextGM, nextGDS] = Mos_Calculater(vds, vgs,  MOSMODEL(:, Mostype(mosCount)), MOSW(mosCount), MOSL(mosCount));
+            %用上一轮x(z)p结果的到的三端电压计算得到新的伴随器件参数(MOS合法判断在Mos_Calculator中)
+            [nextIeq, nextGM, nextGDS] = Mos_Calculator(vds, vgs,  MOSMODEL(:, Mostype(mosCount)), MOSW(mosCount), MOSL(mosCount));
             nextIeq = -nextIeq;
             nextGM = -nextGM;
             %源漏交互换后GM的控制电压端口也要改变为原来的栅漏端 - 原GM的第二个控制端由S改D
@@ -22,7 +22,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
             %正常情况
             vds = vd - vs;
             vgs = vg - vs;
-            [nextIeq, nextGM, nextGDS] = Mos_Calculater(vds, vgs, MOSMODEL(:, Mostype(mosCount)), MOSW(mosCount), MOSL(mosCount));
+            [nextIeq, nextGM, nextGDS] = Mos_Calculator(vds, vgs, MOSMODEL(:, Mostype(mosCount)), MOSW(mosCount), MOSL(mosCount));
             %源漏换回来，正常vgs控制
            dependence{MOSLine + 3*mosCount - 2}(2) = mosNodeMat(mosCount, 3);
         end

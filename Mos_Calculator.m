@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Mos_Calculater%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 根据牛顿迭代公式得到MOS伴随器件信息
-function [Ikk,GMk,GDSk]=Mos_Calculater(VDSk,VGSk,Mosarg,W,L)
+function [Ikk,GMk,GDSk]=Mos_Calculator(VDSk,VGSk,Mosarg,W,L)
     Mosarg = cell2mat(Mosarg);
     Type = power(-1,Mosarg(1,1)); %-1是PMOS,1是NMOS
     Vth = Mosarg(2,1);

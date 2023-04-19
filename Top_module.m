@@ -47,6 +47,8 @@ switch SPICEOperation{1}{1}
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
-        [Obj, Values] = ValueCalc(plotnv, plotcurrent, x, Moscurrent, x_0, Node_Map);
+        [Obj, Values] = ValueCalc(plotnv, plotcurrent, ...
+            x, Moscurrent, Value, ...
+            x_0, Node_Map, Name, N1, N2, MOSName);
         display(Obj, Values);
 end

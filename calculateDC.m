@@ -3,7 +3,7 @@
     x=calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
     Name,N1,N2,dependence,Value,MOSLine, Error)
 输入:
-    MOStype, MOSW, MOSL, MOSMODEL是经过parse_netlist得到的迭代过程中计算Mos_Calculater所需要的按原顺序排列的MOS信息
+    MOStype, MOSW, MOSL, MOSMODEL是经过parse_netlist得到的迭代过程中计算Mos_Calculator所需要的按原顺序排列的MOS信息
     MOSMODEL是1*n的cell,每个元素是double型列向量存一种mos器件的参数
     测试程序中MOStype, MOSW, MOSL均为行向量，如更改注意后续第35行mosNum的读取
     Name,N1,N2,dependence,Value,MOSLine这些由网表建立MNA方程过程得到的初始器件信息
