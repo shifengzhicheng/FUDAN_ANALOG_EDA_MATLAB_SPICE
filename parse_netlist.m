@@ -26,7 +26,7 @@ while ~feof(fid)
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
-    tokens_Operation = regexp(line, '^[(\.hb)(\.trans)]', 'tokens', 'ignorecase');
+    tokens_Operation = regexp(line, '^[(\.hb)(\.trans)(\.dc)]', 'tokens', 'ignorecase');
     if ~isempty(tokens_Device)
         % 提取关键字符
         keyword = tokens_Device{1}{1}(1);
@@ -57,8 +57,8 @@ while ~feof(fid)
                 [MOSName{MCount},MOSN1{MCount},MOSN2{MCount},MOSN3{MCount}...
                     MOStype{MCount},MOSW{MCount},MOSL{MCount}]=Device{:};
         end
-    end
-    if ~isempty(tokens_MODEL)
+
+    elseif ~isempty(tokens_MODEL)
         % 匹配的正则表达式
         expr = ['\.MODEL\s+(\d+)\s+VT\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)' ...
             '\s+MU\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+COX\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+' ...
@@ -73,13 +73,13 @@ while ~feof(fid)
             str2double(tokens{1}{4}); ...
             str2double(tokens{1}{5}); ...
             str2double(tokens{1}{6})];
-    end
-    if ~isempty(tokens_Plot)
+
+    elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
         PlotCount = PlotCount + 1;
         PLOT{PlotCount}=strsplit(strtrim(line));
-    end
-    if ~isempty(tokens_Operation)
+
+    elseif ~isempty(tokens_Operation)
         % 在这里已经匹配到了操作的名称
         OperationCount = OperationCount + 1;
         SPICEOperation{OperationCount}=strsplit(strtrim(line));
