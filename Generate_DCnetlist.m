@@ -1,12 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [Name,N1,N2,dependence,Value,MOSLine,x_0,Node_Map] = Generate_DCnetlist(RLCName,RLCN1,RLCN2,RLCarg1,...
+function [Name,N1,N2,dependence,Value,MOSLine,x_0,Node_Map, NodeInfo, DeviceInfo] = Generate_DCnetlist(RLCName,RLCN1,RLCN2,RLCarg1,...
     SourceName,SourceN1,SourceN2,...
     Sourcetype,SourceDcValue,SourceAcValue,...
     SourceFreq,SourcePhase,...
     MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,...
-    MOSMODEL)
+    MOSMODEL,...
+    DeviceInfo)
 
 %% 初始化变量
 Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;
@@ -24,6 +25,10 @@ for i=1:length(Node)
     Node_Map(i,1)=str2double(Node(i));
 end
 Node_Map = unique(Node_Map,"rows");
+
+%% 新建 NodeInfo
+NodeInfo = {};
+count = 0;
 
 %% 处理RLC
 for i=1:length(RLCName)
@@ -47,6 +52,40 @@ for i=1:length(RLCName)
            N2(kl) = Node2;
            Value(kl) = 0;
    end
+
+    % NodeInfo 更新
+    Node_Element1.index = Node1;
+    Node_Element1.node = RLCN1{i};
+    Node_Element1.devices = {};
+    Node_Element1.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element1.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element1;        
+    end
+
+    Node_Element2.index = Node2;
+    Node_Element2.node = RLCN2{i};
+    Node_Element2.devices = {};
+    Node_Element2.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element2.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element2;        
+    end
+    % NodeInfo更新结束
 end
 
 %% 处理Source
@@ -58,20 +97,42 @@ for i=1:length(SourceName)
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = str2double(SourceDcValue{i});
+
+    % NodeInfo更新
+    Node_Element1.index = Node1;
+    Node_Element1.node = SourceN1{i};
+    Node_Element1.devices = {};
+    Node_Element1.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element1.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element1;        
+    end
+
+    Node_Element2.index = Node2;
+    Node_Element2.node = SourceN2{i};
+    Node_Element2.devices = {};
+    Node_Element2.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element2.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element2;        
+    end
+    % NodeInfo更新结束
 end
 
-%% 生成初始解
-Index = find(contains({'Vdd'},SourceName));
-Vdd = Value(Index);
-Vdd_node = SourceN1(Index);
-Gnd_node = 0;
-
-% NodeInfo和DeviceInfo提取一下
-NodeInfo = 'not sure';
-DeviceInfo = 'not sure';
-
-x_0 = init_value(NodeInfo,DeviceInfo,Vdd,Vdd_node,Gnd_node);
-% 同时变更下面mos_calculator的带入电压值
 
 %% 处理mos
 
@@ -108,4 +169,125 @@ for i=1:length(MOSName)
     N1(kl) = Node1;
     N2(kl) = Node3;
     Value(kl) = Ikk;
+    
+    % NodeInfo更新
+    Node_Element1.index = Node1;
+    Node_Element1.node = MOSN1{i};
+    Node_Element1.devices = {};
+    Node_Element1.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element1.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element1;        
+    end
+
+    Node_Element2.index = Node2;
+    Node_Element2.node = MOSN2{i};
+    Node_Element2.devices = {};
+    Node_Element2.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element2.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element2;        
+    end
+    
+    Node_Element3.index = Node3;
+    Node_Element3.node = MOSN3{i};
+    Node_Element3.devices = {};
+    Node_Element3.value = -1;  % 初始化为负数，方便初始化时判断节点是否赋过电压初值
+    flag = 0;
+    for j = 1:numel(NodeInfo)
+        if isequal(NodeInfo{j}.node, Node_Element3.node)
+            flag = 1;
+            break;
+        end
+    end
+    if flag == 0
+        count = count + 1;
+        NodeInfo{count} = Node_Element3;        
+    end
+    % NodeInfo更新结束
+end
+
+%% 对NodeInfo按节点索引值(0-21的节点序数)排序
+for i = 1:numel(NodeInfo)
+    for j = i:numel(NodeInfo)
+        if NodeInfo{j}.index == i-1
+            tmp = NodeInfo{j};
+            NodeInfo{j} = NodeInfo{i};
+            NodeInfo{i} = tmp;
+        end
+    end
+end
+
+%% 将DeviceInfo中的各器件相连节点以其在NodeInfo中的索引值替换
+%% 同时，在NodeInfo中添加各节点相连器件信息(给初始解时用)
+for i = 1:numel(DeviceInfo)
+    for j = 1:numel(DeviceInfo{i}.nodes)
+        % 在NodeInfo中查找节点索引值
+        for k = 1:numel(NodeInfo)
+            if isequal(NodeInfo{k}.node, DeviceInfo{i}.nodes{j})
+                DeviceInfo{i}.nodes{j} = NodeInfo{k}.index;
+                max_index = numel(NodeInfo{k}.devices) + 1;
+                NodeInfo{k}.devices{max_index} = DeviceInfo{i}.name;
+                break;
+            end
+        end
+    end
+end
+
+
+%{
+fprintf("DeviceInfo的数据如下: \n\n");
+for i = 1:numel(DeviceInfo)
+    disp(DeviceInfo{i});
+end
+
+fprintf("NodeInfo的数据如下: \n\n");
+for i = 1:numel(NodeInfo)
+    disp(NodeInfo{i});
+end
+%}
+
+
+%% 生成初始解
+%Index = find(contains({'Vdd'},SourceName));
+Vdd = SourceDcValue{1};
+Vdd = str2double(Vdd);
+
+for i = 1:numel(NodeInfo)
+    if isequal(NodeInfo{i}.node, SourceN1{1})
+        Vdd_node = NodeInfo{i}.index;
+        break;
+    end
+end
+
+for i = 1:numel(NodeInfo)
+    if isequal(NodeInfo{i}.node, SourceN2{1})
+        Gnd_node = NodeInfo{i}.index;
+        break;
+    end
+end
+
+%Vdd_node = SourceN1{1};
+%Gnd_node = SourceN2{1};
+%Vdd = Value(Index);
+%Vdd_node = SourceN1(Index);
+%Gnd_node = 0;
+
+x_0 = init_value(NodeInfo,DeviceInfo,Vdd,Vdd_node,Gnd_node);
+    
+
 end
