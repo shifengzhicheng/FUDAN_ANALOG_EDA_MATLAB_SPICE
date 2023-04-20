@@ -2,7 +2,7 @@
 % 此文件为项目搭建的顶层架构，用于梳理和切割项目实现的功能并实现模块化
 
 %% 读取文件，预处理阶段
-filename = 'testfile\dbmixerDC.sp';
+filename = 'testfile\Voltagefollower.sp';
 % filename = 'testfile\buffer.sp';
 [RLCName,RLCN1,RLCN2,RLCarg1,...
     SourceName,SourceN1,SourceN2,...
