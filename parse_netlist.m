@@ -8,7 +8,7 @@ function [RLCName,RLCN1,RLCN2,RLCarg1,...
     MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,...
     MOSMODEL,PLOT,SPICEOperation]=parse_netlist(filename)
-% 读取网表文件
+%% 读取网表文件
 fid = fopen(filename, 'r');
 Count=0;
 MCount=0;
@@ -16,6 +16,30 @@ SourceCount=0;
 MOSMODELCount=0;
 PlotCount=0;
 OperationCount=0;
+%% 数据初始化
+RLCName=cell(0);
+SourceName=cell(0);
+RLCN1=cell(0);
+RLCN2=cell(0);
+RLCarg1=cell(0);
+SourceN1=cell(0);
+SourceN2=cell(0);
+Sourcetype=cell(0);
+SourceDcValue=cell(0);
+SourceAcValue=cell(0);
+SourceFreq=cell(0);
+SourcePhase=cell(0);
+MOSName=cell(0);
+MOSN1=cell(0);
+MOSN2=cell(0);
+MOSN3=cell(0);
+MOStype=cell(0);
+MOSW=cell(0);
+MOSL=cell(0);
+MOSMODEL=[];
+PLOT=cell(0);
+SPICEOperation=cell(0);
+%% 解析每一行
 while ~feof(fid)
     % 读取一行
     line = fgets(fid);

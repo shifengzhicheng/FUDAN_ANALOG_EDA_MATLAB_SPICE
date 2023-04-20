@@ -31,7 +31,7 @@ DeviceInfo = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
 % dependence cell [cp1 cp2] or 'Name'
 % Value double
 % MOSLine double
-switch SPICEOperation{1}{1}
+switch lower(SPICEOperation{1}{1})
     case '.hb'
         % 这里进入AC分析
         % 需要时间步长，AC频率
@@ -45,7 +45,7 @@ switch SPICEOperation{1}{1}
         plotnv=portMapping(PLOT);
         [timeseries,Values]=trans(plotnv,x,transnetlist);
         plot(timeseries,Values);
-    case {'.dc','.DC'}
+    case '.dc'
         Error = 1e-6;
         % 到这里需要DC电路网表
         [x, Moscurrent, x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
