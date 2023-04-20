@@ -9,6 +9,9 @@ tsize = size(plotnv)+size(plotcurrent);
 % 初始化
 Obj = cell(tsize);
 Values = zeros(tsize);
+if isempty(x)
+    error('没有解，不能画出所需信息')
+end
 for i=1:size(plotnv)
     Obj(i) = {['Node_Voltage: ' num2str(Node_Map(plotnv(i))) ' Value: ']};
     % 基本逻辑是在解出来的结果中找到对应的节点然后得到其电压
