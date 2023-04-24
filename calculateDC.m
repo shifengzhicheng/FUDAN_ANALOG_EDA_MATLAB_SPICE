@@ -13,7 +13,7 @@
     各mos管(按网表处理后的顺序)的Ids
 %}
 
-function [DCres, mosCurrents, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
+function [DCres, mosCurrents, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, MOSID,...
     Name,N1,N2,dependence,Value,MOSLine, Error, x_0)
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
