@@ -83,7 +83,7 @@ MOSL = str2double(MOSL);
 Nlimit = 500; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
-    [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, A0, b0, Name, N1, N2, dependence, Value, zp);
+    [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, A0, b0, Name, N1, N2, dependence, Value, zp);
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
