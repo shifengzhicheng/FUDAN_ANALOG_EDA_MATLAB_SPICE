@@ -12,7 +12,7 @@ Test Pass: Y (no separate test file)
 
 function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
     SourceName,SourceN1,SourceN2,SourceDcValue,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype)
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype,MOSID)
 
     DeviceInfo = {};
     count = 0;
