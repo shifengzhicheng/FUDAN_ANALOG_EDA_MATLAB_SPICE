@@ -283,10 +283,19 @@ for i=1:length(MOSName)
    VD = x_0(Node1 + 1);
    VG = x_0(Node2 + 1);
    VS = x_0(Node3 + 1);
-   VDS = VD - VS;
-   VGS = VG - VS;
+   if MOStype{i} == 'n' && VD < VS || MOStype{i} == 'p' && VD > VS  %源漏互换
+        VDS = VS - VD;
+        VGS = VG - VD;
+        flag = -1;
+   else
+        VDS = VD - VS;
+        VGS = VG - VS;
+        flag = 1;
+   end
    % [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
    [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
+   Ikk = Ikk * flag;
+   GMk =  GMk * flag;
     kl = kl+1;
     Name{kl} = ['R',MOSName{i}];
     N1(kl) = Node1;
@@ -296,7 +305,11 @@ for i=1:length(MOSName)
     Name{kl} = ['G',MOSName{i}];
     N1(kl) = Node1;
     N2(kl) = Node3;
-    dependence{kl} = [Node2,Node3];
+    if(flag == -1)
+        dependence{kl} = [Node2,Node1];
+    else
+        dependence{kl} = [Node2,Node3];
+    end
     Value(kl) = GMk;
     kl = kl+1;
     Name{kl} = ['I',MOSName{i}];
