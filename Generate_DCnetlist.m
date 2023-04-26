@@ -10,7 +10,7 @@ function [Name,N1,N2,dependence,Value,MOSLine,x_0, Node_Map, NodeInfo, DeviceInf
     DeviceInfo)
 
 %% 初始化变量
-Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;
+Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;  % MOS的线性化模型有3个器件
 Name = cell(1,Length);
 N1 = zeros(1,Length);
 N2 = zeros(1,Length);
@@ -26,7 +26,7 @@ for i=1:length(Node)
 end
 Node_Map = unique(Node_Map,"rows");
 
-%% 新建 NodeInfo并填入节点值
+%% 新建 NodeInfo并填入索引值与节点值，其他属性只做初始化
 NodeInfo = cell(1,length(Node_Map));
 % count = 0;
 for count = 1:length(Node_Map)
@@ -42,8 +42,8 @@ MOSID_C = str2double(MOSID);
 
 %% 处理RLC
 for i=1:length(RLCName)
-    Node1 = find(Node_Map==str2double(RLCN1(i)))-1;
-    Node2 = find(Node_Map==str2double(RLCN2(i)))-1;
+    Node1 = find(Node_Map==str2double(RLCN1(i)))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==str2double(RLCN2(i)))-1;  % 节点索引从0开始，∴要-1
     kl=kl+1;
    switch RLCName{i}(1)
        case 'R'
@@ -52,12 +52,12 @@ for i=1:length(RLCName)
            N2(kl) = Node2;
            Value(kl) = str2double(RLCarg1{i});
        case 'L'
-           Name{kl} = ['V',RLCName{i}];
+           Name{kl} = ['V',RLCName{i}];  % 电感DC时等价为1个电压为0的电压源
            N1(kl) = Node1;
            N2(kl) = Node2;
            Value(kl) = 0;
        case 'C'
-           Name{kl} = ['I',RLCName{i}];
+           Name{kl} = ['I',RLCName{i}];  % 电容DC时等价为1个电流为0的电流源
            N1(kl) = Node1;
            N2(kl) = Node2;
            Value(kl) = 0;
@@ -245,11 +245,11 @@ end
 
 
 %% 生成初始解
-%Index = find(contains({'Vdd'},SourceName));
+Index = find(contains({'Vdd'},SourceName));
 Vdd = SourceDcValue{1};
 Vdd = str2double(Vdd);
-
 %输入格式假定第一个输入的电压源为Vdd？
+
 for i = 1:numel(NodeInfo)
     if isequal(NodeInfo{i}.node, SourceN1{1})
         Vdd_node = NodeInfo{i}.index;
@@ -292,8 +292,8 @@ for i=1:length(MOSName)
         VGS = VG - VS;
         flag = 1;
    end
-   % [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
-   [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
+   [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
+   % [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
    Ikk = Ikk * flag;
    GMk =  GMk * flag;
     kl = kl+1;
