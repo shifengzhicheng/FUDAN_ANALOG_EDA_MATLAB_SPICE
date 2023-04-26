@@ -27,7 +27,12 @@ disp("DCres name list: "); disp(x0);
 
 %% 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 %% 初始解加上了
+zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+
+%{
 zp_1 = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+fprintf("zp_1: \n\n")
+disp(zp_1)
 
 num1 = size(x_0, 1);
 num2 = size(zp_1, 1);
@@ -49,7 +54,7 @@ for i = 1:num_i
         zp(num1 + i, 1) = 0.005;
     end
 end
-
+%}
 
 %MOS个数，也即需更新的3个一组的数据组数
 mosNum = size(MOStype,2);

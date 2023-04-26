@@ -13,137 +13,89 @@ Test Pass: N (no separate test file)
 function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
 
     %% 对电路中的各个节点赋初始值
-    % 目标: 所有源极接Gnd或Vdd的MOS管尽量都在饱和区，其他所有MOS管尽量都在线性区
+    % 目标: 所有源极接Gnd或Vdd的MOS管尽量都在饱和区，其他所有MOS管尽量都不在截止区
     % 假设: 只有几个MOS管工作在截止区的话应该不影响电路求解?
     % 考虑1: 对于截止区的MOS管，指定一个迭代轮数n，在这n轮内可以改截止区的MOS管模型为线性区，不然这些截止区的管子可能一直跳不出截止状态
     % 考虑2: 如果考虑1有效，可以考虑在这个指定的迭代轮数n轮内，不论截止、线性，都设为饱和区，让电路状态可以更快地跳出截止区?
     % 备注1: 还没有考虑电流变量，只考虑了节点电压. 电流变量在unlinearDC.m中先直接赋为0了
-    % 备注2: 要不要考虑负电压? 现在还没有考虑
+    % 备注2: 允许赋>Vdd与<Gnd的电压初值
+    % 备注3: 源漏交换在Generate_DCnetlist.m中考虑
     
     % 1. 先找源极接Gnd或Vdd的MOS管
     % (所有MOS管，尽量都|Vgs| = Vdd / 3, |Vds| = Vdd / 4)
     % 2. 再找其他与Gnd或Vdd相连的器件
     % 3. 最后更新其他所有未打标记的节点
     
+    % MOS节点顺序: DGS
     
     for i = 1:numel(DeviceInfo)
+        Type = 0;
+        if isequal(DeviceInfo{i}.type, 'nmos')
+            Type = 1;
+        elseif isequal(DeviceInfo{i}.type, 'pmos')
+            Type = -1;
+        end
         for j = 1:numel(DeviceInfo{i}.nodes)
             % fprintf("Nodes of each device: \n\n");
             % disp(DeviceInfo{i}.nodes{j});
-            % 找源极接Gnd的NMOS
-            if isequal(DeviceInfo{i}.nodes{j}, Gnd_node) && isequal(DeviceInfo{i}.type, 'nmos')
+            %% 找源极接Gnd的NMOS
+            if isequal(DeviceInfo{i}.nodes{j}, Gnd_node) && Type == 1
                 DeviceInfo{i}.init = 1;
-                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 4;  % D
+                % 确认D未赋过初值再赋值
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
                 end
-                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;  % G
+                % 确认G未赋过初值再赋值
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
                 end
-                NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;  % S
+                % S
+                NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;
                 break;
-            % 找源极接Vdd的PMOS
-            elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node) && isequal(DeviceInfo{i}.type, 'pmos')
+            %% 找源极接Vdd的PMOS
+            elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node) && Type == -1
                 DeviceInfo{i}.init = 1;
-                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd * 3/4;  % D
-                    %{
-                    fprintf("Test 4 value: \n\n");
-                    disp( Vdd/4 );
-                    %}
+                % 确认D未赋过初值再赋值
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd * 2;
                 end
-                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;  % G
+                % 确认G未赋过初值再赋值
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;
                 end
-                NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = Vdd;  % S
+                % S
+                NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = Vdd;
                 break;
-            % 未连接Vdd或Gnd的NMOS，不区分D\S，按Vd=Vs的线性区赋值
-            elseif isequal(DeviceInfo{i}.type, 'nmos')
+            %% 未连接Vdd或Gnd的MOS
+            elseif Type ~= 0
                 DeviceInfo{i}.init = 1;
-                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1  % D赋过初值，将S赋为相同值，将G赋为Vs + Vdd/3
-                    if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value;
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
+                    % D赋过初值，将S赋为Vd - Vdd*2/3 * Type，将G赋为Vs + Vdd/2 * Type
+                    % 确认S未赋过初值再赋值
+                    if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1
+                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd * 2/3 * Type;
                     end
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value + Vdd/3 <= Vdd
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value + Vdd/3;
-                        else
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.9 * Vdd;
-                        end
+                    % 确认G未赋过初值再赋值
+                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type;
                     end
-                elseif NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1  % S赋过初值，将D赋为相同值，将G赋为Vs + Vdd/3
-                    if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                        NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1
+                    % S赋过初值，将D赋为Vs + Vdd*2/3 * Type，将G赋为Vs + Vdd/2 * Type
+                    % D一定未赋过初值
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type;
+                    % 确认G未赋过初值再赋值
+                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type;
                     end
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value + Vdd/3 <= Vdd
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value + Vdd/3;
-                        else
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.9 * Vdd;
-                        end
-                    end
-                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1  % G赋过初值
-                    DeviceInfo{i}.init = 1;
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/3 >= 0
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/3;
-                        end
-                        if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/3;
-                        end
-                    else
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0.1 * Vdd;
-                        end
-                        if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0.1 * Vdd;
-                        end
-                    end
+                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1
+                    % G赋过初值，将S赋为Vg - Vdd/2 * Type，将D赋为Vs + Vdd*2/3 * Type
+                    % S一定未赋过初值
+                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/2 * Type;
+                    % D一定未赋过初值
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type;
                 end
                 break;
-            % 未连接Vdd或Gnd的PMOS，不区分D\S，按Vd=Vs的线性区赋值
-            elseif isequal(DeviceInfo{i}.type, 'pmos')
-                DeviceInfo{i}.init = 1;
-                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1  % D赋过初值，将S赋为相同值，将G赋为Vs - Vdd/3
-                    if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value;
-                    end
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd/3 >= 0
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd/3;
-                        else
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.1 * Vdd;
-                        end
-                    end
-                elseif NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1  % S赋过初值，将D赋为相同值，将G赋为Vs - Vdd/3
-                    if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                        NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value;
-                    end
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1  % 确认未赋过初值再赋值
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd/3 >= 0
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd/3;
-                        else
-                            NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.1 * Vdd;
-                        end
-                    end
-                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1  % G赋过初值
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value + Vdd/3 <= Vdd
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value + Vdd/3;
-                        end
-                        if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value + Vdd/3;
-                        end
-                    else
-                        if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0.9 * Vdd;
-                        end
-                        if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0.9 * Vdd;
-                        end
-                    end
-                end
-                break;
-            % 找有端口接Gnd的非NMOS器件 (除MOS外其他器件都是二端器件)
+            %% 找有端口接Gnd的非NMOS器件 (除MOS外其他器件都是二端器件)
             elseif isequal(DeviceInfo{i}.nodes{j}, Gnd_node)
                 DeviceInfo{i}.init = 1;
                 Vdd_and_Gnd = 0;
@@ -166,7 +118,7 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     end
                 end
                 break;
-            % 找有端口接Vdd的非PMOS器件 (除MOS外其他器件都是二端器件)    
+            %% 找有端口接Vdd的非PMOS器件 (除MOS外其他器件都是二端器件)    
             elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node)
                 DeviceInfo{i}.init = 1;
                 for k = 1:numel(DeviceInfo{i}.nodes)
@@ -205,4 +157,3 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     fprintf("InitValue: \n\n");
     disp(zp);
 end
-
