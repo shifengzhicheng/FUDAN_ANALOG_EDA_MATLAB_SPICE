@@ -11,7 +11,8 @@ filename = 'testfile\dbmixerDC.sp';
     SourceFreq,SourcePhase,...
     MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,MOSID,...
-    MOSMODEL,PLOT,SPICEOperation]=parse_netlist(filename);
+    MOSMODEL,Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel,...
+    PLOT,SPICEOperation]=parse_netlist(filename);
 
 %% 根据读到的操作选择执行任务的分支
 DeviceInfo = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
@@ -33,6 +34,8 @@ DeviceInfo = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
 % Value double
 % MOSLine double
 switch lower(SPICEOperation{1}{1})
+    case '.dc_sweep'
+
     case '.hb'
         % 这里进入AC分析
         % 需要时间步长，AC频率
@@ -49,14 +52,14 @@ switch lower(SPICEOperation{1}{1})
     case '.dc'
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [x, Moscurrent, x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL,MOSID,...
-            Name, N1, N2, dependence, Value, MOSLine, Error, x_0);
+        [x, Moscurrent,diodecurrents, x_0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL,MOSID,...
+            Is,diodeLine,Name, N1, N2, dependence, Value, MOSLine, Error, x_0);
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
         [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
-            x, Moscurrent, Value, ...
-            x_0, Node_Map, Name, N1, N2, MOSName);
+            x, Moscurrent, diodecurrents, Value, ...
+            x_0, Node_Map, Name, N1, N2, MOSName,Diodes);
         for i=1:size(Obj)
             display([Obj{i}, num2str(Values(i))]);
         end
