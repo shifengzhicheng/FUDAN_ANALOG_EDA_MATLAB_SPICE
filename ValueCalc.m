@@ -1,7 +1,7 @@
 %% 根据device以及端点从解中得到电流或者电压
-function [Obj,Values] = ValueCalc(plotnv,plotcurrent, ...
-    x, Moscurrent, Value, ...
-    x_0,Node_Map, Name, N1, N2, MOSName)
+function [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
+    x, Moscurrent, diodecurrents, Value, ...
+    x_0, Node_Map, Name, N1, N2, MOSName,Diodes);
 % 画图对象的总数量
 plotnv=plotnv';
 plotcurrent=plotcurrent';
@@ -24,19 +24,26 @@ for j = i+1:tsize
     switch dname(1)
         case 'M'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(contains(MOSName,dname));            
+            Index = find(contains(MOSName,dname));
             switch plotport
-                case 'd' 
+                case 'd'
                     Values(j) = Moscurrent(Index);
-                case 'g' 
+                case 'g'
                     Values(j) = 0;
-                case 's' 
+                case 's'
                     Values(j) = -Moscurrent(Index);
             end
-
+        case 'D'
+            Index = find(contains(Diodes,dname));
+            switch plotport
+                case '+'
+                    Values(j) = diodecurrents(Index);
+                case '-'
+                    Values(j) = -diodecurrents(Index);
+            end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(contains(x_0,['I_' plotcurrent{j-i}{1}]));          
+            Index = find(contains(x_0,['I_' plotcurrent{j-i}{1}]));
             switch plotport
                 case '+'
                     Values(j) = x(Index);
@@ -45,7 +52,7 @@ for j = i+1:tsize
             end
         case 'I'
             % 找电流源的结果就直接到
-            Index = find(Name,dname);          
+            Index = find(Name,dname);
             switch plotport
                 case '+'
                     Values(j) = Value(Index);
