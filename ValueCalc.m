@@ -4,8 +4,8 @@ function [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
     x_0, Node_Map, Name, N1, N2, MOSName,Diodes);
 % 画图对象的总数量
 plotnv=plotnv';
-plotcurrent=plotcurrent';
-tsize = size(plotnv)+size(plotcurrent);
+plotCurrent=plotCurrent';
+tsize = size(plotnv)+size(plotCurrent);
 % 初始化
 Obj = cell(tsize);
 Values = zeros(tsize);
@@ -18,8 +18,8 @@ for i=1:size(plotnv)
     Values(i) = x(plotnv(i));
 end
 for j = i+1:tsize
-    dname = plotcurrent{j-i}{1};
-    plotport = plotcurrent{j-i}{2};
+    dname = plotCurrent{j-i}{1};
+    plotport = plotCurrent{j-i}{2};
     Obj(j) = {[dname '_Current: ' num2str(plotport) ' Value: ']};
     switch dname(1)
         case 'M'
@@ -62,7 +62,7 @@ for j = i+1:tsize
         case 'R'
             % 找两端节点然后计算出电流
             Index = find(Name,dname);
-            if plotcurrent{j-i}{2} == N1(Index)
+            if plotCurrent{j-i}{2} == N1(Index)
                 Values(j) = Value(Index)*(x(N1(Index)) - x(N2(Index)));
             else
                 Values(j) = -Value(Index)*(x(N1(Index)) - x(N2(Index)));
