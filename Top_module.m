@@ -20,7 +20,7 @@ DeviceInfo = Gen_DeviceInfo(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
 % Value double
 % MOSLine double
 switch lower(SPICEOperation{1}{1})
-    case '.dc_sweep'
+    case '.dcsweep'
 
     case '.hb'
         % 这里进入AC分析
