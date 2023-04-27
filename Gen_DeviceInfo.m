@@ -10,9 +10,9 @@ Function: 将parser得到的预处理数据整合为DeviceInfo元胞数组
 Test Pass: Y (no separate test file)
 %}
 
-function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
-    SourceName,SourceN1,SourceN2,SourceDcValue,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype,MOSID)
+function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
+    SourceName,SourceN1,SourceN2,...
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype)
 
     DeviceInfo = {};
     count = 0;
@@ -21,7 +21,7 @@ function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
         count = count + 1;
         Device.name = RLCName{i};
         Device.type = 'RLC';
-        Device.nodes = {RLCN1{i}, RLCN2{i}};
+        Device.nodes = {RLCN1(i), RLCN2(i)};
         Device.init = 0;
         DeviceInfo{count} = Device;
     end
@@ -30,7 +30,7 @@ function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
         count = count + 1;
         Device.name = SourceName{i};
         Device.type = 'source';
-        Device.nodes = {SourceN1{i}, SourceN2{i}};
+        Device.nodes = {SourceN1(i), SourceN2(i)};
         Device.init = 0;
         DeviceInfo{count} = Device;
     end
@@ -43,7 +43,7 @@ function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,RLCarg1,...
         elseif MOStype{i} == 'p'
             Device.type = 'pmos';
         end
-        Device.nodes = {MOSN1{i}, MOSN2{i}, MOSN3{i}};
+        Device.nodes = {MOSN1(i), MOSN2(i), MOSN3(i)};
         Device.init = 0;
         DeviceInfo{count} = Device;
     end
