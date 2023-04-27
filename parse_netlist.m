@@ -1,14 +1,9 @@
 % 此函数由郑志宇完成，读取网表文件并提取所有的有效信息
 %% 函数主体
 % 这个函数获得的数据来自网表
-[RLCName,RLCN1,RLCN2,RLCarg1,...
-    SourceName,SourceN1,SourceN2,...
-    Sourcetype,SourceDcValue,SourceAcValue,...
-    SourceFreq,SourcePhase,...
-    MOSName,MOSN1,MOSN2,MOSN3,...
-    MOStype,MOSW,MOSL,MOSID,...
-    MOSMODEL,Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel,...
-    PLOT,SPICEOperation]=parse_netlist(filename);
+function [RCLINFO,SourceINFO,MOSINFO,...
+    DIODEINFO,PLOT,SPICEOperation]...
+    =parse_netlist(filename)
 %% 读取网表文件
 fid = fopen(filename, 'r');
 Count=0;
@@ -24,7 +19,7 @@ RLCName=cell(0);
 SourceName=cell(0);
 RLCN1=cell(0);
 RLCN2=cell(0);
-RLCarg1=cell(0);
+RLCValue=cell(0);
 SourceN1=cell(0);
 SourceN2=cell(0);
 Sourcetype=cell(0);
@@ -60,7 +55,7 @@ while ~feof(fid)
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
-    tokens_Operation = regexp(line, '^[(\.hb)(\.trans)(\.dc)]', 'tokens', 'ignorecase');
+    tokens_Operation = regexp(line, '^[(\.hb)(\.trans)(\.dc)(\.dcsweep)]', 'tokens', 'ignorecase');
     if ~isempty(tokens_Device)
         % 提取关键字符
         keyword = tokens_Device{1}{1}(1);
@@ -69,7 +64,7 @@ while ~feof(fid)
             case {'R','L','C'}
                 % RLC处理
                 Count = Count + 1;
-                [RLCName{Count},RLCN1{Count},RLCN2{Count},RLCarg1{Count}]=Device{:};
+                [RLCName{Count},RLCN1{Count},RLCN2{Count},RLCValue{Count}]=Device{:};
             case {'V','I'}
                 % 直流交流源处理
                 SourceCount = SourceCount + 1;
@@ -132,5 +127,13 @@ while ~feof(fid)
         SPICEOperation{OperationCount}=strsplit(strtrim(line));
     end
 end
+RCLINFO={RLCName,RLCN1,RLCN2,RLCValue};
+SourceINFO={SourceName,SourceN1,SourceN2,...
+    Sourcetype,SourceDcValue,SourceAcValue,...
+    SourceFreq,SourcePhase};
+MOSINFO={MOSName,MOSN1,MOSN2,MOSN3,...
+    MOStype,MOSW,MOSL,MOSID,...
+    MOSMODEL};
+DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
 % 关闭文件
 fclose(fid);
