@@ -13,54 +13,44 @@
     各mos管(按网表处理后的顺序)的Ids
 %}
 
-function [DCres, mosCurrents, x0] = calculateDC(MOSMODEL, MOStype, MOSW, MOSL, MOSID,...
-    Name,N1,N2,dependence,Value,MOSLine, Error, x_0)
+function [DCres, mosCurrents, diodeCurrents, x0] = calculateDC(Name, N1, N2, dependence, Value, varargin)
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法是在这个A0与b0基础上贴上每轮的MOS伴随器件 - 避免记录上一轮的伴随器件信息
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value);
 disp("DCres name list: "); disp(x0);
 
+%% 判断是否是纯线性网络，如果是，则baseA就是正确的A，直接得结果，否则读线性器件输入信息
+if isempty(varargin) || isempty(varargin{1}) || isempty(varargin{2}) 
+    DCres = A0 \ b0;
+    mosCurrents = [];
+    diodeCurrents = [];
+    return;
+else
+    MOSINFO = varargin{1};
+    DIODEINFO = varargin{2};
+    Error  =varargin{3};
+    %需要的MOS相关信息
+    MOSMODEL = MOSINFO{1};
+    MOStype = MOSINFO{2};
+    MOSW = MOSINFO{3};
+    MOSL = MOSINFO{4};
+    MOSID = MOSINFO{5};
+    MOSLine = MOSINFO{6};
+    %需要的DIODE相关信息
+    Is = DIODEINFO{1};
+    diodeLine = DIODEINFO{2};
+end
+
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
 %默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
 [A1, b1] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value); %用初始值得到的首轮A和b
-
-%% 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
-%% 初始解加上了
+% 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
-
-%{
-zp_1 = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
-fprintf("zp_1: \n\n")
-disp(zp_1)
-
-num1 = size(x_0, 1);
-num2 = size(zp_1, 1);
-num_i = num2 - num1;
-zp = zeros(num2, 1);
-for i = 1:num1
-    if zp_1(i, 1) ~= 0
-        zp(i, 1) = zp_1(i, 1);
-    elseif x_0(i, 1) ~= 0
-        zp(i, 1) = x_0(i, 1);
-    else
-        zp(i, 1) = 0.1;  % 赋一个不为0的小值     
-    end
-end
-for i = 1:num_i
-    if zp_1(num1 + i, 1) ~= 0
-        zp(num1 + i, 1) = zp_1(num1 + i, 1);
-    else
-        zp(num1 + i, 1) = 0.005;
-    end
-end
-%}
 
 %MOS个数，也即需更新的3个一组的数据组数
 mosNum = size(MOStype,2);
-
-%每个MOS得到的GM的端点信息其实已经可以看到dsg三端了 
-%% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号
+%% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号 - GM的端点信息可以读到
 mosNodeMat = zeros(mosNum, 3);
 for mosCount = 0 : mosNum-1
     %三列按D、G、S的顺序 
@@ -68,6 +58,15 @@ for mosCount = 0 : mosNum-1
     mosNodeMat(mosCount+1, 1) = N1(MOSLine + 3*mosCount);   %D - R第一个端口
     mosNodeMat(mosCount+1, 2) = dependence{MOSLine + 3*mosCount + 1}(1);   %G - GM第一个控制端口绝对是G
     mosNodeMat(mosCount+1, 3) = N2(MOSLine + 3*mosCount);    %S - R第二个端口
+end
+
+%% 用diodeNum*2的矩阵存储diode两端节点序号 - 从伴随器件读到
+diodeNum = size(Is, 2);
+diodeNodeMat = zeros(diodeNum, 2);
+for diodeCount = 1 : diodeNum
+    %从Gd的两端找到
+    diodeNodeMat(diodeCount, 1) = N1(diodeLine + diodeCount * 2 - 2);
+    diodeNodeMat(diodeCount, 2) = N2(diodeLine + diodeCount * 2 - 2);
 end
 
 %把字符表示的MOStype直接换1、2表示的Mostype方便直接选MOSMODEL
@@ -85,10 +84,12 @@ MOSW = str2double(MOSW);
 MOSL = str2double(MOSL);
 
 %% 开始迭代
-Nlimit = 500; %迭代上限，可能次数太多因为初始解不收敛
+Nlimit = 200; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
-    [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, A0, b0, Name, N1, N2, dependence, Value, zp);
+    [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
+                                          diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                          A0, b0, Name, N1, N2, dependence, Value, zp);
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
@@ -96,7 +97,7 @@ for i = 1 : Nlimit
         %MNA方程解的结果
         DCres = zc;
 
-        %%  为打印电流输出结果提供的输出
+        %%  为打印MOS电流输出结果提供的输出
         tempz = [0; zp];
         %得到绝对原网表三端电压，再根据MOS一阶模型得原Ids，计算Ids函数内考虑ds交换
         vg = zeros(mosNum, 1); vs = zeros(mosNum, 1); netlistVds = zeros(mosNum, 1);
@@ -113,9 +114,21 @@ for i = 1 : Nlimit
         finalIMs = Value(MOSLine + 2 : 3 : MOSLine + 3 * mosNum - 1).';
         mosCurrents = finalIMs + finalGMs .* vgs + (1./finalRMs) .* netlistVds;
 
+        %%  打印Diode电流输出结果
+        vpn = zeros(diodeNum, 1);
+        for dioCount = 1 : diodeNum
+            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
+        end
+            finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2);
+            finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1);
+        diodeCurrents = finalIDs + vpn ./ finalRDs;
+        %或直接用双端Diode电流公式
+        %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);
+
         %测试打印输出 - test
         display(DCres);
         display(mosCurrents);
+        display(diodeCurrents);
         return;
     else
         zp = zc; %本轮结果成为'上轮'

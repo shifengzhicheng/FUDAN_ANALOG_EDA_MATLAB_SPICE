@@ -15,10 +15,10 @@ for i=1:CellCount
     % 考虑节点地，方程要往右往下移动一个单位
     pNum1=N1(i)+1;
     pNum2=N2(i)+1;
+    %% MOS
     if CellName(2) == 'M'
         switch CellName(1)
             case 'R'
-
                 %% 在电路上贴MOS得到的伴随电阻
                 cpValue=Value(i);
                 % 方程贴电阻
@@ -46,6 +46,23 @@ for i=1:CellCount
                 A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
                 A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
         end
+    elseif CellName(2) == 'D'
+        switch CellName(1)
+            case 'R'
+                %% 在电路上贴DIODE得到的伴随电阻
+                cpValue=Value(i);
+                % 方程贴电阻
+                A(pNum1,pNum1)= A(pNum1,pNum1)+1/cpValue;
+                A(pNum1,pNum2)= A(pNum1,pNum2)-1/cpValue;
+                A(pNum2,pNum1)= A(pNum2,pNum1)-1/cpValue;
+                A(pNum2,pNum2)= A(pNum2,pNum2)+1/cpValue;
+            case 'I'
+                %% 在电路上贴DIODE得到的伴随电流源
+                cpValue=Value(i);
+                % 节点的净流出与净流入电流
+                b(pNum1)=b(pNum1)-cpValue;
+                b(pNum2)=b(pNum2)+cpValue;
+        end    
     end
 end
 A(1,:)=[];

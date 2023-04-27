@@ -27,7 +27,7 @@ for i=1:CellCount
     pNum2=N2(i)+1;
     switch CellName(1)
         case 'R'
-            if CellName(2) ~= 'M'
+            if CellName(2) ~= 'M' && CellName(2) ~= 'D'
                 %% 在电路上贴电阻
                 cpValue=Value(i);
                 % 方程贴电阻
@@ -37,7 +37,7 @@ for i=1:CellCount
                 A(pNum2,pNum2)= A(pNum2,pNum2)+1/cpValue;
             end
         case 'I'
-            if CellName(2) ~= 'M'
+            if CellName(2) ~= 'M' && CellName(2) ~= 'D'
                 %% 在电路上贴电流源
                 cpValue=Value(i);
                 % 节点的净流出与净流入电流
