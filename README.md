@@ -138,9 +138,59 @@ C3 118 0 1e-12
 
 #### 电路文件的信息提取
 
+此功能由郑志宇同学完成
+
+├── parse_netlist
+
+##### 函数定义
+
+```matlab
+function [RCLINFO, SourceINFO, MOSINFO, DIODEINFO,...
+PLOT, SPICEOperation] = parse_netlist(filename);
+```
+
+函数完成解析sp文件并提取出有效信息的功能，为后面功能的实现做铺垫。
+
+##### 接口说明
+
+`RCLINFO`：电阻，电容，电感的信息
+
+`SourceINFO`：电源的信息
+
+`MOSINFO`：MOS管的信息
+
+`DIODEINFO`：二极管的信息
+
+`PLOT`：绘图的信息
+
+`SPICEOperation`：电路所需要进行的操作
+
+##### 技术细节
+
+文件主要使用正则表达式在文件中提取和匹配有效的信息并将有效信息打包给其他环节进行处理
+
 #### 文件信息的预处理
 
 #### 矩阵方程的建立
+
+郑志宇、林与正
+
+├── Gen_baseA
+
+├── Gen_nextA
+
+```matlab
+%% 处理网表中的所有线性器件生成A、b
+function [A,x,b]=Gen_baseA(Name, N1, N2, dependence, Value)
+```
+
+函数接受一个处理好的线性网表的参数，并生成电路的网表
+
+##### 接口说明
+
+此函数
+
+##### 技术细节
 
 ### Part 2 迭代求解电路的直流工作点
 
