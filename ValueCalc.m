@@ -1,7 +1,7 @@
 %% 根据device以及端点从解中得到电流或者电压
 function [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
     x, Moscurrent, diodecurrents, Value, ...
-    x_0, Node_Map, Name, N1, N2, MOSName,Diodes);
+    x_0, Node_Map, Name, N1, N2, MOSName,Diodes)
 % 画图对象的总数量
 plotnv=plotnv';
 plotCurrent=plotCurrent';
