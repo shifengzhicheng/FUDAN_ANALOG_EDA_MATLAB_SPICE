@@ -10,10 +10,10 @@ filename = 'testfile\dbmixerDC.sp';
     =parse_netlist(filename);
 
 %% 根据读到的操作选择执行任务的分支
-DeviceInfo = Gen_DeviceInfo(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
 
 [Name,N1,N2,dependence,Value,MOSINFO,DIODEINFO,Node_Map, NodeInfo, DeviceInfo]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DeviceInfo);
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+
 % Name cell,'Name'
 % N1 double
 % N2 double
@@ -22,15 +22,7 @@ DeviceInfo = Gen_DeviceInfo(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
 % MOSLine double
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
-        Error = 1e-6;
-        [InData,OutDataNV,OutDataNc] = SweepDC(Name,N1,N2,dependence,Value,...
-            MOSINFO,DIODEINFO,{SPICEOperation{1}{2:end}},PLOT,Error);
-        for i=1:size(OutDataNv,2)
-            plot(InData,OutDataNV(i));
-        end
-        for i=1:size(OutDataNc,2)
-            plot(InData,OutDataNc(i));
-        end
+
     case '.hb'
         % 这里进入AC分析
         % 需要时间步长，AC频率
