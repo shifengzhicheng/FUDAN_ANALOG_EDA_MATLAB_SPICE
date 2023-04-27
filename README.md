@@ -82,6 +82,8 @@
 
 电路网表文件是一个文本文件，格式如下：
 
+要求，文件中`D, M, R, V, C, L, .`都是关键字，在给电阻电容电感命名的时候最好不要使用，避免被错误索引
+
 ```css
 * non-inverting buffer
 VDD 103 0 DC 3
@@ -120,8 +122,8 @@ C3 118 0 1e-12
 │   ├── buffer.sp         	
 │   ├── lc_filter.sp       	
 │   └── amplifier.sp       	
-├──Top_module.m
-├──
+├── Top_module.m
+├── parse_netlist.m
 ├──
 ├──
 ├──
@@ -140,7 +142,7 @@ C3 118 0 1e-12
 
 此功能由郑志宇同学完成
 
-├── parse_netlist
+├── parse_netlist.m
 
 ##### 函数定义
 
@@ -194,9 +196,11 @@ DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
 
 此功能由郑志宇、林与正同学完成，郑志宇同学写好了初版的线性电路矩阵的生成函数，由林与正同学运用到迭代中去
 
-├── Gen_baseA
+├── Gen_baseA.m
 
-├── Gen_nextA
+├── Gen_nextA.m
+
+##### 函数定义
 
 ```matlab
 %% 处理网表中的所有线性器件生成A、b
@@ -204,7 +208,7 @@ function [A,x,b]=Gen_baseA(Name, N1, N2, dependence, Value)
 function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
 ```
 
-函数接受一个处理好的线性网表的参数，并生成电路的网表
+函数接受一个处理好的线性网表的参数，并生成电路的MNA方程
 
 ##### 接口说明
 
@@ -226,7 +230,7 @@ function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
 
 函数实现了计算所有线性元件电路的方法，但是对受控源的书写顺序有一定的要求。即受到依赖的电路元件下标应该小于依赖这一元件的电路元件的下标，防止受控电流源找不到依赖的器件电流。
 
-`I、V、R`：在这里不做多的介绍
+`I、V、R - 基本的线性电路元件`
 
 `压控电压源 (VCVS) - E`
 
@@ -252,9 +256,53 @@ function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
 
 ### Part 5 将电路生成的结果输出
 
+#### `.dc`中输出结果
+
+此功能由郑志宇同学完成
+
+├── portMapping.m
+
+├── ValueCalc.m
+
+##### 函数定义
+
+```matlab
+function [plotnv,plotCurrent] = portMapping(PLOT,Node_Map)
+function [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
+    x, Moscurrent, diodecurrents, Value, ...
+    x_0, Node_Map, Name, N1, N2, MOSName,Diodes)
+```
+
+##### 接口说明
+
+`PLOT`：文件中希望绘制的结果信息
+
+`Node_Map`：在前面节点映射的结果
+
+`plotnv, plotCurrent`：电压电流的绘制信息
+
+##### 技术细节
+
+如果想要看一个节点的电压或者某个器件节点的电流在dc中的结果，应该在文件中这样写：
+
+```css
+* dc
+.plotnv <node>
+.dc
+
+* dcsweep
+Vin <node1> <node2> DC Value
+.plotnv <node>
+.dcsweep Vin [1,3] step
+```
+
+
+
+
+
 ## 项目测试用例
 
-### DC测试用例
+### `.dc`/`.dcsweep`测试用例
 
 #### DC测试用例1`filename.sp`
 [电路图]()
