@@ -1,8 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Gen_nextRes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, A0, b0, Name, N1, N2, dependence, Value, zp)
-%已经得到了按顺序的每个MOS管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
+function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
+                                               diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                               A0, b0, Name, N1, N2, dependence, Value, zp)
+    
+%% 处理MOS
+    %已经得到了按顺序的每个MOS管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
     for mosCount = 1 : mosNum   % 1个MOS衍生出的3个伴随器件1组
-%% 可能出现源漏端交换的情况，我们固定初始GDS的物理位置，源漏交换只体现在伴随器件的数值正负上
+    % 可能出现源漏端交换的情况，我们固定初始GDS的物理位置，源漏交换只体现在伴随器件的数值正负上
         tempz = [0; zp];
         vd = tempz(mosNodeMat(mosCount, 1) + 1);
         vg = tempz(mosNodeMat(mosCount, 2) + 1);
@@ -32,7 +36,16 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
         Value(tempCount+2) = nextIeq; %更新IM
         Value(tempCount+1) = nextGM; %更新GM
     end
-    %将得到的新器件数据结合A0、b0得到新的矩阵
+
+%% 处理二极管
+    for diodeCount = 1 : diodeNum
+        Vpn = tempz(diodeNodeMat(diodeCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
+        [Gdk, Ieqk] = Diode_Calculator(Vpn, Is(diodeCount), 27);    %室温
+        Value(diodeLine + diodeCount * 2 - 2) = 1 / Gdk;
+        Value(diodeLine + diodeCount * 2 - 1) = Ieqk;
+    end
+
+%% 将得到的新器件数据结合A0、b0得到新的矩阵
     [Ac, bc] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value);
     %解得新一轮的x(z)cur
     zc = Ac \ bc;
