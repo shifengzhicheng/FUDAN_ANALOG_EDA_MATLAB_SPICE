@@ -24,7 +24,7 @@ for j = i+1:tsize
     switch dname(1)
         case 'M'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(contains(MOSName,dname));
+            Index = find(strcmp(MOSName,dname));
             switch plotport
                 case 'd'
                     Values(j) = Moscurrent(Index);
@@ -34,7 +34,7 @@ for j = i+1:tsize
                     Values(j) = -Moscurrent(Index);
             end
         case 'D'
-            Index = find(contains(Diodes,dname));
+            Index = find(strcmp(Diodes,dname));
             switch plotport
                 case '+'
                     Values(j) = diodecurrents(Index);
@@ -43,7 +43,7 @@ for j = i+1:tsize
             end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(contains(x_0,['I_' plotCurrent{j-i}{1}]));
+            Index = find(strcmp(x_0,['I_' plotCurrent{j-i}{1}]));
             switch plotport
                 case '+'
                     Values(j) = x(Index);

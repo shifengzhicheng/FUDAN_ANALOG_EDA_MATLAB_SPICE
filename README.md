@@ -296,7 +296,7 @@ Vin <node1> <node2> DC Value
 .dcsweep Vin [1,3] step
 ```
 
-
+`ValueCalc`利用迭代计算的结果以及端口映射的结果找到正确的计算值然后返回。
 
 
 

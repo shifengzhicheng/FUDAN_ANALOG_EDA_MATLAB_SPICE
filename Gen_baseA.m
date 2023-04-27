@@ -104,7 +104,7 @@ for i=1:CellCount
             % 电流控制电流源 (CCCS) - F
 
             CdName=dependence{i};
-            cpIndex=find(contains(Name,CdName));
+            cpIndex=find(strcmp(Name,CdName));
             cpValue=Value(i);
 
             %% 电流控制电流源 (CCCS) - F
@@ -135,16 +135,16 @@ for i=1:CellCount
                         % 如果为电压源，这里应该去寻找电压源对应的电流
                         % 如果是其他源的电流，很可能在这里还没有生成，所以还需要另外的步骤去寻找这样一个电流
                         % 考虑重新引入一个队列去在这个循环之后特别处理这样的源
-                        ICdName_Index=find(contains(x, ['I_' CdName]));
+                        ICdName_Index=find(strcmp(x, ['I_' CdName]));
                         A(nodeNums+INum, ICdName_Index) = A(nodeNums+INum, ICdName_Index) - 1;
                     case {'I','G','F'}
                         % 如果为电流源、受控电流源，则会有一个电流相等的关系
-                        ICdName_Index=find(contains(x, ['I_' CdName]));
+                        ICdName_Index=find(strcmp(x, ['I_' CdName]));
                         if CdName(1) == 'I'
                             A(nodeNums+INum, ICdName_Index) = A(nodeNums+INum, ICdName_Index) - 1;
                         elseif CdName(1) == 'F'
                             % 还得找控制G,F的电流
-                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName{1}]));
+                            IcontrolCS_Index=find(strcmp(x,['Icontrol_' CdName{1}]));
                             A(nodeNums+INum, IcontrolCS_Index) = A(nodeNums+INum, IcontrolCS_Index) - Value(cpIndex);
                         elseif CdName(1) == 'G'
                             A(pNum1,cpNum1)= A(pNum1,cpNum1) - cpValue;
@@ -185,16 +185,16 @@ for i=1:CellCount
                         % 如果为电压源，这个时候这条支路上一定会引入一个电流
                         % 如果是其他源的电流，很可能在这里还没有生成，所以还需要另外的步骤去寻找这样一个电流
                         % 考虑重新引入一个队列去在这个循环之后特别处理这样的源
-                        ICdName_Index=find(contains(x, ['I_' CdName]));
+                        ICdName_Index=find(strcmp(x, ['I_' CdName]));
                         A(k, ICdName_Index) = A(k, ICdName_Index) - 1;
                     case {'I','G','F'}
                         % 如果为电流源、受控电流源，则会有一个电流相等的关系
-                        ICdName_Index = find(contains(x, ['I_' CdName]));
+                        ICdName_Index = find(strcmp(x, ['I_' CdName]));
                         if CdName(1) == 'I'
                             A(k, ICdName_Index) = A(k, ICdName_Index) - 1;
                         elseif CdName(1) == 'F'
                             % 还得找控制G,F的电流
-                            IcontrolCS_Index=find(contains(x,['Icontrol_' CdName]));
+                            IcontrolCS_Index=find(strcmp(x,['Icontrol_' CdName]));
                             A(k, IcontrolCS_Index) = A(k, IcontrolCS_Index) - Value(cpIndex);
                         elseif CdName(1) == 'G'
                             A(pNum1,cpNum1)= A(pNum1,cpNum1) - cpValue;
