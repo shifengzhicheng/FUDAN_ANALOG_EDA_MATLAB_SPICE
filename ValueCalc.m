@@ -43,7 +43,7 @@ for j = i+1:tsize
             end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(contains(x_0,['I_' plotcurrent{j-i}{1}]));
+            Index = find(contains(x_0,['I_' plotCurrent{j-i}{1}]));
             switch plotport
                 case '+'
                     Values(j) = x(Index);
