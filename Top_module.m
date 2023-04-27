@@ -11,7 +11,8 @@ filename = 'testfile\dbmixerDC.sp';
 
 %% 根据读到的操作选择执行任务的分支
 DeviceInfo = Gen_DeviceInfo(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
-[Name,N1,N2,dependence,Value,MOSLine,x_0,Node_Map, NodeInfo, DeviceInfo, MOSID]=...
+
+[Name,N1,N2,dependence,Value,MOSLine,DiodeLine,Node_Map, NodeInfo, DeviceInfo]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DeviceInfo);
 % Name cell,'Name'
 % N1 double
@@ -40,7 +41,7 @@ switch lower(SPICEOperation{1}{1})
         % 到这里需要DC电路网表
         [x, Moscurrent,diodecurrents, x_0] = ...
         calculateDC(Name, N1, N2, dependence, Value,...
-        MOSINFO,DIODEINFO,MOSLine,diodeLine, Error, x_0);
+        MOSINFO,DIODEINFO,MOSLine,diodeLine, Error);
 
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
