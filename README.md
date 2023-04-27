@@ -155,11 +155,30 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 
 `RCLINFO`：电阻，电容，电感的信息
 
+```matlab
+RCLINFO={RLCName,RLCN1,RLCN2,RLCValue};
+```
+
 `SourceINFO`：电源的信息
+
+```matlab
+SourceINFO={SourceName,SourceN1,SourceN2,...
+Sourcetype,SourceDcValue,SourceAcValue,...
+SourceFreq,SourcePhase};
+```
 
 `MOSINFO`：MOS管的信息
 
+```matlab
+MOSINFO={MOSName,MOSN1,MOSN2,MOSN3,...
+MOStype,MOSW,MOSL,MOSID,MOSMODEL};
+```
+
 `DIODEINFO`：二极管的信息
+
+```matlab
+DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
+```
 
 `PLOT`：绘图的信息
 
@@ -173,7 +192,7 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 
 #### 矩阵方程的建立
 
-郑志宇、林与正
+此功能由郑志宇、林与正同学完成，郑志宇同学写好了初版的线性电路矩阵的生成函数，由林与正同学运用到迭代中去
 
 ├── Gen_baseA
 
@@ -182,15 +201,44 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 ```matlab
 %% 处理网表中的所有线性器件生成A、b
 function [A,x,b]=Gen_baseA(Name, N1, N2, dependence, Value)
+function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
 ```
 
 函数接受一个处理好的线性网表的参数，并生成电路的网表
 
 ##### 接口说明
 
-此函数
+`A`：电路矩阵方程，用于求解电路以及迭代
+
+`x`：解空间的命名，用于索引
+
+`b`：`Ax=b`，MNA方程的右边部分
+
+`Name`：器件名
+
+`N1，N2`：线性器件的端口
+
+`dependence`：器件的依赖，用于受控源
+
+`Value`：线性器件的的参数
 
 ##### 技术细节
+
+函数实现了计算所有线性元件电路的方法，但是对受控源的书写顺序有一定的要求。即受到依赖的电路元件下标应该小于依赖这一元件的电路元件的下标，防止受控电流源找不到依赖的器件电流。
+
+`I、V、R`：在这里不做多的介绍
+
+`压控电压源 (VCVS) - E`
+
+`压控电流源 (VCCS) - G`
+
+`流控电压源 (CCVS) - H`
+
+`流控电流源 (CCCS) - F`
+
+含有MOS管的电路中只用到了`(VCCS) - G`压控电流源
+
+含有二极管的电路同理
 
 ### Part 2 迭代求解电路的直流工作点
 
@@ -201,6 +249,8 @@ function [A,x,b]=Gen_baseA(Name, N1, N2, dependence, Value)
 ### Part 3 实现trans仿真
 
 ### Part 4 实现频率响应分析
+
+### Part 5 将电路生成的结果输出
 
 ## 项目测试用例
 
