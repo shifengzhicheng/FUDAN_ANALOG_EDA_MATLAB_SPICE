@@ -9,20 +9,33 @@ filename = 'testfile\dbmixerDC.sp';
     DIODEINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename);
 
-%% 根据读到的操作选择执行任务的分支
+%% 生成DC线性网表
 
-[Name,N1,N2,dependence,Value,MOSINFO,DIODEINFO,Node_Map, NodeInfo, DeviceInfo]=...
+[LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
-
+%% LinerNet
 % Name cell,'Name'
 % N1 double
 % N2 double
 % dependence cell [cp1 cp2] or 'Name'
 % Value double
 % MOSLine double
+%% MOSINFO
+
+%% DIODEINFO
+
+%% Node_Map
+
+%% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
-
+        Error = 1e-6;
+        OperationInfo = {SPICEOperation{1}{2:end}};
+        [InData, Obj, Res] = Sweep_DC(LinerNet,...
+            MOSINFO,DIODEINFO,OperationInfo,PLOT,Error);
+        for i=1:size(Obj,1)
+            plot(InData,Res(i,:));
+        end
     case '.hb'
         % 这里进入AC分析
         % 需要时间步长，AC频率
@@ -39,16 +52,14 @@ switch lower(SPICEOperation{1}{1})
     case '.dc'
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [x, Moscurrent,diodecurrents, x_0] = ...
-        calculateDC(Name, N1, N2, dependence, Value,...
-        MOSINFO,DIODEINFO, Error);
+        [DCres, x_0] = ...
+            calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
 
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
         [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
-            x, Moscurrent, diodecurrents, Value, ...
-            x_0, Node_Map, Name, N1, N2, MOSName, Diodes);
+            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO);
         for i=1:size(Obj)
             display([Obj{i}, num2str(Values(i))]);
         end

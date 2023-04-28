@@ -35,14 +35,14 @@ MOStype=cell(0);
 MOSW=cell(0);
 MOSL=cell(0);
 MOSID=cell(0);
-MOSMODEL=[];
+MOSMODEL= cell(0);
 PLOT=cell(0);
 SPICEOperation=cell(0);
 Diodes=cell(0);
 DiodeN1=cell(0);
 DiodeN2=cell(0);
 DiodeID=cell(0);
-DIODEModel = [];
+DIODEModel=cell(0);
 %% 解析每一行
 while ~feof(fid)
     % 读取一行

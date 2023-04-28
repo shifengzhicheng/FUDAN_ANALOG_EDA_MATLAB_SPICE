@@ -1,21 +1,30 @@
 %% 根据device以及端点从解中得到电流或者电压
-function [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
-    x, Moscurrent, diodecurrents, Value, ...
-    x_0, Node_Map, Name, N1, N2, MOSName,Diodes)
+function [Obj, res] = ValueCalc(plotnv, plotCurrent, ...
+            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO)
 % 画图对象的总数量
+Diodecurrents = DCres('Diode');
+Moscurrents = DCres('MOS');
+x = DCres('x');
+Name = LinerNet('Name');
+N1 = LinerNet('N1');
+N2 = LinerNet('N2');
+Value = LinerNet('Value');
+MOSName = MOSINFO('Name');
+Diodes = DIODEINFO('Name'); 
+
 plotnv=plotnv';
 plotCurrent=plotCurrent';
 tsize = size(plotnv)+size(plotCurrent);
 % 初始化
 Obj = cell(tsize);
-Values = zeros(tsize);
+res = zeros(tsize);
 if isempty(x)
     error('没有解，不能画出所需信息')
 end
 for i=1:size(plotnv)
     Obj(i) = {['Node_Voltage: ' num2str(Node_Map(plotnv(i))) ' Value: ']};
     % 基本逻辑是在解出来的结果中找到对应的节点然后得到其电压
-    Values(i) = x(plotnv(i));
+    res(i) = x(plotnv(i));
 end
 for j = i+1:tsize
     dname = plotCurrent{j-i}{1};
@@ -27,45 +36,45 @@ for j = i+1:tsize
             Index = find(strcmp(MOSName,dname));
             switch plotport
                 case 'd'
-                    Values(j) = Moscurrent(Index);
+                    res(j) = Moscurrents(Index);
                 case 'g'
-                    Values(j) = 0;
+                    res(j) = 0;
                 case 's'
-                    Values(j) = -Moscurrent(Index);
+                    res(j) = -Moscurrents(Index);
             end
         case 'D'
             Index = find(strcmp(Diodes,dname));
             switch plotport
                 case '+'
-                    Values(j) = diodecurrents(Index);
+                    res(j) = Diodecurrents(Index);
                 case '-'
-                    Values(j) = -diodecurrents(Index);
+                    res(j) = -Diodecurrents(Index);
             end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(strcmp(x_0,['I_' plotCurrent{j-i}{1}]));
+            Index = find(strcmp(x_0,['I_' dname]));
             switch plotport
                 case '+'
-                    Values(j) = x(Index);
+                    res(j) = x(Index);
                 case '-'
-                    Values(j) = -x(Index);
+                    res(j) = -x(Index);
             end
         case 'I'
             % 找电流源的结果就直接到
             Index = find(Name,dname);
             switch plotport
                 case '+'
-                    Values(j) = Value(Index);
+                    res(j) = Value(Index);
                 case '-'
-                    Values(j) = -Value(Index);
+                    res(j) = -Value(Index);
             end
         case 'R'
             % 找两端节点然后计算出电流
             Index = find(Name,dname);
             if plotCurrent{j-i}{2} == N1(Index)
-                Values(j) = Value(Index)*(x(N1(Index)) - x(N2(Index)));
+                res(j) = (x(N1(Index)) - x(N2(Index)))/Value(Index);
             else
-                Values(j) = -Value(Index)*(x(N1(Index)) - x(N2(Index)));
+                res(j) = -(x(N1(Index)) - x(N2(Index)))/Value(Index);
             end
     end
 end
