@@ -13,7 +13,15 @@
     各mos管(按网表处理后的顺序)的Ids
 %}
 
-function [DCres, mosCurrents, diodeCurrents, x0] = calculateDC(Name, N1, N2, dependence, Value, varargin)
+%function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
+function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
+
+%% 读出线性网表信息
+Name = LinerNet('Name');
+N1 = LinerNet('N1');
+N2 = LinerNet('N2');
+dependence = LinerNet('dependence');
+Value = LinerNet('Value');
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法是在这个A0与b0基础上贴上每轮的MOS伴随器件 - 避免记录上一轮的伴随器件信息
@@ -21,15 +29,22 @@ function [DCres, mosCurrents, diodeCurrents, x0] = calculateDC(Name, N1, N2, dep
 disp("DCres name list: "); disp(x0);
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A，直接得结果，否则读线性器件输入信息
-if isempty(varargin) || isempty(varargin{1}) || isempty(varargin{2}) 
+if isempty(MOSINFO) || isempty(DIODEINFO) 
     DCres = A0 \ b0;
     mosCurrents = [];
     diodeCurrents = [];
     return;
 else
-    MOSINFO = varargin{1};
-    DIODEINFO = varargin{2};
-    Error  =varargin{3};
+%     %需要的MOS相关信息
+%     MOSMODEL = MOSINFO{1};
+%     MOStype = MOSINFO{2};
+%     MOSW = MOSINFO{3};
+%     MOSL = MOSINFO{4};
+%     MOSID = MOSINFO{5};
+%     MOSLine = MOSINFO{6};
+%     %需要的DIODE相关信息
+%     Is = DIODEINFO{1};
+%     diodeLine = DIODEINFO{2};
     %需要的MOS相关信息
     MOSMODEL = MOSINFO('MODEL');
     MOStype = MOSINFO('type');
@@ -95,7 +110,7 @@ for i = 1 : Nlimit
     if norm(zc-zp) <= Error
         disp("Convergence!");
         %MNA方程解的结果
-        DCres = zc;
+        z_res = zc;
 
         %%  为打印MOS电流输出结果提供的输出
         tempz = [0; zp];
@@ -124,17 +139,22 @@ for i = 1 : Nlimit
         diodeCurrents = finalIDs + vpn ./ finalRDs;
         %或直接用双端Diode电流公式
         %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);
+        %打包成hash结构DCres
+        DCres = containers.Map({'x', 'mosCurrents', 'diodeCurrents'}, {z_res, mosCurrents, diodeCurrents});
 
-        %测试打印输出 - test
-        display(DCres);
-        display(mosCurrents);
-        display(diodeCurrents);
+%         %测试打印输出 - test
+%         display(z_res);
+%         display(mosCurrents);
+%         display(diodeCurrents);
         return;
     else
         zp = zc; %本轮结果成为'上轮'
     end
 end
-disp("Can not Converge!");
-DCres = [];
-mosCurrents = [];
+    disp("Can not Converge!");
+    z_res = [];
+    mosCurrents = [];
+    diodeCurrents = [];
+    %打包成hash结构DCres
+    DCres = containers.Map({'x', 'mosCurrents', 'diodeCurrents'}, {z_res, mosCurrents, diodeCurrents});
 end
