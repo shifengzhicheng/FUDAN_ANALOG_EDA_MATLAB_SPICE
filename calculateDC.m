@@ -31,15 +31,15 @@ else
     DIODEINFO = varargin{2};
     Error  =varargin{3};
     %需要的MOS相关信息
-    MOSMODEL = MOSINFO{1};
-    MOStype = MOSINFO{2};
-    MOSW = MOSINFO{3};
-    MOSL = MOSINFO{4};
-    MOSID = MOSINFO{5};
-    MOSLine = MOSINFO{6};
+    MOSMODEL = MOSINFO('MODEL');
+    MOStype = MOSINFO('type');
+    MOSW = MOSINFO('W');
+    MOSL = MOSINFO('L');
+    MOSID = MOSINFO('ID');
+    MOSLine = MOSINFO('MOSLine');
     %需要的DIODE相关信息
-    Is = DIODEINFO{1};
-    diodeLine = DIODEINFO{2};
+    Is = DIODEINFO('Is');
+    diodeLine = DIODEINFO('DiodeLine');
 end
 
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
