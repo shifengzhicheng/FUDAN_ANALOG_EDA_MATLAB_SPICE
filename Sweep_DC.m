@@ -15,13 +15,21 @@
         #矩阵大小size(Obj) * [(stop-start)/step]
         #Obj里一个对象在各扫描点结果对应Values的一行
 %}
-function [InData, Obj, Values] = Sweep_DC(Name,N1,N2,dependence,Value, ...
-                                          MOSINFO, MOSName,DIODEINFO, Diodes, Error, ...
-                                          SweepInfo, PLOT, ...
-                                          x_0, Node_Map)
+function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, SweepInfo, PLOT, Node_Map)
+    [~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    %% 读出线性网表信息
+    Name = LinerNet('Name');
+    N1 = LinerNet('N1');
+    N2 = LinerNet('N2');
+    Value = LinerNet('Value');
+    %% 扫描信息
     SweepInName = SweepInfo{1};
     [start, stop] = SweepInfo{2};
     step = SweepInfo{3};
+    %% MOS 二极管名
+    MOSName = MOSINFO('Name');
+    Diodes = DIODEINFO('Name');
+    
     %要打印的序号值或者器件类型加端口名
     [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
     plotnv=plotnv';
@@ -122,19 +130,25 @@ function [InData, Obj, Values] = Sweep_DC(Name,N1,N2,dependence,Value, ...
 % 要被打印的与Obj顺序对应的是Values的行 Values哪几行要改索引向量由上得到 避免每轮都switch
     for i = 1 : sweepTimes
         %修改作扫描的值
-        Value(SweepInIndex) = InData(i);
+        tValue = LinerNet('Value');
+        tValue(SweepInIndex) = InData(i);
+        LinerNet('Value') = tValue;
         %把上次DC的Value结果当作下次DC计算的初始解应该更快收敛
-        [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name,N1,N2,dependence,Value,MOSINFO, DIODEINFO, Error);
-        Values((1 : nvNum), i) = DCres(plotnv);
+        [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+        x_res = DCres('x');
+        mosCurrents = DCres('mosCurrents');
+        diodeCurrents = DCres('diodeCurrents');
+
+        Values((1 : nvNum), i) = x_res(plotnv);
         %mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流
         Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosIndexInmosCurrents);
         %更改Values结果里要的diode管电流
         Values(dioIndexInValues, i) = Values(dioIndexInValues, i) .* diodeCurrents(dioIndexIndiodeCurrents);
         %更改Values结果里要的电源电压V
-        Values(VIndexInValues, i) = Values(VIndexInValues, i) .* DCres(VIndexInDCres);
+        Values(VIndexInValues, i) = Values(VIndexInValues, i) .* x_res(VIndexInDCres);
         %更改Values结果里要的电源电流I
         Values(IIndexInValues, i) = Values(IIndexInValues, i) .* Value(IIndexInValue);
         %更改Values结果里要的电阻电流
-        Values(RIndexInValues, i) = Values(RIndexInValues, i) .* (DCres(RNodeIndexInDCresN1) - DCres(RNodeIndexInDCresN2));
+        Values(RIndexInValues, i) = Values(RIndexInValues, i) .* (x_res(RNodeIndexInDCresN1) - x_res(RNodeIndexInDCresN2));
     end
 end
