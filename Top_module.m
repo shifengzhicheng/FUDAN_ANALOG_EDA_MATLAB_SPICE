@@ -13,6 +13,7 @@ filename = 'testfile\dbmixerDC.sp';
 
 [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+
 %% LinerNet
 % Name cell,'Name'
 % N1 double
@@ -20,11 +21,23 @@ filename = 'testfile\dbmixerDC.sp';
 % dependence cell [cp1 cp2] or 'Name'
 % Value double
 % MOSLine double
+
 %% MOSINFO
+% Name cell 'Name'
+% MODEL cell [ID,Vth,MU,COX,LAMBDA]
+% type cell 'n/p'
+% W double
+% L double
+% ID double
+% MOSLine double*1
 
 %% DIODEINFO
+% Name cell 'Name'
+% IS double
+% DiodeLine double*1
 
 %% Node_Map
+% double
 
 %% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
@@ -53,7 +66,7 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
-
+        DCres('MOS')
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到

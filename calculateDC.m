@@ -95,8 +95,9 @@ for i = 1 : mosNum
 end
 
 %MOSW MOSL作格式修改，由str - cell改成double - mat
-MOSW = str2double(MOSW);
-MOSL = str2double(MOSL);
+% MOSW = str2double(MOSW);
+% MOSL = str2double(MOSL);
+% zrc：前面改过了，这里不用再转化了
 
 %% 开始迭代
 Nlimit = 200; %迭代上限，可能次数太多因为初始解不收敛
@@ -140,7 +141,7 @@ for i = 1 : Nlimit
         %或直接用双端Diode电流公式
         %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);
         %打包成hash结构DCres
-        DCres = containers.Map({'x', 'mosCurrents', 'diodeCurrents'}, {z_res, mosCurrents, diodeCurrents});
+        DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
 
 %         %测试打印输出 - test
 %         display(z_res);
@@ -156,5 +157,5 @@ end
     mosCurrents = [];
     diodeCurrents = [];
     %打包成hash结构DCres
-    DCres = containers.Map({'x', 'mosCurrents', 'diodeCurrents'}, {z_res, mosCurrents, diodeCurrents});
+    DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
 end

@@ -1,36 +1,36 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [Name,N1,N2,dependence,Value,MOSINFO,DIODEINFO,Node_Map, NodeInfo, DeviceInfo]=...
+function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
 
 %% 初始化变量
 % 器件名称
-RLCName = RCLINFO{1};
-SourceName = SourceINFO{1};
-MOSName = MOSINFO{1};
-DiodeName = DIODEINFO{1};
+RLCName = RCLINFO('Name');
+SourceName = SourceINFO('Name');
+MOSName = MOSINFO('Name');
+DiodeName = DIODEINFO('Name');
 
 % 节点序号
-RLCN1 = str2double(RCLINFO{2});
-RLCN2 = str2double(RCLINFO{3});
-SourceN1 = str2double(SourceINFO{2});
-SourceN2 = str2double(SourceINFO{3});
-MOSN1 = str2double(MOSINFO{2});
-MOSN2 = str2double(MOSINFO{3});
-MOSN3 = str2double(MOSINFO{4});
-DiodeN1 = str2double(DIODEINFO{2});
-DiodeN2 = str2double(DIODEINFO{3});
+RLCN1 = str2double(RCLINFO('N1'));
+RLCN2 = str2double(RCLINFO('N2'));
+SourceN1 = str2double(SourceINFO('N1'));
+SourceN2 = str2double(SourceINFO('N2'));
+MOSN1 = str2double(MOSINFO('d'));
+MOSN2 = str2double(MOSINFO('g'));
+MOSN3 = str2double(MOSINFO('s'));
+DiodeN1 = str2double(DIODEINFO('N1'));
+DiodeN2 = str2double(DIODEINFO('N2'));
 
 %其他所需变量
-SourceDcValue = str2double(SourceINFO{5});
-RLCarg = str2double(RCLINFO{4});
-MOStype = MOSINFO{5};
-MOSW = str2double(MOSINFO{6});
-MOSL = str2double(MOSINFO{7});
-MOSID = str2double(MOSINFO{8});
-MOSMODEL = MOSINFO{9};
-DiodeID = str2double(DIODEINFO{4});
-DiodeMODEL = DIODEINFO{5};
+SourceDcValue = str2double(SourceINFO('DcValue'));
+RLCarg = str2double(RCLINFO('Value'));
+MOStype = MOSINFO('type');
+MOSW = str2double(MOSINFO('W'));
+MOSL = str2double(MOSINFO('L'));
+MOSID = str2double(MOSINFO('ID'));
+MOSMODEL = MOSINFO('MODEL');
+DiodeID = str2double(DIODEINFO('ID'));
+DiodeMODEL = str2double(DIODEINFO('MODEL'));
 
 % 输出结果
 Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;  % MOS的线性化模型有3个器件
@@ -96,7 +96,6 @@ end
 %% 生成初始解
 % Index = find(contains({'Vdd'},SourceName));
 Vdd = SourceDcValue(1);
-%输入格式假定第一个输入的电压源为Vdd？
 
 for i = 1:numel(NodeInfo)
     if isequal(NodeInfo{i}.node, SourceN1(1))
@@ -140,8 +139,8 @@ for i=1:length(MOSName)
         VGS = VG - VS;
         flag = 1;
    end
-%    MOSMODEL(MOSID(i))
-%    MOSMODEL(:,MOSID(i))
+%    VDS
+%    VGS
    [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i));
    % [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
    Ikk = Ikk * flag;
@@ -169,7 +168,7 @@ for i=1:length(MOSName)
     
 end
 
-MOSINFO = {MOSMODEL,MOStype,MOSW,MOSL,MOSID,MOSLine};
+MOSINFO = containers.Map({'Name','MODEL','type','W','L','ID','MOSLine'},{MOSName,MOSMODEL,MOStype,MOSW,MOSL,MOSID,MOSLine});
 
 %% 处理Diode 替换Diode器件
 % 记录Diode最后更改位置Is，diodeLine
@@ -179,11 +178,11 @@ for i=1:length(DiodeName)
     Node1 = find(Node_Map==DiodeN1(i))-1;
     Node2 = find(Node_Map==DiodeN2(i))-1;
 
-%     V1 = x_0(Node1 + 1);
-%     V2 = x_0(Node2 + 1);
-%     VT = V1 - V2;
-%     [Gdk, Ieqk] = Diode_Calculator(VT, DiodeMODEL(:,DiodeID(i)), 300)
-    [Gdk, Ieqk] = Diode_Calculator(3, DiodeMODEL(:,DiodeID(i)), 300);
+    V1 = x_0(Node1 + 1);
+    V2 = x_0(Node2 + 1);
+    VT = V1 - V2;
+    [Gdk, Ieqk] = Diode_Calculator(VT, DiodeMODEL(:,DiodeID(i)), 300);
+    % [Gdk, Ieqk] = Diode_Calculator(3, DiodeMODEL(:,DiodeID(i)), 300);
     kl = kl+1;
     Name{kl} = ['R',MOSName{i}];
     N1(kl) = Node1;
@@ -196,8 +195,9 @@ for i=1:length(DiodeName)
     Value(kl) = Ieqk;
     
 end
+DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName,DiodeMODEL,DiodeLine});
 
-DIODEINFO = {DiodeMODEL,DiodeLine};
-
+%% 打包输出
+LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});
 
 end
