@@ -24,7 +24,8 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     Value = LinerNet('Value');
     %% 扫描信息
     SweepInName = SweepInfo{1};
-    [start, stop] = SweepInfo{2};
+    start = SweepInfo{2}(1);
+    stop = SweepInfo{2}(2);
     step = SweepInfo{3};
     %% MOS 二极管名
     MOSName = MOSINFO('Name');
@@ -36,7 +37,7 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     plotCurrent=plotCurrent';
     nvNum = size(plotnv);
     ncNum = size(plotCurrent);
-    ObjNum = size(plotnv) + size(plotCurrent);
+    ObjNum = size(plotnv,1) + size(plotCurrent,1);
     Obj = cell(ObjNum);
     for i=1 : nvNum
      Obj(i) = {['Node_Voltage: ' num2str(Node_Map(plotnv(i)))]};
@@ -136,8 +137,8 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
         %把上次DC的Value结果当作下次DC计算的初始解应该更快收敛
         [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
         x_res = DCres('x');
-        mosCurrents = DCres('mosCurrents');
-        diodeCurrents = DCres('diodeCurrents');
+        mosCurrents = DCres('MOS');
+        diodeCurrents = DCres('Diode');
 
         Values((1 : nvNum), i) = x_res(plotnv);
         %mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流

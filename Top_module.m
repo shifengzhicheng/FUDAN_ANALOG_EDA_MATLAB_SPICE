@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\Amplifier.sp';
+filename = 'testfile\bufferSweep.sp';
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,PLOT,SPICEOperation]...
@@ -43,11 +43,16 @@ filename = 'testfile\Amplifier.sp';
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
         Error = 1e-6;
-        OperationInfo = {SPICEOperation{1}{2:end}};
+        DeviceName = SPICEOperation{1}{2};
+        range = eval(SPICEOperation{1}{3});
+        step = str2double(SPICEOperation{1}{4});
+        OperationInfo = {DeviceName,range,step};
         [InData, Obj, Res] = Sweep_DC(LinerNet,...
-            MOSINFO,DIODEINFO,OperationInfo,PLOT,Error);
+            MOSINFO,DIODEINFO,Error,OperationInfo,PLOT,Node_Map);
         for i=1:size(Obj,1)
+            figure('Name',Obj{i})
             plot(InData,Res(i,:));
+            title(Obj{i});
         end
     case '.hb'
         % 这里进入AC分析
@@ -66,7 +71,7 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
-        DCres('MOS')
+        DCres('x')=[0;DCres('x')];
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
