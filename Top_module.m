@@ -52,8 +52,7 @@ switch lower(SPICEOperation{1}{1})
     case '.dc'
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, x_0] = ...
-            calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
+        [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
 
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
