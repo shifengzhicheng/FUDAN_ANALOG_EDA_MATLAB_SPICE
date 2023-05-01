@@ -114,11 +114,11 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
                 end
             case 'R'
                 % 找两端节点然后计算出电流
-                Index = find(Name,dname);
-                RIndexInValues = [RIndexInValues; j + ncNum];
+                Index = find(strcmp(Name,dname));
+                RIndexInValues = [RIndexInValues; Index];
                 % 希望可以直接DCres(RNodeIndexInDCresN1)-DCres(RNodeIndexInDCresN2)就是要观察的各个R的两端电压向量
-                RNodeIndexInDCresN1 = [RNodeIndexInDCresN1; N1(index)];
-                RNodeIndexInDCresN2 = [RNodeIndexInDCresN2; N2(index)];
+                RNodeIndexInDCresN1 = [RNodeIndexInDCresN1; N1(Index)];
+                RNodeIndexInDCresN2 = [RNodeIndexInDCresN2; N2(Index)];
                 if plotCurrent{j}{2} == N1(Index)
                     Values(j + nvNum, :) = 1 / Value(Index);
                 else

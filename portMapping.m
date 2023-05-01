@@ -19,7 +19,7 @@ for i=1:plotnum
         case '.plotnc'
             % 从字符串中匹配括号前的内容和括号内的内容
             str = PLOT{i}{2};
-            expr = '(\w+)\((\w+)\)';
+            expr = '(\w+)\((.*)\)';
             match = regexp(str, expr, 'tokens', 'once');
             % 如果匹配成功，则将匹配结果存储到 device 和 num 变量中
             if ~isempty(match)
