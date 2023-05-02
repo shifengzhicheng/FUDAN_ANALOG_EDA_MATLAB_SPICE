@@ -329,8 +329,6 @@ M6 12 13 0 n 20e-6 0.35e-6 2
 .dcsweep Vin [0,3] 0.01
 ```
 
-
-
 ![电路图](picture/ceshidianlu1.png)
 
 #### DCsweep测试用例1`bufferSweep.sp`
@@ -366,6 +364,8 @@ C3 118 0 1e-12
 ![buffer](C:\Users\18064\projects\FUDAN_ANALOG_EDA_MATLAB_SPICE\picture\buffer.png)
 
 **注意，此电路图直接使用的是来自Pj文档中的电路图，这样的电路图是不准确的，实际测试电路将MOS管按照反相器的接法接在了电路上**
+
+如下是DCsweep的仿真结果
 
 ![bufferDCsweep](picture\bufferDCsweep2.png)
 
