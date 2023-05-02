@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
 function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO)
 
 %% 初始化变量
 % 器件名称
@@ -9,6 +9,7 @@ RLCName = RCLINFO('Name');
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
+BJTName = BJTINFO('Name');
 
 % 节点序号
 RLCN1 = str2double(RCLINFO('N1'));
@@ -20,6 +21,9 @@ MOSN2 = str2double(MOSINFO('g'));
 MOSN3 = str2double(MOSINFO('s'));
 DiodeN1 = str2double(DIODEINFO('N1'));
 DiodeN2 = str2double(DIODEINFO('N2'));
+BJTN1 = str2double(BJTINFO('N1'));
+BJTN2 = str2double(BJTINFO('N2'));
+BJTN3 = str2double(BJTINFO('N3'));
 
 %其他所需变量
 SourceDcValue = str2double(SourceINFO('DcValue'));
@@ -31,9 +35,16 @@ MOSID = str2double(MOSINFO('ID'));
 MOSMODEL = MOSINFO('MODEL');
 DiodeID = str2double(DIODEINFO('ID'));
 DiodeMODEL = str2double(DIODEINFO('MODEL'));
+BJTalpha_f = str2double(BJTINFO('alpha_f'));
+BJTalpha_r = str2double(BJTINFO('alpha_r'));
+BJTJunctionArea = str2double(BJTINFO('Junctionarea'));
+BJTID = str2double(BJTINFO('ID'));
+BJTMODEL = str2double(BJTINFO('MODEL'));
 
 % 输出结果
-Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;  % MOS的线性化模型有3个器件
+% MOS的线性化模型有3个器件，Diode的线性化模型有2个器件
+% BJT的线性化模型有2个Diode和2个CCCS，相当于6个器件
+Length =  length(RLCName) + length(SourceName) + length(MOSName)*3 + length(Diode)*2 + length(BJT)*6;
 Name = cell(1,Length);
 N1 = zeros(1,Length);
 N2 = zeros(1,Length);
@@ -44,17 +55,19 @@ kl = 0; %遍历变量
 %% 生成DeviceInfo
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
     SourceName,SourceN1,SourceN2,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype);
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
+    DiodeName,DiodeN1,DiodeN2,...
+    BJTName,BJTN1,BJTN2,BJTN3,BJTN4,BJTtype);
 
 %% 节点映射
-Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3];
+Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3,BJTN4];
 Node_Map = zeros(length(Node),1);
 for i=1:length(Node)
     Node_Map(i,1)=Node(i);
 end
 Node_Map = unique(Node_Map,"rows");
 
-%% 新建 NodeInfo 优化DeviceInfo的值
+%% 新建NodeInfo 优化DeviceInfo的值
 [NodeInfo,DeviceInfo] = Gen_NodeInfo(Node_Map,DeviceInfo);
 
 %% 处理RLC
@@ -96,27 +109,24 @@ end
 %% 生成初始解
 % Index = find(contains({'Vdd'},SourceName));
 Vdd = SourceDcValue(1);
-
 for i = 1:numel(NodeInfo)
     if isequal(NodeInfo{i}.node, SourceN1(1))
         Vdd_node = NodeInfo{i}.index;
         break;
     end
 end
-
 for i = 1:numel(NodeInfo)
     if isequal(NodeInfo{i}.node, SourceN2(1))
         Gnd_node = NodeInfo{i}.index;
         break;
     end
 end
-
 %Vdd_node = SourceN1{1};
 %Gnd_node = SourceN2{1};
 %Vdd = Value(Index);
 %Vdd_node = SourceN1(Index);
 %Gnd_node = 0;
-
+% 现在的初始解假设电路中应该不会同时有MOS和BJT，否则初始解生成效果可能不好
 x_0 = init_value(NodeInfo,DeviceInfo,Vdd,Vdd_node,Gnd_node);
 
 %% 处理mos 替换mos器件
@@ -165,7 +175,6 @@ for i=1:length(MOSName)
     N1(kl) = Node1;
     N2(kl) = Node3;
     Value(kl) = Ikk;
-    
 end
 
 MOSINFO = containers.Map({'Name','MODEL','type','W','L','ID','MOSLine'},{MOSName,MOSMODEL,MOStype,MOSW,MOSL,MOSID,MOSLine});
@@ -177,7 +186,6 @@ DiodeLine = kl+1;
 for i=1:length(DiodeName)
     Node1 = find(Node_Map==DiodeN1(i))-1;
     Node2 = find(Node_Map==DiodeN2(i))-1;
-
     V1 = x_0(Node1 + 1);
     V2 = x_0(Node2 + 1);
     VT = V1 - V2;
@@ -193,9 +201,81 @@ for i=1:length(DiodeName)
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Ieqk;
-    
+
 end
 DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName,DiodeMODEL,DiodeLine});
+
+%% 处理BJT 替换BJT器件
+% 记录BJT最后更改位置Is，BJTLine
+BJTLine = kl+1;
+
+for i = 1:length(BJTName)
+    Node1 = find(Node_Map==BJTN1(i))-1;
+    Node2 = find(Node_Map==BJTN2(i))-1;
+    Node3 = find(Node_Map==BJTN3(i))-1;
+   VC = x_0(Node1 + 1);
+   VB = x_0(Node2 + 1);
+   VE = x_0(Node3 + 1);
+   VBC = VB-VC;
+   VBE = VB-VE;
+           Name{kl} = RLCName{i};
+           N1(kl) = Node1;
+           N2(kl) = Node2;
+           Value(kl) = RLCarg(i);
+   
+   
+    
+    % 先在E-B \ C-B节点间各贴1个CCCS
+    k1 = k1+1;
+    Name{k1} = ['F', BJTName{i}];
+    N1(k1) = Node3;
+    N2(k1) = Node2;
+    
+    % Gen_baseA.m里贴了CCCS的值，这里给好dependence就可以
+    % 仿照MOS的受控电流源 (G型器件) 写法
+    
+    
+    
+    % 再在B-E \ B-C节点间各加入1个Diode
+    
+    % 和Diode部分的处理方式一样
+    
+   
+   [Gdk_f, Ieqk_f, Gdk_r, Ieqk_r, CCCS_r] = BJT_Caculator(VBE,VBC,BJTMODEL(:), BJTJunctionArea(i));
+[Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i));
+   % [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
+   Ikk = Ikk * flag;
+   GMk =  GMk * flag;
+    kl = kl+1;
+    Name{kl} = ['R',BJTName{i}];
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    Value(kl) = 1/GDSk;
+    kl = kl+1;
+    Name{kl} = ['G',MOSName{i}];
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    if(flag == -1)
+        dependence{kl} = [Node2,Node1];
+    else
+        dependence{kl} = [Node2,Node3];
+    end
+    Value(kl) = GMk;
+    kl = kl+1;
+    Name{kl} = ['I',MOSName{i}];
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    Value(kl) = Ikk;
+
+end
+
+
+
+
+
+
+
+
 
 %% 打包输出
 LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});

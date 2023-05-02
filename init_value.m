@@ -10,7 +10,7 @@ Function: 给电路的每个节点电压赋初始值
 Test Pass: N (no separate test file)
 %}
 
-function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
+function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
 
     %% 对电路中的各个节点赋初始值
     % 目标: 所有源极接Gnd或Vdd的MOS管尽量都在饱和区，其他所有MOS管尽量都不在截止区
@@ -34,12 +34,17 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
             Type = 1;
         elseif isequal(DeviceInfo{i}.type, 'pmos')
             Type = -1;
+        elseif isequal(DeviceInfo{i}.type, 'npn')
+            Type = 2;
+        elseif isequal(DeviceInfo{i}.type, 'pnp')
+            Type = -2;
         end
         for j = 1:numel(DeviceInfo{i}.nodes)
             % fprintf("Nodes of each device: \n\n");
             % disp(DeviceInfo{i}.nodes{j});
             %% 找源极接Gnd的NMOS
-            if isequal(DeviceInfo{i}.nodes{j}, Gnd_node) && Type == 1
+            % [BJT一般不会和MOS同时出现] 找发射极接Gnd的npnBJT
+            if isequal(DeviceInfo{i}.nodes{j}, Gnd_node) && Type >= 1
                 DeviceInfo{i}.init = 1;
                 % 确认D未赋过初值再赋值
                 if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
@@ -53,7 +58,8 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;
                 break;
             %% 找源极接Vdd的PMOS
-            elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node) && Type == -1
+            % [BJT一般不会和MOS同时出现] 找发射极接Vdd的pnpBJT
+            elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node) && Type <= -1
                 DeviceInfo{i}.init = 1;
                 % 确认D未赋过初值再赋值
                 if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
@@ -66,7 +72,7 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                 % S
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = Vdd;
                 break;
-            %% 未连接Vdd或Gnd的MOS
+             %% 未连接Vdd或Gnd的MOS
             elseif Type ~= 0
                 DeviceInfo{i}.init = 1;
                 if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
@@ -95,7 +101,7 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type;
                 end
                 break;
-            %% 找有端口接Gnd的非NMOS器件 (除MOS外其他器件都是二端器件)
+            %% 找有端口接Gnd的非NMOS器件 (除MOS\BJT外其他器件都是二端器件)
             elseif isequal(DeviceInfo{i}.nodes{j}, Gnd_node)
                 DeviceInfo{i}.init = 1;
                 Vdd_and_Gnd = 0;
@@ -109,22 +115,36 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{j}+1 }.value = 0;
                     NodeInfo{ DeviceInfo{i}.nodes{j}+1 }.value = Vdd;
                 else
+                    % for k = 1:2
                     for k = 1:numel(DeviceInfo{i}.nodes)
-                        if k == j
-                            NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = 0;
-                        elseif NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
-                            NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = 0;
+                        if isequal(DeviceInfo{i}.type, 'diode')
+                            if k == j
+                                NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = 0;
+                            elseif NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
+                                NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = Vdd / 6;  % 给二极管赋Vdd/6的正向电压
+                            end
+                        else
+                            if NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
+                                NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = 0;
+                            end
                         end
                     end
                 end
                 break;
-            %% 找有端口接Vdd的非PMOS器件 (除MOS外其他器件都是二端器件)    
+            %% 找有端口接Vdd的非PMOS器件 (除MOS\BJT外其他器件都是二端器件)    
             elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node)
                 DeviceInfo{i}.init = 1;
+                % for k = 1:2
                 for k = 1:numel(DeviceInfo{i}.nodes)
-                    if NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
-                        NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = Vdd;
-                    end
+                    if isequal(DeviceInfo{i}.type, 'diode')
+                        if k ~= j && NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
+                            NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = Vdd * 5/6;  % 给二极管赋Vdd/6的正向电压
+                        end
+                    else
+                        if NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value == -1  % 确认未赋过初值再赋值
+                            NodeInfo{ DeviceInfo{i}.nodes{k}+1 }.value = Vdd;
+                        end
+                    end    
                 end
                 break;
             % 其他没有任何连接Gnd\Vdd节点的非MOS器件 (除MOS外其他器件都是二端器件)
@@ -136,12 +156,22 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     
     for i = 1:numel(DeviceInfo)
         if DeviceInfo{i}.init == 0
-            DeviceInfo{i}.init = 1;
-            if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
-                NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2;
-            end
-            if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
-                NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd/2;
+            if isequal(DeviceInfo{i}.type, 'diode')
+                DeviceInfo{i}.init = 1;
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2;
+                end
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd/3;  % 给二极管赋Vdd/6的正向电压
+                end
+            else
+                DeviceInfo{i}.init = 1;
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2;
+                end
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd/2;
+                end
             end
         end
     end
@@ -149,11 +179,11 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     
     % 没有考虑要额外引入电流变量的情况
     % 如要考虑，所有电流变量设为0.1mA
-    zp = zeros( numel(NodeInfo), 1);
+    x_0 = zeros( numel(NodeInfo), 1);
     for i = 1:numel(NodeInfo)
-        zp(i) = NodeInfo{i}.value;
+        x_0(i) = NodeInfo{i}.value;
     end
     
     fprintf("InitValue: \n\n");
-    disp(zp);
+    disp(x_0);
 end
