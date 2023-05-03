@@ -3,16 +3,17 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\bufferSweep.sp';
+filename = 'testfile\npnDC.sp';
+% filename = 'testfile\bufferSweep.sp';
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
-    DIODEINFO,PLOT,SPICEOperation]...
-    =parse_netlist(filename);
+    DIODEINFO,BJTINFO,PLOT,SPICEOperation]...
+    = parse_netlist(filename);
 
 %% 生成DC线性网表
 
-[LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+[LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
 
 %% LinerNet
 % Name cell,'Name'
@@ -20,7 +21,7 @@ filename = 'testfile\bufferSweep.sp';
 % N2 double
 % dependence cell [cp1 cp2] or 'Name'
 % Value double
-% MOSLine double
+% MOSLine double (好像没有?)
 
 %% MOSINFO
 % Name cell 'Name'
@@ -36,6 +37,14 @@ filename = 'testfile\bufferSweep.sp';
 % IS double
 % DiodeLine double*1
 
+%% BJTINFO
+% Name cell 'Name'
+% MODEL cell [Jf0, Jr0, alpha_f, alpha_r]
+% type cell 'npn'/'pnp'
+% BJTJunctionarea double
+% ID double
+% BJTLine double*1
+
 %% Node_Map
 % double
 
@@ -48,7 +57,7 @@ switch lower(SPICEOperation{1}{1})
         step = str2double(SPICEOperation{1}{4});
         OperationInfo = {DeviceName,range,step};
         [InData, Obj, Res] = Sweep_DC(LinerNet,...
-            MOSINFO,DIODEINFO,Error,OperationInfo,PLOT,Node_Map);
+            MOSINFO,DIODEINFO,BJTINFO,Error,OperationInfo,PLOT,Node_Map);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(InData,Res(i,:));
@@ -63,20 +72,20 @@ switch lower(SPICEOperation{1}{1})
         timestep = 1e-3;
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长
-        x=caculateDC(DCnetlist,Error);
+        x=calculateDC(DCnetlist,Error);
         plotnv=portMapping(PLOT);
         [timeseries,Values]=trans(plotnv,x,transnetlist);
         plot(timeseries,Values);
     case '.dc'
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
+        [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, BJTINFO, Error);
         DCres('x')=[0;DCres('x')];
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
         [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
-            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO);
+            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO, BJTINFO);
         for i=1:size(Obj)
             display([Obj{i}, num2str(Values(i))]);
         end

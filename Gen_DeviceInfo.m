@@ -61,7 +61,7 @@ function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
     % 添加BJT信息
     for i = 1:numel(BJTName)
         count = count + 1;
-        Device.name = DiodeName{i};
+        Device.name = BJTName{i};
         Device.type = BJTtype{i};  % 'npn','pnp'
         Device.nodes = {BJTN1(i), BJTN2(i), BJTN3(i)};
         Device.init = 0;

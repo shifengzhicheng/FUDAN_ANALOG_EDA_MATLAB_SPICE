@@ -2,16 +2,20 @@
 %% 函数主体
 % 这个函数获得的数据来自网表
 function [RCLINFO,SourceINFO,MOSINFO,...
-    DIODEINFO,PLOT,SPICEOperation]...
+    DIODEINFO,BJTINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename)
 %% 读取网表文件
 fid = fopen(filename, 'r');
 Count=0;
 MCount=0;
 DCount=0;
+% #############################################################################
+Qcount=0;
+% ################################# end #######################################
 SourceCount=0;
 MOSMODELCount=0;
 DIODEMODELCount=0;
+BJTMODELCount=0;
 PlotCount=0;
 OperationCount=0;
 %% 数据初始化
@@ -42,7 +46,17 @@ Diodes=cell(0);
 DiodeN1=cell(0);
 DiodeN2=cell(0);
 DiodeID=cell(0);
-DIODEModel=cell(0);
+DIODEMODEL=cell(0);
+% #############################################################################
+BJTName=cell(0);
+BJTN1=cell(0);
+BJTN2=cell(0);
+BJTN3=cell(0);
+BJTtype=cell(0);
+BJTJunctionarea=cell(0);
+BJTID=cell(0);
+BJTMODEL=cell(0);
+% ################################## end ######################################
 %% 解析每一行
 while ~feof(fid)
     % 读取一行
@@ -51,7 +65,10 @@ while ~feof(fid)
     tokens_Device = regexp(line, '^(\w+)', 'tokens');
     % 匹配MODEL
     tokens_MODEL = regexp(line, '^(\.MODEL)', 'tokens');
-    tokens_DiodeModel = regexp(line, '^(\.DIODE)', 'tokens');
+    tokens_DIODEMODEL = regexp(line, '^(\.DIODE)', 'tokens');
+    % #############################################################################
+    tokens_BJTMODEL = regexp(line, '^(\.BIPOLAR)', 'tokens');
+    % ################################## end ######################################
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
@@ -89,7 +106,16 @@ while ~feof(fid)
                 % 二极管处理
                 DCount = DCount+1;
                 [Diodes{DCount},DiodeN1{DCount},DiodeN2{DCount},DiodeID{DCount}]=Device{:};
-
+            % #############################################################################
+            case {'Q'}
+                % ############# 认为网表文件中: 先写MOS，再写Diode，最后写BJT #############
+                % ################### 三极管在网表中的输入格式如下 ########################
+                % #################### Q1 103 104 105 npn 900 1 #########################
+                % ################# 上面的900指的是900um^2的结面积 #######################
+                % 三极管处理
+                Qcount = Qcount+1;
+                [BJTName{Qcount},BJTN1{Qcount},BJTN2{Qcount},BJTN3{Qcount},BJTtype{Qcount},BJTJunctionarea{Qcount},BJTID{Qcount}]=Device{:};
+            % ################################## end ######################################
         end
 
     elseif ~isempty(tokens_MODEL)
@@ -107,7 +133,7 @@ while ~feof(fid)
             str2double(tokens{1}{4}); ...
             str2double(tokens{1}{5}); ...
             str2double(tokens{1}{6})];
-    elseif ~isempty(tokens_DiodeModel)
+    elseif ~isempty(tokens_DIODEMODEL)
         % 匹配的正则表达式
         expr = ['\.DIODE\s+(\d+)\s+Is\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
         % 在这里已经匹配到了模型数据
@@ -116,6 +142,27 @@ while ~feof(fid)
         DIODEMODELCount = DIODEMODELCount + 1;
         DIODEMODEL{DIODEMODELCount} = [str2double(tokens{1}{1}); ...
             str2double(tokens{1}{2})];
+    % #############################################################################
+    elseif ~isempty(tokens_BJTMODEL)
+        % 匹配的正则表达式
+        % ########################## BJTModel的格式如下 ############################
+        % ###### .BIPOLAR 1 Jf0 2 Jr0 2e-4 alpha_f 0.995 alpha_r 0.05 #######
+        % ############# Jf0 2 和 Jr0 2e-4 的单位是A/um^2 ####################
+        expr = ['\.BIPOLAR\s+(\d+)\s+Jf0\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)' ...
+            '\s+Jr0\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+alpha_f\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+' ...
+            'alpha_r\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
+        % 在这里已经匹配到了模型数据
+        % 按照标准的格式进行模型的数据赋值
+        tokens = regexp(line, expr, 'tokens');
+        BJTMODELCount = BJTMODELCount + 1;
+        BJTMODEL{BJTMODELCount}=[str2double(tokens{1}{1}); ...
+            str2double(tokens{1}{2}); ...
+            str2double(tokens{1}{3}); ...
+            str2double(tokens{1}{4}); ...
+            str2double(tokens{1}{5})];     
+        fprintf("<parse_netlist>BJTMODEL:\n\n");
+        disp(BJTMODEL{1});
+    % ################################# end #######################################
     elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
         PlotCount = PlotCount + 1;
@@ -129,17 +176,60 @@ while ~feof(fid)
 end
 RCLINFO=containers.Map({'Name','N1','N2','Value'},...
     {RLCName,RLCN1,RLCN2,RLCValue});
+fprintf("<parse netlist>RCLINFO:\n\n");
+disp(RLCName);
+disp(RLCN1);
+disp(RLCN2);
+disp(RLCValue);
 SourceINFO=containers.Map({'Name','N1','N2',...
     'type','DcValue','AcValue',...
     'Freq','Phase'},...
     {SourceName,SourceN1,SourceN2,...
     Sourcetype,SourceDcValue,SourceAcValue,...
     SourceFreq,SourcePhase});
+fprintf("<parse netlist>SOURCEINFO:\n\n");
+disp(SourceName);
+disp(SourceN1);
+disp(SourceN2);
+disp(Sourcetype);
+disp(SourceDcValue);
+disp(SourceAcValue);
+disp(SourceFreq);
+disp(SourcePhase);
 MOSINFO=containers.Map({'Name','d','g','s',...
     'type','W','L','ID','MODEL'},...
     {MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
+fprintf("<parse netlist>MOSINFO:\n\n");
+disp(MOSName);
+disp(MOSN1);
+disp(MOSN2);
+disp(MOSN3);
+disp(MOStype);
+disp(MOSW);
+disp(MOSL);
+disp(MOSID);
+disp(MOSMODEL);
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
-    {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel});
+    {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
+fprintf("<parse netlist>DIODEINFO:\n\n");
+disp(Diodes);
+disp(DiodeN1);
+disp(DiodeN2);
+disp(DiodeID);
+disp(DIODEMODEL);
+% #############################################################################
+BJTINFO=containers.Map({'Name','N1','N2','N3','type','Junctionarea','ID','MODEL'},...
+    {BJTName,BJTN1,BJTN2,BJTN3,BJTtype,BJTJunctionarea,BJTID,BJTMODEL});
+fprintf("<parse netlist>BJTINFO:\n\n");
+disp(BJTName);
+disp(BJTN1);
+disp(BJTN2);
+disp(BJTN3);
+disp(BJTtype);
+disp(BJTJunctionarea);
+disp(BJTID);
+disp(BJTMODEL);
+% ################################## end ######################################
 % 关闭文件
 fclose(fid);

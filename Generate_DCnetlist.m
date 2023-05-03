@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+function [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO)
 
 %% 初始化变量
@@ -35,16 +35,15 @@ MOSID = str2double(MOSINFO('ID'));
 MOSMODEL = MOSINFO('MODEL');
 DiodeID = str2double(DIODEINFO('ID'));
 DiodeMODEL = str2double(DIODEINFO('MODEL'));
-BJTalpha_f = str2double(BJTINFO('alpha_f'));
-BJTalpha_r = str2double(BJTINFO('alpha_r'));
-BJTJunctionArea = str2double(BJTINFO('Junctionarea'));
+BJTtype = BJTINFO('type');
+BJTJunctionarea = str2double(BJTINFO('Junctionarea'));
 BJTID = str2double(BJTINFO('ID'));
-BJTMODEL = str2double(BJTINFO('MODEL'));
+BJTMODEL = BJTINFO('MODEL');
 
 % 输出结果
 % MOS的线性化模型有3个器件，Diode的线性化模型有2个器件
 % BJT的线性化模型有2个Diode和2个CCCS，相当于6个器件
-Length =  length(RLCName) + length(SourceName) + length(MOSName)*3 + length(Diode)*2 + length(BJT)*6;
+Length =  length(RLCName) + length(SourceName) + length(MOSName)*3 + length(DiodeName)*2 + length(BJTName)*6;
 Name = cell(1,Length);
 N1 = zeros(1,Length);
 N2 = zeros(1,Length);
@@ -57,10 +56,10 @@ kl = 0; %遍历变量
     SourceName,SourceN1,SourceN2,...
     MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
     DiodeName,DiodeN1,DiodeN2,...
-    BJTName,BJTN1,BJTN2,BJTN3,BJTN4,BJTtype);
+    BJTName,BJTN1,BJTN2,BJTN3,BJTtype);
 
 %% 节点映射
-Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3,BJTN4];
+Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3];
 Node_Map = zeros(length(Node),1);
 for i=1:length(Node)
     Node_Map(i,1)=Node(i);
@@ -192,12 +191,12 @@ for i=1:length(DiodeName)
     [Gdk, Ieqk] = Diode_Calculator(VT, DiodeMODEL(:,DiodeID(i)), 300);
     % [Gdk, Ieqk] = Diode_Calculator(3, DiodeMODEL(:,DiodeID(i)), 300);
     kl = kl+1;
-    Name{kl} = ['R',MOSName{i}];
+    Name{kl} = ['R',DiodeName{i}];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = 1/Gdk;
     kl = kl+1;
-    Name{kl} = ['I',MOSName{i}];
+    Name{kl} = ['I',DiodeName{i}];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Ieqk;
@@ -210,74 +209,77 @@ DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName,DiodeMODEL,Diode
 BJTLine = kl+1;
 
 for i = 1:length(BJTName)
-    Node1 = find(Node_Map==BJTN1(i))-1;
-    Node2 = find(Node_Map==BJTN2(i))-1;
-    Node3 = find(Node_Map==BJTN3(i))-1;
-   VC = x_0(Node1 + 1);
-   VB = x_0(Node2 + 1);
-   VE = x_0(Node3 + 1);
-   VBC = VB-VC;
-   VBE = VB-VE;
-           Name{kl} = RLCName{i};
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = RLCarg(i);
-   
-   
+    Node1 = find(Node_Map==BJTN1(i))-1;  % C
+    Node2 = find(Node_Map==BJTN2(i))-1;  % B
+    Node3 = find(Node_Map==BJTN3(i))-1;  % E
+    VC = x_0(Node1 + 1);
+    VB = x_0(Node2 + 1);
+    VE = x_0(Node3 + 1);
+    BJTflag = 0;
+    VBE = 0;
+    VBC = 0;
+    if isequal(BJTtype{i}, 'npn')
+        VBC = VB - VC;
+        VBE = VB - VE;
+        BJTflag = 1;
+    elseif isequal(BJTtype{i}, 'pnp')
+        VBC = VC - VB;
+        VBE = VE - VB;
+        BJTflag = -1;
+    end
+    fprintf("debug:\n\n");
+    disp(BJTtype{i});
+    disp(VBE);
+    disp(VBC);
+    fprintf("<Generate_DCnetlist>BJTarg:\n\n");
+    disp(BJTMODEL(:));
+    disp(BJTMODEL(:, BJTID(i)));
+    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag);
+    % [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.75,0.025,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag);
+    % 在E-B节点间贴电阻Rbe
+    kl = kl+1;
+    Name{kl} = ['R',BJTName{i}];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    Value(kl) = Rbe_k;
+    % 在E-B节点间贴1个Vbc控制的VCCS
+    kl = kl+1;
+    Name{kl} = ['G',BJTName{i}];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    dependence{kl} = [Node2,Node1];
+    Value(kl) = Gbc_e_k;    
+    % 在E-B节点间贴电流源Ieq
+    kl = kl+1;
+    Name{kl} = ['I', BJTName{i}];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    Value(kl) = Ieq_k;    
     
-    % 先在E-B \ C-B节点间各贴1个CCCS
-    k1 = k1+1;
-    Name{k1} = ['F', BJTName{i}];
-    N1(k1) = Node3;
-    N2(k1) = Node2;
-    
-    % Gen_baseA.m里贴了CCCS的值，这里给好dependence就可以
-    % 仿照MOS的受控电流源 (G型器件) 写法
-    
-    
-    
-    % 再在B-E \ B-C节点间各加入1个Diode
-    
-    % 和Diode部分的处理方式一样
-    
-   
-   [Gdk_f, Ieqk_f, Gdk_r, Ieqk_r, CCCS_r] = BJT_Caculator(VBE,VBC,BJTMODEL(:), BJTJunctionArea(i));
-[Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i));
-   % [Ikk,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
-   Ikk = Ikk * flag;
-   GMk =  GMk * flag;
+    % 在C-B节点间贴电阻Rbc
     kl = kl+1;
     Name{kl} = ['R',BJTName{i}];
     N1(kl) = Node1;
-    N2(kl) = Node3;
-    Value(kl) = 1/GDSk;
+    N2(kl) = Node2;
+    Value(kl) = Rbc_k; 
+    % 在C-B节点间贴1个Vbe控制的VCCS
     kl = kl+1;
-    Name{kl} = ['G',MOSName{i}];
+    Name{kl} = ['G',BJTName{i}];
     N1(kl) = Node1;
-    N2(kl) = Node3;
-    if(flag == -1)
-        dependence{kl} = [Node2,Node1];
-    else
-        dependence{kl} = [Node2,Node3];
-    end
-    Value(kl) = GMk;
+    N2(kl) = Node2;
+    dependence{kl} = [Node2,Node3];
+    Value(kl) = Gbe_c_k;   
+    % 在C-B节点间贴电流源Icq
     kl = kl+1;
-    Name{kl} = ['I',MOSName{i}];
+    Name{kl} = ['I', BJTName{i}];
     N1(kl) = Node1;
-    N2(kl) = Node3;
-    Value(kl) = Ikk;
-
+    N2(kl) = Node2;
+    Value(kl) = Icq_k;    
 end
 
-
-
-
-
-
-
-
+BJTINFO = containers.Map({'Name','MODEL','type','Junctionarea','ID','BJTLine'},{BJTName,BJTMODEL,BJTtype,BJTJunctionarea,BJTID,BJTLine});
 
 %% 打包输出
-LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});
+LinerNet = containers.Map({'Name', 'N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});
 
 end

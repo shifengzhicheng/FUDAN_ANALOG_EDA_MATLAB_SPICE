@@ -14,7 +14,7 @@
 %}
 
 %function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
-function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
+function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error)
 
 %% 读出线性网表信息
 Name = LinerNet('Name');
@@ -33,6 +33,7 @@ if isempty(MOSINFO) || isempty(DIODEINFO)
     DCres = A0 \ b0;
     mosCurrents = [];
     diodeCurrents = [];
+    bjtCurrents = [];
     return;
 else
 %     %需要的MOS相关信息
@@ -55,6 +56,12 @@ else
     %需要的DIODE相关信息
     Is = DIODEINFO('Is');
     diodeLine = DIODEINFO('DiodeLine');
+    %需要的BJT相关信息
+    BJTMODEL = BJTINFO('MODEL');
+    BJTtype = BJTINFO('type');
+    BJTJunctionarea = BJTINFO('Junctionarea');
+    BJTID = BJTINFO('ID');
+    BJTLine = BJTINFO('BJTLine');
 end
 
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
@@ -84,6 +91,17 @@ for diodeCount = 1 : diodeNum
     diodeNodeMat(diodeCount, 2) = N2(diodeLine + diodeCount * 2 - 2);
 end
 
+%BJT个数，也即需更新的3个一组的数据组数
+bjtNum = size(BJTtype,2);
+%% 用bjtNum*3的矩阵bjtNodeMat存储CBE三端节点序号 - R\G\I的端点信息可以读到
+bjtNodeMat = zeros(bjtNum, 3);
+for bjtCount = 0 : bjtNum-1
+    %三列按C、B、E的顺序 
+    bjtNodeMat(bjtCount+1, 1) = N1(BJTLine + 3*bjtCount);   %C
+    bjtNodeMat(bjtCount+1, 2) = dependence{BJTLine + 3*bjtCount + 1}(1);   %B
+    bjtNodeMat(bjtCount+1, 3) = N2(BJTLine + 3*bjtCount);    %E
+end
+
 %把字符表示的MOStype直接换1、2表示的Mostype方便直接选MOSMODEL
 Mostype = zeros(mosNum, 1);
 for i = 1 : mosNum
@@ -105,6 +123,7 @@ for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
     [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
                                           diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                          BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
                                           A0, b0, Name, N1, N2, dependence, Value, zp);
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
@@ -133,16 +152,34 @@ for i = 1 : Nlimit
         %%  打印Diode电流输出结果
         vpn = zeros(diodeNum, 1);
         for dioCount = 1 : diodeNum
-            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
+            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(dioCount, 2) + 1);
         end
             finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2);
             finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1);
         diodeCurrents = finalIDs + vpn ./ finalRDs;
         %或直接用双端Diode电流公式
         %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);
-        %打包成hash结构DCres
-        DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
 
+        %%  打印BJT电流输出结果
+        vbe = zeros(bjtNum, 1);
+        vbc = zeros(bjtNum, 1);
+        for bjtCount = 1 : bjtNum
+            vbe(bjtCount) = abs( tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 3) + 1) );
+            vbc(bjtCount) = abs( tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 1) + 1) );
+        end
+        finalRbe_s = Value(BJTLine : 6 : BJTLine + 6 * bjtNum - 6).';
+        finalGbc_e_s = Value(BJTLine + 1 : 6 : BJTLine + 6 * bjtNum - 5).';
+        finalIeq_s = Value(BJTLine + 2 : 6 : BJTLine + 6 * bjtNum - 4).';
+        finalRbc_s = Value(BJTLine + 3 : 6 : BJTLine + 6 * bjtNum - 3).';
+        finalGbe_c_s = Value(BJTLine + 4 : 6 : BJTLine + 6 * bjtNum - 2).';
+        finalIcq_s = Value(BJTLine + 2 : 6 : BJTLine + 6 * bjtNum - 1).';
+        Ie = finalIeq_s + vbe ./ finalRbe_s + finalGbc_e_s .* vbc;
+        Ic = finalIcq_s + vbc ./ finalRbc_s + finalGbe_c_s .* vbe;
+        Ib = -Ic - Ie;
+        bjtCurrents = [Ic, Ib, Ie];
+        %打包成hash结构DCres
+        DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
+        
 %         %测试打印输出 - test
 %         display(z_res);
 %         display(mosCurrents);
@@ -156,6 +193,7 @@ end
     z_res = [];
     mosCurrents = [];
     diodeCurrents = [];
+    bjtCurrents = [];
     %打包成hash结构DCres
-    DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
+    DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
 end
