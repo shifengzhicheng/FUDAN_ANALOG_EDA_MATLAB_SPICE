@@ -1,9 +1,12 @@
 %% 根据device以及端点从解中得到电流或者电压
 function [Obj, res] = ValueCalc(plotnv, plotCurrent, ...
-            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO)
+            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO, BJTINFO)
 % 画图对象的总数量
 Diodecurrents = DCres('Diode');
 Moscurrents = DCres('MOS');
+BJTcurrentsIc = DCres('BJTIc');
+BJTcurrentsIb = DCres('BJTIb');
+BJTcurrentsIe = DCres('BJTIe');
 x = DCres('x');
 Name = LinerNet('Name');
 N1 = LinerNet('N1');
@@ -11,6 +14,7 @@ N2 = LinerNet('N2');
 Value = LinerNet('Value');
 MOSName = MOSINFO('Name');
 Diodes = DIODEINFO('Name'); 
+BJTName = BJTINFO('Name');
 
 plotnv=plotnv';
 plotCurrent=plotCurrent';
@@ -49,6 +53,19 @@ for j = i+1:tsize
                     res(j) = Diodecurrents(Index);
                 case '-'
                     res(j) = -Diodecurrents(Index);
+            end
+        case 'Q'
+            Index = find(strcmp(BJTName,dname));
+            ic = BJTcurrentsIc(Index);
+            ib = BJTcurrentsIb(Index);
+            ie = BJTcurrentsIe(Index);
+            switch plotport
+                case 'c'
+                    res(j) = ic;
+                case 'b'
+                    res(j) = ib;
+                case 'e'
+                    res(j) = ie;
             end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流

@@ -216,17 +216,14 @@ for i = 1:length(BJTName)
     VB = x_0(Node2 + 1);
     VE = x_0(Node3 + 1);
     BJTflag = 0;
-    VBE = 0;
-    VBC = 0;
     if isequal(BJTtype{i}, 'npn')
-        VBC = VB - VC;
-        VBE = VB - VE;
         BJTflag = 1;
     elseif isequal(BJTtype{i}, 'pnp')
-        VBC = VC - VB;
-        VBE = VE - VB;
         BJTflag = -1;
     end
+    VBE = BJTflag * (VB - VE);
+    VBC = BJTflag * (VB - VC);
+    %{
     fprintf("debug:\n\n");
     disp(BJTtype{i});
     disp(VBE);
@@ -234,44 +231,46 @@ for i = 1:length(BJTName)
     fprintf("<Generate_DCnetlist>BJTarg:\n\n");
     disp(BJTMODEL(:));
     disp(BJTMODEL(:, BJTID(i)));
-    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag);
-    % [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.75,0.025,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag);
+    %}
+    T = 300;
+    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    % [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.75,0.025,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
     % 在E-B节点间贴电阻Rbe
     kl = kl+1;
-    Name{kl} = ['R',BJTName{i}];
+    Name{kl} = ['R',BJTName{i},'_E'];
     N1(kl) = Node3;
     N2(kl) = Node2;
     Value(kl) = Rbe_k;
     % 在E-B节点间贴1个Vbc控制的VCCS
     kl = kl+1;
-    Name{kl} = ['G',BJTName{i}];
+    Name{kl} = ['G',BJTName{i}, '_E'];
     N1(kl) = Node3;
     N2(kl) = Node2;
     dependence{kl} = [Node2,Node1];
     Value(kl) = Gbc_e_k;    
     % 在E-B节点间贴电流源Ieq
     kl = kl+1;
-    Name{kl} = ['I', BJTName{i}];
+    Name{kl} = ['I', BJTName{i}, '_E'];
     N1(kl) = Node3;
     N2(kl) = Node2;
     Value(kl) = Ieq_k;    
     
     % 在C-B节点间贴电阻Rbc
     kl = kl+1;
-    Name{kl} = ['R',BJTName{i}];
+    Name{kl} = ['R',BJTName{i}, '_C'];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Rbc_k; 
     % 在C-B节点间贴1个Vbe控制的VCCS
     kl = kl+1;
-    Name{kl} = ['G',BJTName{i}];
+    Name{kl} = ['G',BJTName{i}, '_C'];
     N1(kl) = Node1;
     N2(kl) = Node2;
     dependence{kl} = [Node2,Node3];
     Value(kl) = Gbe_c_k;   
     % 在C-B节点间贴电流源Icq
     kl = kl+1;
-    Name{kl} = ['I', BJTName{i}];
+    Name{kl} = ['I', BJTName{i}, '_C'];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Icq_k;    

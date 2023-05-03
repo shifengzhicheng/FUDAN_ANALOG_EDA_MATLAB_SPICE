@@ -18,7 +18,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
             vds = vs - vd;
             vgs = vg - vd;
             %用上一轮x(z)p结果的到的三端电压计算得到新的伴随器件参数(MOS合法判断在Mos_Calculator中)
-            [nextIeq, nextGM, nextGDS] = Mos_Calculator(vds, vgs,  MOSMODEL(:, MOSID(mosCount)), MOSW(mosCount), MOSL(mosCount));
+            [nextIeq, nextGM, nextGDS] = Mos_Calculator(vds, vgs, MOSMODEL(:, MOSID(mosCount)), MOSW(mosCount), MOSL(mosCount));
             nextIeq = -nextIeq;
             nextGM = -nextGM;
             %源漏交互换后GM的控制电压端口也要改变为原来的栅漏端 - 原GM的第二个控制端由S改D
@@ -48,21 +48,27 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 %% 处理BJT
     %已经得到了按顺序的每个BJT管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
-    for bjtCount = 1 : bjtNum   % 1个MOS衍生出的3个伴随器件1组
-    % 可能出现源漏端交换的情况，我们固定初始GDS的物理位置，源漏交换只体现在伴随器件的数值正负上
+    for bjtCount = 1 : bjtNum   % 1个BJT衍生出的6个伴随器件1组
         tempz = [0; zp];
         vc = tempz(bjtNodeMat(bjtCount, 1) + 1);
         vb = tempz(bjtNodeMat(bjtCount, 2) + 1);
         ve = tempz(bjtNodeMat(bjtCount, 3) + 1);
-        vbe = abs(vb - ve);
-        vbc = abs(vb - vc);
         BJTflag = 0;
-        if isequal(BJTtype, 'npn')
+        if isequal(BJTtype{1}, 'npn')
             BJTflag = 1;
-        elseif isequal(BJTtype, 'pnp')
+        elseif isequal(BJTtype{1}, 'pnp')
             BJTflag = -1;
         end
-        [next_Rbe, next_Gbc_e, next_Ieq, next_Rbc, next_Gbe_c, next_Icq] = BJT_Calculator(vbe, vbc, BJTMODEL(:, BJTID(bjtCount)), BJTJunctionarea(bjtCount), BJTflag);
+        vbe = BJTflag*(vb - ve);
+        vbc = BJTflag*(vb - vc);
+        fprintf("<Gen_nextRes>vcvbvevbevbc debug:\n\n");
+        disp(vc);
+        disp(vb);
+        disp(ve);
+        disp(vbe);
+        disp(vbc);
+        T = 300;
+        [next_Rbe, next_Gbc_e, next_Ieq, next_Rbc, next_Gbe_c, next_Icq] = BJT_Calculator(vbe, vbc, BJTMODEL(:, BJTID(bjtCount)), BJTJunctionarea(bjtCount), BJTflag, T);
         tempCount = BJTLine + 6 * (bjtCount - 1);
         Value(tempCount) = next_Rbe; %更新Rbe
         Value(tempCount+1) = next_Gbc_e; %更新Gbc_e

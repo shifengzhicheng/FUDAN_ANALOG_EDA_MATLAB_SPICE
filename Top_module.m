@@ -5,7 +5,9 @@ clc;
 %% 读取文件，预处理阶段
 filename = 'testfile\npnDC.sp';
 % filename = 'testfile\bufferSweep.sp';
-% filename = 'testfile\buffer.sp';
+% filename = 'testfile\dbmixerDC.sp';
+% filename = 'testfile\Voltagefollower.sp';
+% filename = 'testfile\bufferDC.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,BJTINFO,PLOT,SPICEOperation]...
     = parse_netlist(filename);

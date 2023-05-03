@@ -44,17 +44,14 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
             %% 找源极接Gnd的NMOS
             % [BJT一般不会和MOS同时出现] 找发射极接Gnd的npnBJT
             if Type >= 1 && isequal(DeviceInfo{i}.nodes{3}, Gnd_node)
-                disp("is it true??");
-                disp(Type);
                 DeviceInfo{i}.init = 1;
                 % 源接Gnd或Vdd(Vcc)的MOS和BJT不用确认节点未赋过初值再赋值，这类器件的节点优先赋初值以保证收敛
                 if Type == 1
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
                     NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
                 elseif Type == 2
-                    disp("is it true??");
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 6;
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 4;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
                 end
                 % S
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;
@@ -68,8 +65,8 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
                     NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;
                 elseif Type == -2
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd * 5/6;
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 3/4;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;
                 end
                 % S
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = Vdd;
@@ -110,26 +107,26 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     % C赋过初值，将E赋为Vc - Vdd/6 * Type/2，将B赋为Ve + Vdd/4 *Type/2
                     % 确认E未赋过初值再赋值
                     if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd/6 * Type/2;
+                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd* 2/3 * Type/2;
                     end
                     % 确认B未赋过初值再赋值
                     if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/4 * Type/2;
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type/2;
                     end
                 elseif NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1
                     % E赋过初值，将C赋为Ve + Vdd/6 * Type/2，将B赋为Ve + Vdd/4 * Type/2
                     % E一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/6 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type/2;
                     % 确认B未赋过初值再赋值
                     if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/4 * Type/2;
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type/2;
                     end
                 elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1
                     % B赋过初值，将E赋为Vb - Vdd/4 * Type/2，将C赋为Ve + Vdd/6 * Type/2
                     % E一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/4 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/2 * Type/2;
                     % C一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/6 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type/2;
                 end
                 break;
             %% 找有端口接Gnd的非NMOS器件 (除MOS\BJT外其他器件都是二端器件)

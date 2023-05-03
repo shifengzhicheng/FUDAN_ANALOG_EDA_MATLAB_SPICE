@@ -27,7 +27,7 @@ for i=1:CellCount
     pNum2=N2(i)+1;
     switch CellName(1)
         case 'R'
-            if CellName(2) ~= 'M' && CellName(2) ~= 'D'
+            if CellName(2) ~= 'M' && CellName(2) ~= 'D' && CellName(2) ~= 'Q'
                 %% 在电路上贴电阻
                 cpValue=Value(i);
                 % 方程贴电阻
@@ -37,7 +37,7 @@ for i=1:CellCount
                 A(pNum2,pNum2)= A(pNum2,pNum2)+1/cpValue;
             end
         case 'I'
-            if CellName(2) ~= 'M' && CellName(2) ~= 'D'
+            if CellName(2) ~= 'M' && CellName(2) ~= 'D' && CellName(2) ~= 'Q'
                 %% 在电路上贴电流源
                 cpValue=Value(i);
                 % 节点的净流出与净流入电流
@@ -71,7 +71,7 @@ for i=1:CellCount
             cpValue=Value(i);
 
             %% 压控电流源 (VCCS) - G
-            if CellName(1)== 'G' && CellName(2) ~= 'M'
+            if CellName(1)== 'G' && (CellName(2) ~= 'M' && CellName(2) ~= 'Q')
                 % 电压控制的电流源没有引入新的变量
                 % 会给一些端口引入电流
                 A(pNum1,cpNum1)= A(pNum1,cpNum1) + cpValue;
@@ -118,8 +118,8 @@ for i=1:CellCount
                 A(nodeNums+INum,nodeNums+INum)= 0;
                 b(nodeNums+INum)=0;
                 % 自身的两个节点引入受控电流
-                A(pNum1,nodeNums+INum)= A(pNum1,nodeNums+INum) + cpValue;
-                A(pNum2,nodeNums+INum)= A(pNum2,nodeNums+INum) - cpValue;
+                A(pNum1,nodeNums+INum) = A(pNum1,nodeNums+INum) + cpValue;
+                A(pNum2,nodeNums+INum) = A(pNum2,nodeNums+INum) - cpValue;
 
                 % 这里缺失一个方程
                 % 根据这里的器件是什么决定如何增添方程

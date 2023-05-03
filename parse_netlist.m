@@ -146,10 +146,10 @@ while ~feof(fid)
     elseif ~isempty(tokens_BJTMODEL)
         % 匹配的正则表达式
         % ########################## BJTModel的格式如下 ############################
-        % ###### .BIPOLAR 1 Jf0 2 Jr0 2e-4 alpha_f 0.995 alpha_r 0.05 #######
-        % ############# Jf0 2 和 Jr0 2e-4 的单位是A/um^2 ####################
-        expr = ['\.BIPOLAR\s+(\d+)\s+Jf0\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)' ...
-            '\s+Jr0\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+alpha_f\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+' ...
+        % ########### .BIPOLAR 1 Js 1e-16 alpha_f 0.995 alpha_r 0.05 #############
+        % ####################### Js 1e-16 的单位是A/um^2 ########################
+        expr = ['\.BIPOLAR\s+(\d+)\s+Is\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)' ...
+            '\s+alpha_f\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+' ...
             'alpha_r\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
         % 在这里已经匹配到了模型数据
         % 按照标准的格式进行模型的数据赋值
@@ -158,10 +158,7 @@ while ~feof(fid)
         BJTMODEL{BJTMODELCount}=[str2double(tokens{1}{1}); ...
             str2double(tokens{1}{2}); ...
             str2double(tokens{1}{3}); ...
-            str2double(tokens{1}{4}); ...
-            str2double(tokens{1}{5})];     
-        fprintf("<parse_netlist>BJTMODEL:\n\n");
-        disp(BJTMODEL{1});
+            str2double(tokens{1}{4})];     
     % ################################# end #######################################
     elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
@@ -176,17 +173,20 @@ while ~feof(fid)
 end
 RCLINFO=containers.Map({'Name','N1','N2','Value'},...
     {RLCName,RLCN1,RLCN2,RLCValue});
+%{
 fprintf("<parse netlist>RCLINFO:\n\n");
 disp(RLCName);
 disp(RLCN1);
 disp(RLCN2);
 disp(RLCValue);
+%}
 SourceINFO=containers.Map({'Name','N1','N2',...
     'type','DcValue','AcValue',...
     'Freq','Phase'},...
     {SourceName,SourceN1,SourceN2,...
     Sourcetype,SourceDcValue,SourceAcValue,...
     SourceFreq,SourcePhase});
+%{
 fprintf("<parse netlist>SOURCEINFO:\n\n");
 disp(SourceName);
 disp(SourceN1);
@@ -196,10 +196,12 @@ disp(SourceDcValue);
 disp(SourceAcValue);
 disp(SourceFreq);
 disp(SourcePhase);
+%}
 MOSINFO=containers.Map({'Name','d','g','s',...
     'type','W','L','ID','MODEL'},...
     {MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
+%{
 fprintf("<parse netlist>MOSINFO:\n\n");
 disp(MOSName);
 disp(MOSN1);
@@ -210,17 +212,21 @@ disp(MOSW);
 disp(MOSL);
 disp(MOSID);
 disp(MOSMODEL);
+%}
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
     {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
+%{
 fprintf("<parse netlist>DIODEINFO:\n\n");
 disp(Diodes);
 disp(DiodeN1);
 disp(DiodeN2);
 disp(DiodeID);
 disp(DIODEMODEL);
+%}
 % #############################################################################
 BJTINFO=containers.Map({'Name','N1','N2','N3','type','Junctionarea','ID','MODEL'},...
     {BJTName,BJTN1,BJTN2,BJTN3,BJTtype,BJTJunctionarea,BJTID,BJTMODEL});
+%{
 fprintf("<parse netlist>BJTINFO:\n\n");
 disp(BJTName);
 disp(BJTN1);
@@ -230,6 +236,7 @@ disp(BJTtype);
 disp(BJTJunctionarea);
 disp(BJTID);
 disp(BJTMODEL);
+%}
 % ################################## end ######################################
 % 关闭文件
 fclose(fid);

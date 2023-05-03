@@ -7,7 +7,10 @@ CellCount = length(Name);% 元件数量
 A = [zeros(size(pureA,1),1), pureA];
 A = [zeros(1,size(A, 2)); A];
 b = [0; pureb];
-%x=compose('v_%d',(0:nodeNums)'); %不必要了
+% x=compose('v_%d',(0:nodeNums)'); %不必要了
+% fprintf("<Gen_nextA>debug for A0\b0:\n\n");
+% disp(pureA);
+% disp(pureb);
 
 %% 只处理MOS相关伴随器件
 for i=1:CellCount
@@ -17,6 +20,9 @@ for i=1:CellCount
     pNum2=N2(i)+1;
     %% MOS
     if CellName(2) == 'M'
+        % fprintf("<Gen_nextA>MOSdebug:\n\n");
+        % disp(CellName);
+        % disp(A);
         switch CellName(1)
             case 'R'
                 %% 在电路上贴MOS得到的伴随电阻
@@ -46,6 +52,7 @@ for i=1:CellCount
                 A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
                 A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
         end
+        % disp(A);
     elseif CellName(2) == 'D'
         switch CellName(1)
             case 'R'
@@ -63,6 +70,41 @@ for i=1:CellCount
                 b(pNum1)=b(pNum1)-cpValue;
                 b(pNum2)=b(pNum2)+cpValue;
         end    
+    elseif CellName(2) == 'Q'
+        % fprintf("<Gen_nextA>BJTdebug:\n\n");
+        % disp(CellName);
+        % disp(A);
+        switch CellName(1)
+            case 'R'
+                %% 在电路上贴BJT得到的伴随电阻
+                cpValue=Value(i);
+                % 方程贴电阻
+                A(pNum1,pNum1)= A(pNum1,pNum1)+1/cpValue;
+                A(pNum1,pNum2)= A(pNum1,pNum2)-1/cpValue;
+                A(pNum2,pNum1)= A(pNum2,pNum1)-1/cpValue;
+                A(pNum2,pNum2)= A(pNum2,pNum2)+1/cpValue;
+            case 'I'
+                %% 在电路上贴BJT得到的伴随电流源
+                cpValue=Value(i);
+                % 节点的净流出与净流入电流
+                b(pNum1)=b(pNum1)-cpValue;
+                b(pNum2)=b(pNum2)+cpValue;
+            case 'G'
+                %% BJT得到的伴随压控电流源 (VCCS) - G
+                % 控制端口与增益
+                cpNum1=dependence{i}(1)+1;
+                cpNum2=dependence{i}(2)+1;
+                cpValue=Value(i);
+                % 压控电流源 (VCCS) - G
+                % 电压控制的电流源没有引入新的变量
+                % 会给一些端口引入电流
+                A(pNum1,cpNum1)= A(pNum1,cpNum1) + cpValue;
+                A(pNum1,cpNum2)= A(pNum1,cpNum2) - cpValue;
+                A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
+                A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
+        end
+        % disp(A);
+        % disp(b);
     end
 end
 A(1,:)=[];
