@@ -23,4 +23,4 @@ M4   11 12 0  n 10e-6 0.35e-6 2
 .plotnv 16
 
 
-.dcsweep Vin [0,3] 0.01
+.dcsweep Vin [0,10] 0.01
