@@ -196,7 +196,169 @@ DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
 ——zrc
 
 #### 电路初始解的生成
-——zrz
+此功能由张润洲同学完成
+
+在对非线性电路进行瞬态仿真或AC仿真之前，一般需要先进行DC仿真。线性电路的DC分析可以直接通过求解矩阵方程得到结果，而非线性电路的DC分析等同于求解超越方程组，需要为程序提供一组各个待求变量的初始解，程序以这组初值为基础开始数值迭代运算。如果没有为非线性电路提供初始解，或初始解估计不准，则会导致DC分析的计算时间增加，甚至会解出不合适的解 (比如SRAM单元、环形振荡器等多稳态电路)
+
+给出电路初始解的思路可以分为手工进行DC分析和自动化给定初始解等。手工进行DC分析需要将L的初始电流、C的初始电压、MOS管、二极管、双极型晶体管等器件的初始电压设置为手工分析得到的直流解。或者将上述电流、电压量设置为一个较为合理的猜测的值再进行DC分析，这样做手工分析的工作量有所减少，但初始解同样不是自动化给出的
+
+本项目选用自动化给定初始解的方法，采用程序init_value.m给定初始解。得到初始解后，Generate_DCnetlist函数利用初始解生成第1次NR迭代前伴随器件应“贴”入MNA方程的值 (MOS管、二极管、双极型晶体管分别对应3个、2个、6个伴随器件)，Gen_baseA函数将所有非伴随器件的值贴入MNA方程，之后每轮迭代调用一次Gen_nextRes函数将这一轮迭代的伴随器件值贴入MNA方程，直至迭代完成
+
+##### 初始解赋值思路
+
+本项目计算初始解的思路如下：
+
+1. 找**源极接Gnd的NMOS管 (源极接Vdd的PMOS管)**，如果MOS管的节点已赋过值 (在NodeInfo中查找到的value为正值，不为-1) 则跳过该节点，否则为这些MOS管的源极电压赋值为0或Vdd，|Vgs|赋为Vdd *  2/3, |Vds|赋为Vdd / 2
+
+   找**发射极接Gnd的npn型BJT管 (发射极接Vcc的pnp型BJT管)**，如果BJT管的节点已赋过值 (在NodeInfo中查找到的value为正值，不为-1) 则跳过该节点，否则为这些BJT管的发射极电压赋值为0或Vcc，|Vbe|赋为0.6667V，|Vce|赋为0.5V
+
+2. 找**源极未连接Gnd的NMOS管 (源极未连接Vdd的PMOS管)**，如果MOS管的节点已赋过值则跳过该节点，否则和上述MOS管赋一样的|Vgs|和|Vds|
+
+   找**发射极未连接Gnd的npn型BJT管 (发射极未连接Vcc的pnp型BJT管)**，如果BJT管的节点已赋过值则跳过该节点，否则和上述BJT管赋一样的|Vbe|和|Vce|
+
+3. 找**直流电压源**，如果电压源的2个节点已赋过值则跳过该器件；如果电压源与Gnd或Vdd (Vcc) 相连，或者电压源的1个节点已赋过值，将另1个节点赋值以使得器件两端电压为电压源的直流电压值 (该值可以从DeviceInfo元胞数组中查到)；如果电压源的2个节点都未赋值，将电压源的第2个节点电压赋为0，将第1个节点电压赋为电压源的直流电压值
+4. 找**有节点接Gnd的其他非NMOS非npn型BJT器件** (均为二端器件)，如果该器件的另1节点未连接Vdd，则先赋值为0
+5. 找**有节点接Vdd的其他非PMOS非pnp型BJT器件** (均为二端器件)，将该器件的另1节点赋值为Vdd
+6. 其他器件的节点如果没有赋过初值，则赋电压为Vdd/2
+
+##### init_value函数输入输出
+
+```matlab
+function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
+```
+
+init_value函数采用2重循环，先遍历各个器件，再遍历每个器件的各个节点。遍历器件需要DeviceInfo元胞数组的信息，遍历器件节点并赋节点电压初始值时需要NodeInfo元胞数组的信息
+
+`DeviceInfo`：存储电路器件信息的cell
+
+DeviceInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_DeviceInfo函数赋值的，Gen_DeviceInfo函数的定义如下：
+
+```matlab
+function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
+    SourceName,SourceN1,SourceN2,SourceDcValue,...
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
+    DiodeName,DiodeN1,DiodeN2,...
+    BJTName,BJTN1,BJTN2,BJTN3,BJTtype)
+```
+
+以添加直流源为例，其他器件添加信息的区别只有Device.value不用赋值。代码如下：
+
+```matlab
+% 添加电压源\电流源信息
+for i = 1:numel(SourceName)
+    count = count + 1;
+    Device.name = SourceName{i};
+    Device.type = 'source';
+    Device.nodes = {SourceN1(i), SourceN2(i)};
+    Device.init = 0;
+    Device.value = SourceDcValue(i);
+    DeviceInfo{count} = Device;
+end
+```
+
+`NodeInfo`：存储电路节点信息的cell
+
+NodeInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_NodeInfo函数赋值的，初始化代码如下：
+
+```matlab
+NodeInfo = cell(1,length(Node_Map));
+for count = 1:length(Node_Map)
+    Node_Element1.index = count-1;  % 存储节点索引 (从0开始，比如0-21的连续赋值)
+    Node_Element1.node = Node_Map(count);  % 存储节点在.sp网表文件中的编码
+    Node_Element1.devices = {};  % 存储节点相连的器件信息
+    Node_Element1.value = -1;  % 存储节点电压初始解。初始化为负数，方便初始化时判断节点是否赋过电压初值
+    NodeInfo{count} = Node_Element1; 
+end
+```
+
+将DeviceInfo中的各器件相连节点以其在NodeInfo中的索引值替换。同时，在NodeInfo中添加各节点相连器件信息。
+
+```matlab
+for i = 1:numel(DeviceInfo)
+    for j = 1:numel(DeviceInfo{i}.nodes)
+        % 在NodeInfo中查找节点索引值
+        for k = 1:numel(NodeInfo)
+            if isequal(NodeInfo{k}.node, DeviceInfo{i}.nodes{j})
+                DeviceInfo{i}.nodes{j} = NodeInfo{k}.index;
+                max_index = numel(NodeInfo{k}.devices) + 1;
+                NodeInfo{k}.devices{max_index} = DeviceInfo{i}.name;
+            end
+            break;
+        end
+    end
+end
+```
+
+`zp`：节点电压初始解向量
+
+```matlab
+x_0 = zeros( numel(NodeInfo), 1);
+for i = 1:numel(NodeInfo)
+    x_0(i) = NodeInfo{i}.value;
+end
+```
+
+初始解函数只需要给出节点电压初始值，不需要为MNA方程中的电流变量提供初值后续迭代也可以收敛。
+
+##### init_value函数细节
+
+init_value函数采用2重循环，先遍历各个器件，再遍历每个器件的各个节点，按照上述初始解赋值思路为各个节点赋值。以找源极接Gnd的NMOS和发射极接Gnd的npn型BJT的部分为例，寻找其他器件的代码同样在内层循环中。代码如下：
+
+```matlab
+for i = 1:numel(DeviceInfo)
+    Type = 0;
+    if isequal(DeviceInfo{i}.type, 'nmos')
+        Type = 1;
+    elseif isequal(DeviceInfo{i}.type, 'pmos')
+        Type = -1;
+    elseif isequal(DeviceInfo{i}.type, 'npn')
+        Type = 2;
+    elseif isequal(DeviceInfo{i}.type, 'pnp')
+        Type = -2;
+    end
+    for j = 1:numel(DeviceInfo{i}.nodes)
+        %% 找源极接Gnd的NMOS
+        % [BJT一般不会和MOS同时出现] 找发射极接Gnd的npnBJT
+        if Type >= 1 && isequal(DeviceInfo{i}.nodes{3}, Gnd_node)
+            DeviceInfo{i}.init = 1;
+            % 源接Gnd或Vdd(Vcc)的MOS和BJT不用确认节点未赋过初值再赋值，这类器件的节点优先赋初值以保证收敛
+            if Type == 1
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
+                end
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
+                end
+            elseif Type == 2
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0.5;
+                end
+                if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.6667;
+                end
+            end
+            % S
+            NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;
+            break;
+        end
+    end
+end
+```
+
+##### init_value函数备注
+
+1. 计算初始解的函数认为，电路网表文件中的第一个直流电压源是Vdd (Vcc)
+2. 初始解只能尽量满足各个器件的节点电压赋值要求 (包括MOS管的|Vgs|与|Vds|，电压源的两端节点电压等)
+
+##### 初始解可能的优化方法
+
+1. 采用瞬态分析得到初始解
+
+   可以将直流分析的输入电压源视为具有较长上升时间的斜坡输入信号，将所有节点电压初始化为零后进行1次瞬态分析。使用本次瞬态分析结束时刻的解作为DC分析的初始解。通过这种方法得到的初始解准确，同时可以直接根据瞬态分析得到的初始解判断输入电路是否合理，但瞬态分析需要将L、C计入，算法复杂度较高，而DC分析中L、C都得到了简化，求解初始解的时间相对整个DC分析过程占比较大
+
+2. 采用随机初始解
+
+   通过大量随机初始解可以测得几组可能的收敛解，从中选出合理的收敛解。这种方法得到也能得到更准确的DC分析结果，通过多次运行DC分析避免了对初始解的依赖，但多次运行DC算法复杂度高；同时还需要从多组解中人工选出合理的解，没有完全实现初始解的自动化给定
 
 #### 器件替换为dc分析网表形式
 ——zrc
