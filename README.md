@@ -341,7 +341,7 @@ M4   11 12 0  n 10e-6 0.35e-6 2
 
 ##### 电路图
 
-![电路图](picture/ceshidianlu1.png)
+<img src="picture/Amplifier.png" alt="电路图" style="zoom:50%;" />
 
 #### 运行结果
 #### DC测试用例2 `bufferSweep.sp`
@@ -383,19 +383,19 @@ C3 118 0 1e-12
 
 ##### 电路图
 
-![image-20230504151356355](picture\buffer.png)
+<img src="picture\buffer.png" alt="image-20230504151356355" style="zoom:50%;" />
 
 ##### 测试结果图
 
-![转移特性](picture\buffer_102.png)
+<img src="picture\buffer_102.png" alt="转移特性" style="zoom:50%;" />
 
-![转移特性](picture\buffer_M1_d.png)
+<img src="picture\buffer_M1_d.png" alt="转移特性" style="zoom:50%;" />
 
-![转移特性](picture\buffer_M3_d.png)
+<img src="picture\buffer_M3_d.png" alt="转移特性" style="zoom:50%;" />
 
-![转移特性](picture\buffer_107.png)
+<img src="picture\buffer_107.png" alt="转移特性" style="zoom:50%;" />
 
-![转移特性](picture\buffer_118.png)
+<img src="picture\buffer_118.png" alt="转移特性" style="zoom:50%;" />
 
 结果基本符合预期
 
@@ -431,13 +431,13 @@ C3 118 0 1e-12
 
 ##### 电路图
 
-
+<img src="C:\Users\18064\projects\FUDAN_ANALOG_EDA_MATLAB_SPICE\picture\invertbuffer.png" alt="反相器" style="zoom:50%;" />
 
 ##### 运行结果
 
-![转移特性](picture\invertbuffer_M1_d.png)
+<img src="picture\invertbuffer_M1_d.png" alt="转移特性" style="zoom:50%;" />
 
-![转移特性](picture\invertbuffer_118.png)
+<img src="picture\invertbuffer_118.png" alt="转移特性" style="zoom:50%;" />
 
 ## 结束语
 
