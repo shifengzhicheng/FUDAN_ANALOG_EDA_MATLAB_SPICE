@@ -21,25 +21,22 @@ function [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE, VB
     % disp(VBC);
     % Ie\Ic均为流入E\C的电流
     Ie = BJTflag * ( - If0*(exp(VBE/Vt) - 1) + alpha_r*Ir0*(exp(VBC/Vt) - 1) );
+    if Ie > 1
+        Ie = 1;
+    end
     Gbe = - If0/Vt * exp(VBE/Vt);
     Rbe_k = - 1 / Gbe;
     Gbc_e_k = alpha_r * Ir0/Vt * exp(VBC/Vt);
     Ieq_k = Ie + VBE / Rbe_k - Gbc_e_k * VBC;
     
     Ic = BJTflag * ( - Ir0*(exp(VBC/Vt) - 1) + alpha_f*If0*(exp(VBE/Vt) - 1) );
+    if Ic > 1
+        Ic = 1;
+    end
     Gbc = - Ir0/Vt * exp(VBC/Vt);
     Rbc_k = - 1 / Gbc;
     Gbe_c_k = alpha_f * If0/Vt * exp(VBE/Vt);
     Icq_k = Ic + VBC / Rbc_k - Gbe_c_k * VBE;
-    
-    %{
-    Rbe_k = 1 * Rbe_k;
-    Gbc_e_k = 1 * Gbc_e_k;
-    Ieq_k = 1 * Ieq_k;
-    Rbc_k = 1 * Rbc_k;
-    Gbe_c_k = 1 * Gbe_c_k;
-    Icq_k = 1 * Icq_k;
-    %}
     
     fprintf("<BJT_calculator>result:\n\n");
     disp(Ie);

@@ -53,7 +53,7 @@ kl = 0; %遍历变量
 
 %% 生成DeviceInfo
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
-    SourceName,SourceN1,SourceN2,...
+    SourceName,SourceN1,SourceN2,SourceDcValue,...
     MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
     DiodeName,DiodeN1,DiodeN2,...
     BJTName,BJTN1,BJTN2,BJTN3,BJTtype);
@@ -234,7 +234,7 @@ for i = 1:length(BJTName)
     %}
     T = 300;
     [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
-    % [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.75,0.025,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    % [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
     % 在E-B节点间贴电阻Rbe
     kl = kl+1;
     Name{kl} = ['R',BJTName{i},'_E'];

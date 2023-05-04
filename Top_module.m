@@ -3,7 +3,10 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\npnDC.sp';
+% filename = 'testfile\npnDC.sp';
+% filename = 'testfile\pnpDC.sp';
+filename = 'testfile\bjtAmplifier_DC.sp';
+
 % filename = 'testfile\bufferSweep.sp';
 % filename = 'testfile\dbmixerDC.sp';
 % filename = 'testfile\Voltagefollower.sp';

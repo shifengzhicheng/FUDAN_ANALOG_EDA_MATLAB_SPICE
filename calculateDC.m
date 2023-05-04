@@ -26,7 +26,11 @@ Value = LinerNet('Value');
 %% 生成仅贴入"MOS\diode\BJT衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法是在这个A0与b0基础上贴上每轮的MOS\diode\BJT伴随器件 - 避免记录上一轮的伴随器件信息
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value);
-disp("DCres name list: "); disp(x0); disp(A0 \ b0);
+disp("DCres name list: ");
+disp(x0);
+disp(A0);
+disp(b0);
+disp(A0 \ b0);
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A，直接得结果，否则读线性器件输入信息
 if isempty(MOSINFO) && isempty(DIODEINFO) && isempty(BJTINFO)
@@ -67,10 +71,12 @@ end
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
 %默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
 [A1, b1] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value); %用初始值得到的首轮A和b
+
 fprintf("A1:\n\n");
 disp(A1);
 fprintf("b1:\n\n");
 disp(b1);
+
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
 fprintf("zp:\n\n");
@@ -124,7 +130,7 @@ end
 % zrc：前面改过了，这里不用再转化了
 
 %% 开始迭代
-Nlimit = 200; %迭代上限，可能次数太多因为初始解不收敛
+Nlimit = 10; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     fprintf("iterating times:\n\n");
     disp(i);
@@ -133,6 +139,8 @@ for i = 1 : Nlimit
                                           diodeNum, diodeNodeMat, diodeLine, Is, ...
                                           BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
                                           A0, b0, Name, N1, N2, dependence, Value, zp);
+    
+    
     fprintf("zp:\n\n");
     for j = 1:length(zp)
         fprintf(num2str(zp(j)));
@@ -145,6 +153,7 @@ for i = 1 : Nlimit
         disp("\n");
     end
     % disp(zc);
+    
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
         disp("Convergence!");
@@ -182,9 +191,17 @@ for i = 1 : Nlimit
         %%  打印BJT电流输出结果
         vbe = zeros(bjtNum, 1);
         vbc = zeros(bjtNum, 1);
+        fprintf("<calculateDC BJTflag>:\n\n");
         for bjtCount = 1 : bjtNum
-            vbe(bjtCount) = tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 3) + 1);
-            vbc(bjtCount) = tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 1) + 1);
+            BJTflag = 0;
+            info = BJTtype(bjtCount);
+            if isequal(info{1}, 'npn')
+                BJTflag = 1;
+            elseif isequal(info{1}, 'pnp')
+                BJTflag = -1;
+            end
+            vbe(bjtCount) = BJTflag * (tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 3) + 1));
+            vbc(bjtCount) = BJTflag * (tempz(bjtNodeMat(bjtCount, 2) + 1) - tempz(bjtNodeMat(bjtCount, 1) + 1));
         end
         finalRbe_s = Value(BJTLine : 6 : BJTLine + 6 * bjtNum - 6).';
         finalGbc_e_s = Value(BJTLine + 1 : 6 : BJTLine + 6 * bjtNum - 5).';
@@ -196,6 +213,7 @@ for i = 1 : Nlimit
         Ie = finalIeq_s - vbe ./ finalRbe_s + finalGbc_e_s .* vbc;
         Ic = finalIcq_s - vbc ./ finalRbc_s + finalGbe_c_s .* vbe;
         Ib = -Ic - Ie;
+        %{
         fprintf("<calculateDC> debug:\n\n");
         disp(finalRbe_s);
         disp(finalGbc_e_s);
@@ -203,6 +221,7 @@ for i = 1 : Nlimit
         disp(finalRbc_s);
         disp(finalGbe_c_s);
         disp(finalIcq_s);
+        %}
         %打包成hash结构DCres
         DCres = containers.Map({'x', 'MOS', 'Diode', 'BJTIc', 'BJTIb', 'BJTIe'}, {z_res, mosCurrents, diodeCurrents, Ic, Ib, Ie});
         

@@ -71,8 +71,8 @@ for i=1:CellCount
                 b(pNum2)=b(pNum2)+cpValue;
         end    
     elseif CellName(2) == 'Q'
-        % fprintf("<Gen_nextA>BJTdebug:\n\n");
-        % disp(CellName);
+        fprintf("<Gen_nextA>BJTdebug:\n\n");
+        disp(CellName);
         % disp(A);
         switch CellName(1)
             case 'R'
@@ -103,8 +103,8 @@ for i=1:CellCount
                 A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
                 A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
         end
-        % disp(A);
-        % disp(b);
+        disp(A);
+        disp(b);
     end
 end
 A(1,:)=[];

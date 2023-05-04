@@ -61,12 +61,16 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
         end
         vbe = BJTflag*(vb - ve);
         vbc = BJTflag*(vb - vc);
+        
         fprintf("<Gen_nextRes>vcvbvevbevbc debug:\n\n");
+        fprintf("bjtCount:\n\n");
+        disp(bjtCount);
         disp(vc);
         disp(vb);
         disp(ve);
         disp(vbe);
         disp(vbc);
+        
         T = 300;
         [next_Rbe, next_Gbc_e, next_Ieq, next_Rbc, next_Gbe_c, next_Icq] = BJT_Calculator(vbe, vbc, BJTMODEL(:, BJTID(bjtCount)), BJTJunctionarea(bjtCount), BJTflag, T);
         tempCount = BJTLine + 6 * (bjtCount - 1);
@@ -81,5 +85,8 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 %% 将得到的新器件数据结合A0、b0得到新的矩阵
     [Ac, bc] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value);
     %解得新一轮的x(z)cur
+    fprintf("<Gne_nextRes> Ac\bc:\n\n");
+    disp(Ac);
+    disp(bc);
     zc = Ac \ bc;
 end

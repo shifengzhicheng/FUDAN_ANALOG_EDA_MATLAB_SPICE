@@ -23,8 +23,9 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     
     % 1. 先找源极接Gnd或Vdd的MOS管
     % (所有MOS管，尽量都|Vgs| = Vdd / 3, |Vds| = Vdd / 4)
-    % 2. 再找其他与Gnd或Vdd相连的器件
-    % 3. 最后更新其他所有未打标记的节点
+    % 2. 再找普通电压源
+    % 3. 再找其他与Gnd或Vdd相连的器件
+    % 4. 最后更新其他所有未打标记的节点
     
     % MOS节点顺序: DGS
     % BJT节点顺序: CBE
@@ -50,8 +51,8 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
                     NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
                 elseif Type == 2
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd * 2/3;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0.5;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.6667;
                 end
                 % S
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = 0;
@@ -65,13 +66,13 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
                     NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;
                 elseif Type == -2
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd / 2;
-                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = Vdd / 3;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0.5;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0.3333;
                 end
                 % S
                 NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = Vdd;
                 break;
-             %% 未连接Vdd或Gnd的MOS
+             %% 源极未连接Vdd或Gnd的MOS
             elseif abs(Type) == 1
                 DeviceInfo{i}.init = 1;
                 if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
@@ -100,36 +101,43 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type;
                 end
                 break;
-                %% 未连接Vdd(Vcc)或Gnd的BJT
+                %% 源极未连接Vdd(Vcc)或Gnd的BJT
             elseif abs(Type) == 2
                 DeviceInfo{i}.init = 1;
-                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
-                    % C赋过初值，将E赋为Vc - Vdd/6 * Type/2，将B赋为Ve + Vdd/4 *Type/2
-                    % 确认E未赋过初值再赋值
-                    if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - Vdd* 2/3 * Type/2;
-                    end
-                    % 确认B未赋过初值再赋值
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type/2;
-                    end
-                elseif NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1
+                if NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value ~= -1
                     % E赋过初值，将C赋为Ve + Vdd/6 * Type/2，将B赋为Ve + Vdd/4 * Type/2
                     % E一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type/2;
-                    % 确认B未赋过初值再赋值
-                    if NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
-                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd/2 * Type/2;
-                    end
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + 0.6667 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + 0.5 * Type/2;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
+                    % C赋过初值，将E赋为Vc - Vdd/6 * Type/2，将B赋为Ve + Vdd/4 *Type/2
+                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - 0.6667 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + 0.5 * Type/2;
                 elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1
                     % B赋过初值，将E赋为Vb - Vdd/4 * Type/2，将C赋为Ve + Vdd/6 * Type/2
                     % E一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - Vdd/2 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value - 0.5 * Type/2;
                     % C一定未赋过初值
-                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + Vdd * 2/3 * Type/2;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{3}+1 }.value + 0.6667 * Type/2;
                 end
                 break;
-            %% 找有端口接Gnd的非NMOS器件 (除MOS\BJT外其他器件都是二端器件)
+            %% 找普通电压源
+            elseif isequal(DeviceInfo{i}.type, 'source') && isequal(DeviceInfo{i}.name(1), 'V')
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1 && NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - DeviceInfo{i}.value;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1 && NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value + DeviceInfo{i}.value;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1 && NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
+                    if isequal(DeviceInfo{i}.nodes{1}, Gnd_node)
+                        NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = 0;
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = DeviceInfo{i}.value;
+                    elseif isequal(DeviceInfo{i}.nodes{2}, Gnd_node)
+                        NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = 0;
+                        NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = DeviceInfo{i}.value;
+                    end
+                end
+                break;
+            %% 找有端口接Gnd的其他非NMOS器件 (除MOS\BJT外其他器件都是二端器件)
             elseif isequal(DeviceInfo{i}.nodes{j}, Gnd_node)
                 DeviceInfo{i}.init = 1;
                 Vdd_and_Gnd = 0;
@@ -159,7 +167,7 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
                     end
                 end
                 break;
-            %% 找有端口接Vdd的非PMOS器件 (除MOS\BJT外其他器件都是二端器件)    
+            %% 找有端口接Vdd的其他非PMOS器件 (除MOS\BJT外其他器件都是二端器件)    
             elseif isequal(DeviceInfo{i}.nodes{j}, Vdd_node)
                 DeviceInfo{i}.init = 1;
                 % for k = 1:2
@@ -208,10 +216,17 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     % 没有考虑要额外引入电流变量的情况
     % 如要考虑，所有电流变量设为0.1mA
     x_0 = zeros( numel(NodeInfo), 1);
+    %{
     for i = 1:numel(NodeInfo)
         x_0(i) = NodeInfo{i}.value;
     end
-    
+    %}
+    x_0(1) = 0;
+    x_0(2) = 9;
+    x_0(3) = 1.416;
+    x_0(4) = 0.72;
+    x_0(5) = 2;
+    x_0(6) = 1.2;
     fprintf("InitValue: \n\n");
     disp(x_0);
 end
