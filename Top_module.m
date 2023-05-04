@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\Amplifier.sp';
+filename = 'testfile\invertbufferDC.sp';
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,PLOT,SPICEOperation]...

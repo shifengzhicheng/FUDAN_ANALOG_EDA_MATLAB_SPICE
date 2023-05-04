@@ -308,39 +308,103 @@ Vin <node1> <node2> DC Value
 
 ### `.dc`/`.dcsweep`测试用例
 
-#### DC测试用例1`filename.sp`
+#### DC测试用例1 `Amplifier.sp`
+
+##### 网表文件
 
 ```css
 * Amplifier
 VDD 10 0 DC 3
-Vin 14 0 DC 0
-Rin 14 13 10
+Vin 13 0 DC 0
+
+Rin 13 12 10
+
 Rout 16 0 1000
 
+VB1 18 0 DC 1.5
+VB2 17 0 DC 1.5 
+
 M1   15 10 10 p 30e-6 0.35e-6 1
-M2   16 11 11   n 10e-6 0.35e-6 2
-M3   16 15 15 p 60e-6 0.35e-6 1
-M4   11 12 0   n 20e-6 0.35e-6 2
-M5   12 10 10 p 60e-6 0.35e-6 1
-M6   12 13 0   n 20e-6 0.35e-6 2
+M2   16 18 15 p 60e-6 0.35e-6 1
+M3   16 17 11 n 20e-6 0.35e-6 2
+M4   11 12 0  n 10e-6 0.35e-6 2
 
 .MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
 .MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
 
+.plotnv 12
+.plotnv 16
+
+
 .dcsweep Vin [0,3] 0.01
 ```
 
-
+##### 电路图
 
 ![电路图](picture/ceshidianlu1.png)
 
 #### 运行结果
-| 测试变量 | 项目SPICE值 |HSPICE仿真值|
-| :----- | :---------: |:---|
-|         |             |        |
-|         |             |        |
-|         |             |        |
-|         |             |        |
+| 测试变量 | 项目SPICE值 |
+| :----- | :---------: |
+|         |             |
+|         |             |
+|         |             |
+|         |             |
+#### 测试用例2 `bufferSweep.sp`
+
+##### 电路网表
+
+```css
+* non-inverting buffer
+VDD 103 0 DC 3
+Vin 101 0 SIN 1.5 2 10e6 0
+Rin 101 102 10
+
+M1   107 102 103 p 30e-6 0.35e-6 1
+M2   107 102 0   n 10e-6 0.35e-6 2
+M3   104 107 103 p 60e-6 0.35e-6 1
+M4   104 107 0   n 20e-6 0.35e-6 2
+
+C1 104 0 0.1e-12
+R2 104 115 25
+L1 115 116 0.5e-12
+C2 116 0 0.5e-12
+R3 116 117 35
+L2 117 118 0.5e-12
+C3 118 0 1e-12
+
+.MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+.MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+
+.PLOTNV 102
+.PLOTNV 107
+.PLOTNV 118
+
+.plotnc M1(d)
+.plotnc M3(d)
+.plotnc R3(+)
+
+.dcsweep Vin [0,3] 0.01
+```
+
+##### 电路图
+
+![image-20230504151356355](picture\buffer.png)
+
+##### 测试结果图
+
+![转移特性](picture\buffer_102.png)
+
+![转移特性](picture\buffer_M1_d.png)
+
+![转移特性](picture\buffer_M3_d.png)
+
+![转移特性](picture\buffer_107.png)
+
+![转移特性](picture\buffer_118.png)
+
+结果基本符合预期
+
 ## 结束语
 
 要注意，我们的项目的仿真工具实现的只是一个较为简单的功能，部分地方细节并不完善，考虑也有欠妥的地方，还有不少改善空间。巴拉巴拉

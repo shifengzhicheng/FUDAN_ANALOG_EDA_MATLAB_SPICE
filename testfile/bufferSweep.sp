@@ -25,7 +25,10 @@ C3 118 0 1e-12
 .PLOTNV 116
 .PLOTNV 118
 
+.plotnc M1(d)
+.plotnc M2(d)
 .plotnc M3(d)
+.plotnc M4(d)
 .plotnc R2(+)
 .plotnc R3(+)
 
