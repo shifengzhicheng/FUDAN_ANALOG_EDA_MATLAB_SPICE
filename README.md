@@ -350,7 +350,7 @@ M4   11 12 0  n 10e-6 0.35e-6 2
 |         |             |
 |         |             |
 |         |             |
-#### 测试用例2 `bufferSweep.sp`
+#### DC测试用例2 `bufferSweep.sp`
 
 ##### 电路网表
 
@@ -404,6 +404,46 @@ C3 118 0 1e-12
 ![转移特性](picture\buffer_118.png)
 
 结果基本符合预期
+
+#### DC测试用例3 `invertbuffer.sp`
+
+##### 测试网表
+
+```css
+* invertbuffer
+VDD 103 0 DC 3
+Vin 101 0 DC 1.5
+Rin 101 107 10
+
+M1 104 107 0 n 20e-6 0.35e-6 2
+M2 104 107 103 p 60e-6 0.35e-6 1
+
+C1 104 0 0.1e-12
+R2 104 115 25
+L1 115 116 0.5e-12
+C2 116 0 0.5e-12
+R3 116 117 35
+L2 117 118 0.5e-12
+C3 118 0 1e-12
+
+.MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+.MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+
+.PLOTNV 104
+.PLOTNV 118
+.plotnc M1(d)
+.dcsweep Vin [0,3] 0.01
+```
+
+##### 电路图
+
+
+
+##### 运行结果
+
+![转移特性](picture\invertbuffer_M1_d.png)
+
+![转移特性](picture\invertbuffer_118.png)
 
 ## 结束语
 
