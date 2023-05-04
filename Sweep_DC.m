@@ -17,6 +17,7 @@
 %}
 function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, SweepInfo, PLOT, Node_Map)
     [~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    display(x_0);
     %% 读出线性网表信息
     Name = LinerNet('Name');
     N1 = LinerNet('N1');
@@ -35,10 +36,10 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
     plotnv=plotnv';
     plotCurrent=plotCurrent';
-    nvNum = size(plotnv);
-    ncNum = size(plotCurrent);
-    ObjNum = size(plotnv,1) + size(plotCurrent,1);
-    Obj = cell(ObjNum);
+    nvNum = size(plotnv, 1);   
+    ncNum = size(plotCurrent, 1);  
+    ObjNum = ncNum + nvNum;
+    Obj = cell(ObjNum, 1);   
     for i=1 : nvNum
      Obj(i) = {['Node_Voltage: ' num2str(Node_Map(plotnv(i)))]};
     end
@@ -55,6 +56,7 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     SweepInIndex = find(ismember(Name, SweepInName));
     %初始化
     Values =  zeros(ObjNum, sweepTimes);
+
     %% 得到要取mosCurrents、diodeCurrents、DCres、Value的各索引值向量
     % 以及对应Values哪些行的索引向量
     mosIndexInValues = [];
@@ -71,6 +73,8 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     for j = 1 : ncNum
         dname = plotCurrent{j}{1};
         plotport = plotCurrent{j}{2};
+        display(dname);
+        display(plotport);
         switch dname(1)
             case 'M'
                 %mosIndexInValues是表示Values中从mosCurrents得电流的位置的索引们
@@ -95,8 +99,8 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
                         Values(j + nvNum, :) = -1;
                 end
             case 'V'
-                VIndexInValues = [SourceIndexInValues; j + nvNum];
-                VIndexInDCres = [SourceIndexInDCres; find(strcmp(x_0,['I_' plotCurrent{j-i}{1}]))];
+                VIndexInValues = [VIndexInValues; j + nvNum];
+                VIndexInDCres = [VIndexInDCres; find(strcmp(x_0, ['I_' plotCurrent{j}{1}]))];
                 switch plotport
                     case '+'
                         Values(j + nvNum, :) = 1;
@@ -104,8 +108,8 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
                         Values(j + nvNum, :) = -1;
                 end
             case 'I'
-                IIndexInValues = [SourceIndexInValues; j + nvNum];
-                IIndexInValue = [SourceIndexInDCres; strcmp(Name,dname)];
+                IIndexInValues = [IIndexInValues; j + nvNum];
+                IIndexInValue = [IIndexInDCres; strcmp(Name,dname)];
                 switch plotport
                     case '+'
                         Values(j + nvNum, :) = 1;
@@ -115,18 +119,20 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
             case 'R'
                 % 找两端节点然后计算出电流
                 Index = find(strcmp(Name,dname));
-                RIndexInValues = [RIndexInValues; Index];
-                % 希望可以直接DCres(RNodeIndexInDCresN1)-DCres(RNodeIndexInDCresN2)就是要观察的各个R的两端电压向量
+                RIndexInValues = [RIndexInValues; j + nvNum];
+                % 希望可以直接x_res(RNodeIndexInDCresN1)-x_res(RNodeIndexInDCresN2)就是要观察的各个R的两端电压向量
                 RNodeIndexInDCresN1 = [RNodeIndexInDCresN1; N1(Index)];
                 RNodeIndexInDCresN2 = [RNodeIndexInDCresN2; N2(Index)];
-                if plotCurrent{j}{2} == N1(Index)
+                if plotCurrent{j}{2} == '+'     %%%%%%%%%%%%%%%%%%%
                     Values(j + nvNum, :) = 1 / Value(Index);
                 else
                     Values(j + nvNum, :) = -1 / Value(Index);
                 end
         end
     end
-
+    VIndexInDCres = VIndexInDCres + 1;
+    RNodeIndexInDCresN1 = RNodeIndexInDCresN1 + 1;
+    RNodeIndexInDCresN2 = RNodeIndexInDCresN2 + 2;
 %% 开始遍历要求的扫描点 每轮循环是一次正常DC 在Values中是一列
 % 要被打印的与Obj顺序对应的是Values的行 Values哪几行要改索引向量由上得到 避免每轮都switch
     for i = 1 : sweepTimes
@@ -134,9 +140,10 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
         tValue = LinerNet('Value');
         tValue(SweepInIndex) = InData(i);
         LinerNet('Value') = tValue;
-        %把上次DC的Value结果当作下次DC计算的初始解应该更快收敛
+        %把上次DC的Value结果当作下次DC计算的初始解加速收敛
         [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
-        x_res = DCres('x');
+        x_res = [0; DCres('x')];
+        display(x_res);
         mosCurrents = DCres('MOS');
         diodeCurrents = DCres('Diode');
 
