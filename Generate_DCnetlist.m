@@ -44,17 +44,17 @@ kl = 0; %遍历变量
 
 %% 生成DeviceInfo
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
-    SourceName,SourceN1,SourceN2,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype);
+    SourceName,SourceN1,SourceN2,SourceDcValue,...
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
+    DiodeName, DiodeN1, DiodeN2);
 
 %% 节点映射
-Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3];
+Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1, DiodeN2];
 Node_Map = zeros(length(Node),1);
 for i=1:length(Node)
     Node_Map(i,1)=Node(i);
 end
 Node_Map = unique(Node_Map,"rows");
-
 %% 新建 NodeInfo 优化DeviceInfo的值
 [NodeInfo,DeviceInfo] = Gen_NodeInfo(Node_Map,DeviceInfo);
 
