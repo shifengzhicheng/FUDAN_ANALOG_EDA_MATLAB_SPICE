@@ -28,7 +28,9 @@ RSS 121 0 100
 .MODEL 4 VT -0.3 MU 1e-2 COX 6e-3 LAMBDA 0.05 CJ0 4.0e-14
 
 * diode models
-.DIODE 1 IS 1e-3
+.DIODE 1 Is 1e-3
+
+.dc
 
 .plotnv  102
 .plotnv  103 

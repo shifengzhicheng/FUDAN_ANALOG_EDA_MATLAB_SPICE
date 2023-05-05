@@ -114,8 +114,7 @@ while ~feof(fid)
         % 按照标准的格式进行模型的数据赋值
         tokens = regexp(line, expr, 'tokens');
         DIODEMODELCount = DIODEMODELCount + 1;
-        DIODEMODEL{DIODEMODELCount} = [str2double(tokens{1}{1}); ...
-            str2double(tokens{1}{2})];
+        DIODEMODEL{DIODEMODELCount} = [str2double(tokens{1}{1});str2double(tokens{1}{2})];
     elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
         PlotCount = PlotCount + 1;
@@ -140,6 +139,6 @@ MOSINFO=containers.Map({'Name','d','g','s',...
     {MOSName,MOSN1,MOSN2,MOSN3,...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
-    {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel});
+    {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
 % 关闭文件
 fclose(fid);
