@@ -269,23 +269,13 @@ init_value函数采用2重循环，先遍历各个器件，再遍历每个器件
 
 `DeviceInfo`：存储电路器件信息的cell
 
-DeviceInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_DeviceInfo函数赋值的，Gen_DeviceInfo函数的定义如下：
-
-```matlab
-function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
-    SourceName,SourceN1,SourceN2,SourceDcValue,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
-    DiodeName,DiodeN1,DiodeN2,...
-    BJTName,BJTN1,BJTN2,BJTN3,BJTtype)
-```
+DeviceInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_DeviceInfo函数赋值的，该数组存储了各器件名称、类型、相连节点、是否初始化、电压源的直流值等信息
 
 以添加直流源为例，其他器件添加信息的区别只有Device.value不用赋值。
 
 `NodeInfo`：存储电路节点信息的cell
 
-NodeInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_NodeInfo函数赋值的。
-
-将DeviceInfo中的各器件相连节点以其在NodeInfo中的索引值替换。同时，在NodeInfo中添加各节点相连器件信息。
+NodeInfo元胞数组是在Generate_DCnetlist.m中通过调用Gen_NodeInfo函数赋值的，该数组存储了各节点的初始值信息
 
 `zp`：节点电压初始解向量
 
