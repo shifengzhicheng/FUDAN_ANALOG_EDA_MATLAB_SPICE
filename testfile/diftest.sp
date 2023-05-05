@@ -30,18 +30,6 @@ RSS 121 0 1e5
 * diode models
 .DIODE 1 Is 1e-5
 
-<<<<<<< HEAD:testfile/testtest.sp
-.dc
-
-.plotnv  102
-.plotnv  103 
-.plotnv  104
-.plotnv  105
-.plotnv  121
-.plotnc  D1(+)
-.plotnc  M4(d)
-.end
-=======
 .plotnv 102
 .plotnv 103 
 .plotnv 104
@@ -56,5 +44,5 @@ RSS 121 0 1e5
 .plotnc Rload2(+)
 .plotnc RSS(+)
 .plotnc Iref(+)
-.dc
->>>>>>> ef982b7ea046dde47d66ee4f21a0b39ed790432d:testfile/diftest
+
+.dcsweep VIN [0,3] 0.01

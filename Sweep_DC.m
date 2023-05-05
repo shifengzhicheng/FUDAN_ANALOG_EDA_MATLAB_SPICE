@@ -107,7 +107,7 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
                 end
             case 'I'
                 IIndexInValues = [IIndexInValues; j + nvNum];
-                IIndexInValue = [IIndexInDCres; strcmp(Name,dname)];
+                IIndexInValue = [IIndexInValue; find(strcmp(Name,dname))];
                 switch plotport
                     case '+'
                         Values(j + nvNum, :) = 1;
