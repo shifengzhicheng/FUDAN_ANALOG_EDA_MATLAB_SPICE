@@ -137,6 +137,17 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     for i = 1:numel(DeviceInfo)
         if DeviceInfo{i}.init == 0
             DeviceInfo{i}.init = 1;
+            if isequal(DeviceInfo{i}.type, 'diode')
+                if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1 && NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value == -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2 + 0.7;
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value ~= -1
+                    NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value - 0.7;
+                elseif NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value ~= -1
+                    NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = NodeInfo{ DeviceInfo{i}.nodes{2}+1 }.value + 0.7;
+                end
+                continue;
+            end
             if NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value == -1
                 NodeInfo{ DeviceInfo{i}.nodes{1}+1 }.value = Vdd/2;
             end
