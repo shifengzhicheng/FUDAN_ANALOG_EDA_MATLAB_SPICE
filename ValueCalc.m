@@ -52,7 +52,7 @@ for j = i+1:tsize
             end
         case 'V'
             % 基本逻辑是在解出来的结果中找到对应的器件然后得到其电流
-            Index = find(strcmp(x_0,['I_' dname]));
+            Index = find(strcmp(x_0,['I_' dname])) + 1;
             switch plotport
                 case '+'
                     res(j) = x(Index);
@@ -61,8 +61,8 @@ for j = i+1:tsize
             end
         case 'I'
             % 找电流源的结果就直接到
-            Index = find(Name,dname);
-            switch plotport
+            Index = find(strcmp(Name,dname));
+            switch plotport 
                 case '+'
                     res(j) = Value(Index);
                 case '-'
@@ -70,11 +70,11 @@ for j = i+1:tsize
             end
         case 'R'
             % 找两端节点然后计算出电流
-            Index = find(Name,dname);
-            if plotCurrent{j-i}{2} == N1(Index)
-                res(j) = (x(N1(Index)) - x(N2(Index)))/Value(Index);
+            Index = find(strcmp(Name,dname));
+            if plotCurrent{j-i}{2} == '+'
+                res(j) = (x(N1(Index)+1) - x(N2(Index)+1)) / Value(Index);
             else
-                res(j) = -(x(N1(Index)) - x(N2(Index)))/Value(Index);
+                res(j) = -(x(N1(Index)+1) - x(N2(Index)+1)) / Value(Index);
             end
     end
 end

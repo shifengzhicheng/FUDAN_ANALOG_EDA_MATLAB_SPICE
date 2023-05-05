@@ -30,7 +30,8 @@ MOSL = str2double(MOSINFO('L'));
 MOSID = str2double(MOSINFO('ID'));
 MOSMODEL = MOSINFO('MODEL');
 DiodeID = str2double(DIODEINFO('ID'));
-DiodeMODEL = str2double(DIODEINFO('MODEL'));
+%DiodeMODEL = str2double(DIODEINFO('MODEL'));
+DiodeMODEL = cell2mat(DIODEINFO('MODEL'));
 
 % 输出结果
 Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;  % MOS的线性化模型有3个器件
@@ -43,9 +44,8 @@ kl = 0; %遍历变量
 
 %% 生成DeviceInfo
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
-    SourceName,SourceN1,SourceN2,SourceDcValue,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
-    DiodeName,DiodeN1,DiodeN2);
+    SourceName,SourceN1,SourceN2,...
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype);
 
 %% 节点映射
 Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3];
@@ -174,7 +174,7 @@ MOSINFO = containers.Map({'Name','MODEL','type','W','L','ID','MOSLine'},{MOSName
 %% 处理Diode 替换Diode器件
 % 记录Diode最后更改位置Is，diodeLine
 DiodeLine = kl+1;
-
+Is = zeros(1, length(DiodeName));
 for i=1:length(DiodeName)
     Node1 = find(Node_Map==DiodeN1(i))-1;
     Node2 = find(Node_Map==DiodeN2(i))-1;
@@ -182,21 +182,23 @@ for i=1:length(DiodeName)
     V1 = x_0(Node1 + 1);
     V2 = x_0(Node2 + 1);
     VT = V1 - V2;
-    [Gdk, Ieqk] = Diode_Calculator(VT, DiodeMODEL(:,DiodeID(i)), 300);
+    Is(i) = DiodeMODEL(2,DiodeID(i));
+    [Gdk, Ieqk] = Diode_Calculator(VT, Is(i), 300);
     % [Gdk, Ieqk] = Diode_Calculator(3, DiodeMODEL(:,DiodeID(i)), 300);
     kl = kl+1;
-    Name{kl} = ['R',MOSName{i}];
+    Name{kl} = ['R',DiodeName{i}];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = 1/Gdk;
     kl = kl+1;
-    Name{kl} = ['I',MOSName{i}];
+    Name{kl} = ['I',DiodeName{i}];
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Ieqk;
     
 end
-DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName,DiodeMODEL,DiodeLine});
+
+DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName, Is, DiodeLine});
 
 %% 打包输出
 LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});
