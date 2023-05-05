@@ -73,8 +73,6 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     for j = 1 : ncNum
         dname = plotCurrent{j}{1};
         plotport = plotCurrent{j}{2};
-        display(dname);
-        display(plotport);
         switch dname(1)
             case 'M'
                 %mosIndexInValues是表示Values中从mosCurrents得电流的位置的索引们
@@ -143,7 +141,6 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
         %把上次DC的Value结果当作下次DC计算的初始解加速收敛
         [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
         x_res = [0; DCres('x')];
-        display(x_res);
         mosCurrents = DCres('MOS');
         diodeCurrents = DCres('Diode');
 

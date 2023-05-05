@@ -26,7 +26,7 @@ Value = LinerNet('Value');
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
 %此后每次迭代更新A和b的方法是在这个A0与b0基础上贴上每轮的MOS伴随器件 - 避免记录上一轮的伴随器件信息
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value);
-disp("DCres name list: "); disp(x0);
+% disp("DCres name list: "); disp(x0); %%%%%%%%%%%%%%%%%%55
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A，直接得结果，否则读线性器件输入信息
 if isempty(MOSINFO) || isempty(DIODEINFO) 
@@ -60,6 +60,7 @@ end
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
 %默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
 [A1, b1] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value); %用初始值得到的首轮A和b
+
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
 
@@ -100,7 +101,7 @@ end
 % zrc：前面改过了，这里不用再转化了
 
 %% 开始迭代
-Nlimit = 200; %迭代上限，可能次数太多因为初始解不收敛
+Nlimit = 100; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
     [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
@@ -109,7 +110,7 @@ for i = 1 : Nlimit
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
-        disp("Convergence!");
+        %disp("Convergence!"); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %MNA方程解的结果
         z_res = zc;
 
@@ -131,12 +132,13 @@ for i = 1 : Nlimit
         mosCurrents = finalIMs + finalGMs .* vgs + (1./finalRMs) .* netlistVds;
 
         %%  打印Diode电流输出结果
-        vpn = zeros(diodeNum, 1);
+        vpn = zeros(1, diodeNum);
         for dioCount = 1 : diodeNum
             vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
         end
             finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2);
             finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1);
+
         diodeCurrents = finalIDs + vpn ./ finalRDs;
         %或直接用双端Diode电流公式
         %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);

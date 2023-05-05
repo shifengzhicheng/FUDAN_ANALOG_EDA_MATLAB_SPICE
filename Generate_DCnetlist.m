@@ -44,11 +44,12 @@ kl = 0; %遍历变量
 
 %% 生成DeviceInfo
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
-    SourceName,SourceN1,SourceN2,...
-    MOSName,MOSN1,MOSN2,MOSN3,MOStype);
+    SourceName,SourceN1,SourceN2,SourceDcValue,...
+    MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
+    DiodeName, DiodeN1, DiodeN2);
 
 %% 节点映射
-Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3];
+Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1, DiodeN2];
 Node_Map = zeros(length(Node),1);
 for i=1:length(Node)
     Node_Map(i,1)=Node(i);
@@ -184,7 +185,7 @@ for i=1:length(DiodeName)
     VT = V1 - V2;
     Is(i) = DiodeMODEL(2,DiodeID(i));
     [Gdk, Ieqk] = Diode_Calculator(VT, Is(i), 27);
-    % [Gdk, Ieqk] = Diode_Calculator(3, DiodeMODEL(:,DiodeID(i)), 27);
+    % [Gdk, Ieqk] = Diode_Calculator(0.3, Is(i), 27);
     kl = kl+1;
     Name{kl} = ['R',DiodeName{i}];
     N1(kl) = Node1;
