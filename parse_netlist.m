@@ -109,7 +109,7 @@ while ~feof(fid)
             str2double(tokens{1}{6})];
     elseif ~isempty(tokens_DiodeModel)
         % 匹配的正则表达式
-        expr = ['\.DIODE\s+(\d+)\s+IS\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
+        expr = ['\.DIODE\s+(\d+)\s+Is\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
         % 在这里已经匹配到了模型数据
         % 按照标准的格式进行模型的数据赋值
         tokens = regexp(line, expr, 'tokens');
@@ -126,6 +126,7 @@ while ~feof(fid)
         SPICEOperation{OperationCount}=strsplit(strtrim(line));
     end
 end
+
 RCLINFO=containers.Map({'Name','N1','N2','Value'},...
     {RLCName,RLCN1,RLCN2,RLCValue});
 SourceINFO=containers.Map({'Name','N1','N2',...
