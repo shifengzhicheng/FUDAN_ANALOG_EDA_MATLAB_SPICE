@@ -40,7 +40,6 @@ RSS 121 0 1e5
 .plotnv  121
 .plotnc  D1(+)
 .plotnc  M4(d)
-.plotnc  R2(+)
 .end
 =======
 .plotnv 102
