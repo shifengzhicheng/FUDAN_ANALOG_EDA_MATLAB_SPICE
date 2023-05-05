@@ -39,6 +39,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 %% 处理二极管
     for diodeCount = 1 : diodeNum
+        tempz = [0; zp];
         Vpn = tempz(diodeNodeMat(diodeCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
         [Gdk, Ieqk] = Diode_Calculator(Vpn, Is(diodeCount), 27);    %室温
         Value(diodeLine + diodeCount * 2 - 2) = 1 / Gdk;
