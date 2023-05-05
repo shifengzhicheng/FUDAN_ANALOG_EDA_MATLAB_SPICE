@@ -109,12 +109,12 @@ while ~feof(fid)
             str2double(tokens{1}{6})];
     elseif ~isempty(tokens_DiodeModel)
         % 匹配的正则表达式
-        expr = ['\.DIODE\s+(\d+)\s+Is\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
+        expr = ['\.DIODE\s+(\d+)\s+IS\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
         % 在这里已经匹配到了模型数据
         % 按照标准的格式进行模型的数据赋值
         tokens = regexp(line, expr, 'tokens');
         DIODEMODELCount = DIODEMODELCount + 1;
-        DIODEMODEL{DIODEMODELCount} = [str2double(tokens{1}{1}); ...
+        DIODEModel{DIODEMODELCount} = [str2double(tokens{1}{1}); ...
             str2double(tokens{1}{2})];
     elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
