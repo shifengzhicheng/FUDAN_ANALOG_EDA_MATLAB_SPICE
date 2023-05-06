@@ -821,7 +821,7 @@ C3 118 0 1e-12
 
 <img src="picture\invertbuffer_118.png" alt="转移特性" style="zoom:50%;" />
 
-#### DC测试用例4`test circuit`
+#### DC测试用例4`diftest.sp`
 
 测试文件由林与正同学提供
 
@@ -872,7 +872,17 @@ RSS 121 0 100
 
 ##### 电路图
 
+<img src="picture\diftest.png" style="zoom:50%;" />
+
 ##### 运行结果
+
+<img src="picture\diftest_M1(d).png" style="zoom:50%;" />
+
+<img src="picture\diftest_D1(+).png" style="zoom:50%;" />
+
+<img src="picture\diftest_Node_102.png" style="zoom:50%;" />
+
+<img src="picture\diftest_Node_103.png" style="zoom:50%;" />
 
 ## 结束语
 

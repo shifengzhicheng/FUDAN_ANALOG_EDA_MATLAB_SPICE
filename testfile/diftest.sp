@@ -32,17 +32,7 @@ RSS 121 0 1e5
 
 .plotnv 102
 .plotnv 103 
-.plotnv 104
-.plotnv 105
-.plotnv 121
 .plotnc D1(+)
-.plotnc D2(+)
-.plotnc M4(d)
-.plotnc M2(d)
 .plotnc M1(d)
-.plotnc M3(d)
-.plotnc Rload2(+)
-.plotnc RSS(+)
-.plotnc Iref(+)
 
-.dcsweep VIN [0,3] 0.01
+.dcsweep VIN [1,3] 0.01

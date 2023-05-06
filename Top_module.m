@@ -3,7 +3,8 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\bufferSweep.sp';
+file = 'diftest';
+filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,PLOT,SPICEOperation]...
@@ -53,6 +54,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(InData,Res(i,:));
             title(Obj{i});
+            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.hb'
         % 这里进入AC分析
