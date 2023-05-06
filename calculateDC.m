@@ -136,8 +136,8 @@ for i = 1 : Nlimit
         for dioCount = 1 : diodeNum
             vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
         end
-            finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2);
-            finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1);
+            finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2).';
+            finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1).';
 
         diodeCurrents = finalIDs + vpn ./ finalRDs;
         %或直接用双端Diode电流公式
