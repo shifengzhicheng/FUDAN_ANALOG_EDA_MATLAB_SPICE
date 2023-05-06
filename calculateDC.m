@@ -132,9 +132,9 @@ for i = 1 : Nlimit
         mosCurrents = finalIMs + finalGMs .* vgs + (1./finalRMs) .* netlistVds;
 
         %%  打印Diode电流输出结果
-        vpn = zeros(1, diodeNum);
+        vpn = zeros(diodeNum, 1);
         for dioCount = 1 : diodeNum
-            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(diodeCount, 2) + 1);
+            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(dioCount, 2) + 1);
         end
             finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2).';
             finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1).';
