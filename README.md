@@ -4,20 +4,46 @@
 
 ## 项目成员
 
-| 成员名称 | 学号 |
-| :----- | :---------: |
-| 郑志宇 | 20307130176 |
-| 朱瑞宸 |             |
-| 林与正 |             |
-| 张润洲 |             |
+| 成员名称 |          学号           |
+| :----- |:---------------------:|
+| 郑志宇 |      20307130176      |
+| 朱瑞宸 |      20300240019      |
+| 林与正 |      20307130137      |
+| 张润洲 |      19307130046      |
 
 ## 功能说明
 
-该工具可以读入电路网表文件，然后执行 DC 分析和瞬态分析，生成对应的输出结果。支持的电路元件包括 MOSFET、电阻器、电容器和电感器。
+该工具可以读入电路网表文件，然后执行 DC 分析、瞬态分析等，生成对应的输出结果。支持的电路元件包括 MOSFET、二极管、电阻、电容、电感等。
 
-在 DC 分析中，可以计算电路中各节点的电压和电流。在瞬态分析中，可以计算电路中各节点在一定时间范围内的电压和电流波形。
+在 MOSFET 模型中，使用了简化版的 SPICE Level = 1 的 MOS 模型。MOSFET 的源端和漏端不是固定的，需要由两个端口当前的电压值来判断。
 
-在 MOSFET 模型中，使用了简化版的 SPICE Level = 1 的 MOS 模型。MOSFET 的源端和漏端不是固定的，需要由两个端口当前的电压值来判断。寄生电容模型中，忽略了 MOS 管模型中寄生电容的非线性特性，假定各寄生电容形式为 $C_{gs}=1/2,~C_{ox}WL=C_{gd},~C_d=C_s=C_{j0}$。
+在 Diode 模型中，使用了简化版的 SPICE Level = 1 的 Diode 模型。默认二极管工作在27℃下。
+
+## 创新点
+
+1. 电流打印。 除了项目提供网表中打印电压的功能，额外完成了电流的输出、索引和打印； 
+
+2. 源漏互换。迭代过程考虑了MOS管源漏交换的情况，可以处理输入网表源漏与电路实际源漏情况相反的情况；
+
+3. 二极管仿真。依据MOS管迭代求解思路，完成了如二极管等其他非线性器件的引入； 
+
+4. 直流扫描。在单点dc分析的基础上增加了直流扫描的功能，可以以所需步长考察所需端点电压/器件电流随输入电压的变化
+
+5. hspice仿真分析。利用hspice对每个实例电路进行了分析，并通过与查阅的标准spice模型对比，进行误差分析、正确性评估与优化
+
+6. 时间复杂度较低。运行bufferDC.sp文件，计算直流工作点时，仅用时0.275s，主要优化体现在：
+* 迭代更新电路方程的过程使用在不贴入"非线性器件生成的线性器件"得到的矩阵基础上贴入每轮更新的器件值，避免每轮重新生成矩阵或额外空间保留上一轮器件值；
+* 进行节点映射，将节点映射为0~N的连续整数，大大降低了查找与遍历的成本
+* 初始解的赋值上，本项目采用了自动化的赋值方法，从初始电压已知的节点Gnd和Vdd (Vcc)出发，遍历网表中的各个器件，为尽可能多的MOS管、二极管等非线性器件赋予合理的初始节点电压，以较低的复杂度实现了初始解的赋值
+
+7. 空间利用率较高。主要体现在：
+* DC扫描输出利用先生成索引后提取每轮结果的方法，避免消耗大量空间保存最终不需要打印观察的信息
+* 存储数据类型尽量采用矩阵和数字的形式，减少字符的使用，减少变量空间占用的同时也可以减少变量类型转换的时间
+
+8. 工程化程度较高。主要体现在：
+* 将项目分成前后端来实现分工与合作，工作大体上分为预处理，网表生成，更新网表迭代，绘制图像这些部分划分，模块之间仅靠接口相互依赖，比较有实际的工程意义
+* 关于项目的接口部分采用了哈希表来实现更快更高效的索引，同时可读性和可扩展性较强，向实际工程靠拢。
+* 关于项目的结构方面，本项目在顶层模块有较高的抽象级，后续容易把项目拓展成有更高的兼容性的项目。
 
 ## 用法
 
@@ -29,11 +55,17 @@
 
 1. 根据要求书写电路网表文件，可以实现以下操作
 
-   - `.dc`，直流电网电路计算
+   - `.dc`，直流工作点计算
 
      > 输入示例：
      >
      > .dc
+
+   - `.dcsweep`，直流扫描，生成转移曲线
+
+     > 输入示例：
+     >
+     > .dcsweep Vin [0,3] 0.01
 
    - `.hb`，AC频率响应分析`暂未实现`
 
@@ -76,7 +108,7 @@
      > `.MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14`
      > `.MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14`
 
-2. 修改Top_module中的filename，在 MATLAB 中运行 `Top_module.m` 脚本得到结果
+3. 修改Top_module中的filename，在 MATLAB 中运行 `Top_module.m` 脚本得到结果
 
 ## 电路网表文件格式
 
@@ -114,15 +146,23 @@ C3 118 0 1e-12
 
 ```bash
 ├── picture # README文档的说明图片
-├── projectfile # 项目要求文档
+├── projectfile # 项目要求文档与参考资料
 │   ├── HSPICE简明教程(复旦大学).pdf
-│   ├── proj1_v02_tj.pdf		
+│   ├── proj1_v03_tj.pdf	
+│   ├── hspice_sa.pdf	
+│   ├── HspiceManual完全手册.pdf		
 ├── testfile # 测试文件目录
-│   ├── dbmixerDC.sp      		
-│   ├── invertbufferDC.sp         	
-│   ├── Amplifier.sp
-│   ├── diftest.sp
-│   └── bufferSweep.sp 
+│   ├── test_ori #项目所给的运行网表
+│   ├── hspice_testfile #hspice测试所用网表
+│   ├── AmplifierDC.sp      		
+│   ├── AmplifierSweep.sp         	
+│   ├── bufferDC.sp
+│   ├── bufferSweep.sp
+│   ├── dbmixerDC.sp 
+│   ├── diftestDC.sp      		
+│   ├── diftestSweep.sp         	
+│   ├── invertbufferDC.sp
+│   └── invertbufferSweep.sp
 ##### 工作文件夹
 ├── Top_module.m
 ├── parse_netlist.m
@@ -130,14 +170,15 @@ C3 118 0 1e-12
 │   ├── Gen_NodeInfo.m
 │   ├── Gen_DeviceInfo.m
 │   ├── init_value.m
-├── Mos_Calculator.m
-├── Diode_Calculator.m
+│   ├── Mos_Calculator.m
+│   └── Diode_Calculator.m
 ├── CalculateDC.m
 │   ├──Gen_nextRes.m
 │   │   ├──Mos_Calculator.m
 │   │   ├──Diode_Calculator.m
 │   ├──Gen_baseA.m
-│   ├──Gen_nextA.m
+│   └──Gen_nextA.m
+├── Sweep_DC.m
 ├── ValueCalc.m
 ├── portMapping.m
 ##### 
@@ -366,7 +407,6 @@ x_0(i) = NodeInfo{i}.value;
    通过大量随机初始解可以测得几组可能的收敛解，从中选出合理的收敛解。这种方法得到也能得到更准确的DC分析结果，通过多次运行DC分析避免了对初始解的依赖，但多次运行DC算法复杂度高；同时还需要从多组解中人工选出合理的解，没有完全实现初始解的自动化给定
    
 #### 生成DC分析网表
-
 此功能由朱瑞宸同学完成
 
 本部分功能为将所有器件按照dc分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的形式，从而可以贴入MNA方程中进行迭代求解。
@@ -623,13 +663,13 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
 Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosIndexInmosCurrents);
 ```
 
-### Part 3 实现trans仿真
+### Part 3 实现trans仿真 (暂未实现)
 
-### Part 4 实现频率响应分析
+### Part 4 实现频率响应分析 (暂未实现)
 
 ### Part 5 将电路生成的结果输出
 
-#### `.dc`中输出结果
+#### `.dc`/`.dcsweep`中输出结果
 
 此功能由郑志宇同学完成
 
@@ -673,63 +713,41 @@ Vin <node1> <node2> DC <Value>
 `ValueCalc`利用迭代计算的结果以及端口映射的结果找到正确的计算值然后返回。
 
 
+## 项目功能测试分析
 
-## 项目测试用例
+项目测试和分析部分由朱瑞宸同学完成，将测试结果与hspice标准仿真结果进行对照分析；部分测试电路由小组成员提供。
 
-### `.dc`/`.dcsweep`测试用例
+### hspice测试原理
 
-#### DC测试用例1 `Amplifier.sp`
+《Star-Hspice Manual》一书详细介绍了hspice低阶模型参数和计算模型。同时，hspice提供了一系列低阶模型的默认参数，以及修改这些参数的接口，因此这为我们提供了运用hspcie验证结果正确性，以及对照和优化模型的可能性。
 
-此测试文件由郑志宇同学提供
+因此，将网表修改为符合hspice语法的形式(testfile\hspice_testfile文件夹下)，使用hspice进行仿真测试，并将结果与我们自己写的spice结果进行对比，从而得到对模型性能的评估。
+
+在用hspice进行测试时，对于mosfet和diode我们均采用level 1模型。同时仅修改实例网表定义的模型参数，其余使用默认参数。需要注意的是，实例网表中的迁移率MU单位为m2/(V⋅s)，而spice标准参数中的迁移率UO单位为cm2/(V⋅s)，在替换参数时需要进行单位换算。
+
+对于mosfet的标准level 1模型，其与我们所做模型的主要差异在于：
+
+* 考虑了衬底偏置效应，Vth需要随着Vsb变化
+* 考虑了沟道有效长度和有效宽度，Leff和Weff会收到相应的扩散系数和scaling的系数影响
+
+对于diode的标准level 1模型，其与我们所做模型的主要差异在于：
+
+* 提供了反向击穿的阈值电压
+* 电流分段，以-10vt为界，当vd<-10vt,I=-ISS
+* 考虑了二极管有效面积，将Is拆为Area和Js的乘积进行定义
+
+除此之外，二阶的mosfet模型增加了非常数表面迁移率效应和速度饱和效应等，与我们所测试的结果相差更大。
+
+### `.dc`测试用例
+
+#### DC测试用例1 `bufferDC.sp`
+
+本测试用例为课程提供
 
 ##### 网表文件
 
 ```css
-* Amplifier
-VDD 9 0 DC 3
-Vin 10 0 DC 0
-
-Rin 10 11 100
-
-Rout 16 0 1000
-
-Vb1 12 0 DC 1
-
-M1   13 13 9 p 30e-6 0.35e-6 1
-M2   16 12 13 p 60e-6 0.35e-6 1
-M3   16 12 14 n 20e-6 0.35e-6 2
-M4   14 11 0  n 10e-6 0.35e-6 2
-
-.MODEL 1 VT -0.5 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
-.MODEL 2 VT 0.5 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
-
-.plotnv 16
-.plotnc Rout(+)
-.plotnc M3(d)
-
-.dcsweep Vin [0,3] 0.01
-```
-
-##### 电路图
-
-<img src="picture/Amplifier.png" alt="电路图" style="zoom:50%;" />
-
-#### 运行结果
-
-<img src="picture\Amplifier_16.png" style="zoom:50%;" />
-
-<img src="picture\Amplifier_M3(d).png" style="zoom:50%;" />
-
-<img src="picture\Amplifier_Rout(+).png" style="zoom:50%;" />
-
-#### DC测试用例2 `bufferSweep.sp`
-
-测试文件由课程提供的文件提供并基于小组项目进行修改
-
-##### 电路网表
-
-```css
-* non-inverting buffer
+* buffer
 VDD 103 0 DC 3
 Vin 101 0 SIN 1.5 2 10e6 0
 Rin 101 102 10
@@ -750,43 +768,135 @@ C3 118 0 1e-12
 .MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
 .MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
 
-.PLOTNV 102
-.PLOTNV 107
+.PLOTNV 101
 .PLOTNV 118
-
 .plotnc M1(d)
+.plotnc M2(d)
 .plotnc M3(d)
-.plotnc R3(+)
+.plotnc M4(d)
 
-.dcsweep Vin [0,3] 0.01
+.DC
 ```
 
 ##### 电路图
 
-<img src="picture\buffer.png" alt="image-20230504151356355" style="zoom:50%;" />
+<img src="picture/buffer.png" alt="电路图" style="height:200px;" />
 
-##### 测试结果图
+##### 项目测试结果 & hspice仿真结果
 
-<img src="picture\buffer_102.png" alt="转移特性" style="zoom:50%;" />
+| 测试项目     | 项目测试结果       | hspice仿真结果 | 
+|----------|--------------|------------|
+| 101 节点电压 | 1.5V         | 1.5000V    |
+| 118 节点电压 | -1.9756e-19V | 13.9329nV  |
+| M1  元件电流 | -3.2451e-05A | -32.4839uA |
+| M2  元件电流 | 3.2451e-05A  | 32.4839uA  |
+| M3  元件电流 | 0            | 0          |
+| M4  元件电流 | -3.4578e-13A | 6.0300pA   |
 
-<img src="picture\buffer_M1_d.png" alt="转移特性" style="zoom:50%;" />
+##### 误差分析
 
-<img src="picture\buffer_M3_d.png" alt="转移特性" style="zoom:50%;" />
+本电路无论N管还是P管均不存在衬偏效应，大部分参数与实际结果拟合程度较高。主要误差在与M3、M4元件的电流较小，误差主要在由计算过程产生。若这里采用level 2模型，考虑到速度饱和效应，M1电流I=-3.4995uA，将产生较大衰减。
 
-<img src="picture\buffer_107.png" alt="转移特性" style="zoom:50%;" />
+#### DC测试用例2 `dbmixerDC.sp`
 
-<img src="picture\buffer_118.png" alt="转移特性" style="zoom:50%;" />
+本测试用例为课程提供
 
-结果基本符合预期，DC扫描的结果验证正确。
+##### 网表文件
 
-#### DC测试用例3 `invertbuffer.sp`
+```css
+*double balanced mixer
 
-测试文件由郑志宇同学提供
+Vdd 101 0 dc 3
+Rload1 101 102 300
+Rload2 101 103 300
 
-##### 测试网表
+* mosfets
+M1 102 104 107 n 30e-6 .25e-6 2
+M2 103 106 107 n 30e-6 .25e-6 2
+M3 102 106 108 n 30e-6 .25e-6 2
+M4 103 104 108 n 30e-6 .25e-6 2
+
+M5 107 110 114 n 30e-6 .25e-6 2
+M6 108 111 115 n 30e-6 .25e-6 2
+
+*source degeneration
+Lde1 114 129 1e-9
+Rloss1 129 109 1.2
+Lde2 115 139 1e-9
+Rloss2 139 109 1.2
+
+* LC tank 
+Lde3 109 149 3e-9
+Rloss3 149 0 3.6
+Cde  109 0 9.2e-12 
+
+*input
+Vlo+ 154 0 SIN 1 0.6 900e6 0 
+Rlo1 154 104 50
+Vlo- 164 0 SIN 1 0.6 900e6 180 
+Rlo2 164 106 50
+
+Vrf1+ 112 212 SIN 0.6 0.01 800e6 180
+Vrf2+ 212 0 SIN 0  0.01 600e6 180
+Vrf1- 113 213 SIN 0.6  0.01 800e6 0
+Vrf2- 213 0 SIN 0 0.01 600e6 0
+Rs1 112 110 25
+Rs2 113 111 25
+
+* level 1 models
+.MODEL 1 VT -0.58281 MU 1.224952e-2 COX 6.058e-3 LAMBDA 0.05 CJ0 4.0e-14
+.MODEL 2 VT 0.386 MU 3.0238e-2 COX 6.058e-3 LAMBDA 0.05 CJ0 4.0e-14
+
+.dc
+.plotnv  102
+.plotnv  103 
+.plotnc M1(d)
+.plotnc M2(d)
+.plotnc M3(d)
+.plotnc M4(d)
+.plotnc M5(d)
+.plotnc M6(d)
+.plotnv  112 
+.plotnv  113 
+.plotnv  154 
+.plotnv  164
+.end
+```
+
+##### 电路图
+
+<img src="picture/dbmixer.png" alt="电路图" style="height:500px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+| 测试项目     | 项目测试结果      | hspice仿真结果 | 
+|----------|-------------|------------|
+| 102 节点电压 | 2.8514V     | 2.8516V    |
+| 103 节点电压 | 2.8514V     | 2.8516V    |
+| 112 节点电压 | 0.6V        | 600.0000mV |
+| 113 节点电压 | 0.6V        | 600.0000mV |
+| 154 节点电压 | 1V          | 1.0000V    |
+| 164 节点电压 | 1V          | 1.0000V    |
+| M1  元件电流 | 0.00024764A | 247.3653uA |
+| M2  元件电流 | 0.00024764A | 247.3653uA |
+| M3  元件电流 | 0.00024764A | 247.3653uA |
+| M4  元件电流 | 0.00024764A | 247.3653uA |
+| M5  元件电流 | 0.00049528A | 494.7307uA |
+| M6  元件电流 | 0.00049528A | 494.7307uA |
+
+##### 误差分析
+
+hspice计算结果与项目测试结果吻合度较高，数据准确性较高。同时，由于衬偏效应的存在，hspice仿真出的电流总是比项目测试结果略小。查阅.lis文件可知，此时pmos管默认的衬偏系数为0.03008(单位:V^-1/2)，若我们设置GAMMA=0.01,再次仿真，可以得到M5、M6管的电流约为495.0791uA，确实与我们自己测试的spice结果更为接近
+
+#### DC测试用例3 `invertbufferDC.sp`
+
+本测试用例为郑志宇同学提供
+
+##### 网表文件
 
 ```css
 * invertbuffer
+
 VDD 103 0 DC 3
 Vin 101 0 DC 1.5
 Rin 101 107 10
@@ -808,48 +918,103 @@ C3 118 0 1e-12
 .PLOTNV 104
 .PLOTNV 118
 .plotnc M1(d)
-.dcsweep Vin [0,3] 0.01
+.plotnc M2(d)
+
+.dc
 ```
 
 ##### 电路图
 
-<img src="picture\invertbuffer.png" alt="反相器" style="zoom:50%;" />
+<img src="picture/invertbuffer.png" alt="电路图" style="height:220px;" />
 
-##### 运行结果
+##### 项目测试结果 & hspice仿真结果
 
-<img src="picture\invertbuffer_M1_d.png" alt="转移特性" style="zoom:50%;" />
+| 测试项目     | 项目测试结果       | hspice仿真结果 | 
+|----------|--------------|------------|
+| 104 节点电压 | 2.4902V      | 2.5131V    |
+| 118 节点电压 | 2.4902V      | 2.5131V    |
+| M1  元件电流 | 6.4902e-05A  | 64.9679uA  |
+| M2  元件电流 | -6.4902e-05A | -64.9679uA |
 
-<img src="picture\invertbuffer_118.png" alt="转移特性" style="zoom:50%;" />
+#### DC测试用例4 `AmplifierDC.sp`
 
-#### DC测试用例4`diftest.sp`
+本测试用例为郑志宇同学提供
 
-测试文件由林与正同学提供
-
-##### 测试网表
+##### 网表文件
 
 ```css
-* A test circuit 
+* Amplifier
+VDD 9 0 DC 3
+Vin 10 0 DC 1
 
-VDD 101 1 DC 3
+Rin 10 11 100
+
+Rout 16 0 1000
+
+Vb1 12 0 DC 1
+
+M1   13 13 9 p 30e-6 0.35e-6 1
+M2   16 12 13 p 60e-6 0.35e-6 1
+M3   16 12 14 n 20e-6 0.35e-6 2
+M4   14 11 0  n 10e-6 0.35e-6 2
+
+.MODEL 1 VT -0.5 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+.MODEL 2 VT 0.5 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+
+.plotnv 12
+.plotnv 16
+.plotnc Rout(+)
+.plotnc M3(d)
+
+.dc
+```
+
+##### 电路图
+
+<img src="picture/Amplifier.png" alt="电路图" style="height:300px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+| 测试项目         | 项目测试结果      | hspice仿真结果 | 
+|--------------|-------------|------------|
+| 12 节点电压      | 1V          | 1.0000V    |
+| 16 节点电压      | 0.02267V    | 22.7090mV  |
+| Rout(+) 元件电流 | 2.267e-05A  | 22.7090uA  |
+| M3 元件电流      | 9.4961e-07A | 910.9894nA |
+
+##### 误差分析
+
+本例虽为类似共源共珊的放大器结构，但由于上部负载的pmos管均工作在深线性区，因此放大系数很小。同时，M3管受到衬偏效应影响,电流与项目测试结果有较大差距，而且由于M3管工作在线性区，衬偏效应对其d端电压影响也更大。查阅文件，此时N管的GAMMA=6.07，将其减小为0.3，重新测试，此时Id3= 947.4308nA，V16 = 22.6726mV，均与测试结果更为接近。
+
+#### DC测试用例5 `diftestDC.sp`
+
+本测试用例为林与正同学提供
+
+##### 网表文件
+
+```css
+*Diftest
+
+VDD 101 0 DC 2
 Vb 111 0 DC 1
-Rload1 104 0 10
-Rload2 105 0 10
+Rload1 104 0 1e5
+Rload2 105 0 5
 
 * mosfet
 M1 102 112 121 n 30e-6 .5e-6 2
 M2 103 112 121 n 30e-6 .5e-6 1
-M3 102 111 101 p 90e-6 .5e-6 4
-M4 103 111 101 p 90e-6 .5e-6 3
+M3 102 111 101 p 30e-6 .5e-6 4
+M4 103 111 101 p 30e-6 .5e-6 3
 
 * diode 
 D1 104 102 1
 D2 103 105 1
 
 * input 
-VIN 112 0 1
-Iref 121 0 0.001
+VIN 112 0 DC 1.5
+Iref 121 0 DC 0.001
 
-RSS 121 0 100
+RSS 121 0 1e5
 
 * level 1 models
 .MODEL 1 VT 0.5 MU 3e-2 COX 6e-3 LAMBDA 0.05 CJ0 4.0e-14
@@ -858,32 +1023,254 @@ RSS 121 0 100
 .MODEL 4 VT -0.3 MU 1e-2 COX 6e-3 LAMBDA 0.05 CJ0 4.0e-14
 
 * diode models
-.DIODE 1 IS 1e-3
+.DIODE 1 Is 1e-5
 
-.plotnv  102
-.plotnv  103 
-.plotnv  104
-.plotnv  105
-.plotnv  121
-.plotnc  D1(+)
-.plotnc  M4(d)
-.end
+.plotnv 102
+.plotnv 103 
+.plotnv 104
+.plotnv 105
+.plotnv 121
+.plotnc D1(+)
+.plotnc D2(+)
+.plotnc M4(d)
+.plotnc M2(d)
+.plotnc M1(d)
+.plotnc M3(d)
+.plotnc Rload2(+)
+.plotnc RSS(+)
+.plotnc Iref(+)
+
+.dc
+
 ```
 
 ##### 电路图
 
-<img src="picture\diftest.png" style="zoom:50%;" />
+<img src="picture/diftest.png" alt="电路图" style="height:300px;" />
 
-##### 运行结果
+##### 项目测试结果 & hspice仿真结果
 
-<img src="picture\diftest_M1(d).png" style="zoom:50%;" />
+| 测试项目            | 项目测试结果       | hspice仿真结果  | 
+|-----------------|--------------|-------------|
+| 102 节点电压        | 0.18108V     | 180.1583mV  |
+| 103 节点电压        | 0.10141V     | 100.7527mV  |
+| 104 节点电压        | 0.17607V     | 175.2094mV  |
+| 105 节点电压        | 0.002261V    | 2.2614mV    |
+| 121 节点电压        | 0.097246V    | 96.5883mV   |
+| D1  元件电流        | -1.7607e-06A | -1.7521uA   |
+| D2  元件电流        | 0.0004522A   | 452.2701uA  |
+| M1  元件电流        | 0.00096045V  | 960.5029uA  |
+| M2  元件电流        | 4.0519e-05V  | 40.4630uA   |
+| M3  元件电流        | -0.00096221V | -962.2550uA |
+| M4  元件电流        | -0.00049272V | -492.7331uA |
+| Rload2(+)  元件电流 | 0.0004522A   | 452.2701uA  |
+| RSS(+)  元件电流    | 9.7246e-07A  | 965.8828nA  |
+| Iref(+)  元件电流   | 0.001A       | 1.0000mA    |
 
-<img src="picture\diftest_D1(+).png" style="zoom:50%;" />
+### `.dcsweep`测试用例
 
-<img src="picture\diftest_Node_102.png" style="zoom:50%;" />
+#### DCsweep测试用例1 `bufferSweep.sp`
 
-<img src="picture\diftest_Node_103.png" style="zoom:50%;" />
+本用例电路图同 “DC测试用例1” 扫描条件为：
+
+`.dcsweep Vin [0,3] 0.01`
+
+##### 项目测试结果 & hspice仿真结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_102.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_102_hspice.png" alt="转移特性" style="height:210px;" />
+
+`107节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_107.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_107_hspice.png" alt="转移特性" style="height:210px;" />
+
+`118节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_118.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_118_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过M1管电流`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_M1.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_M1_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过M3管电流`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_M3.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_M3_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过R3电阻电流`：
+
+* 项目测试结果：
+
+<img src="picture\buffer_R3.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\buffer_R3_hspice.png" alt="转移特性" style="height:210px;" />
+
+结果基本符合预期，DC扫描的结果验证正确。R3上为开路，其电流主要为计算产生的噪声，因此分布与hspice结果不完全相同，但数量级一致，对正确性几乎没有影响
+
+#### DCsweep测试用例2 `invertbufferSweep.sp`
+
+本用例电路图同 “DC测试用例3” 扫描条件为：
+
+`.dcsweep Vin [0,3] 0.01`
+
+##### 项目测试结果 & hspice仿真结果
+
+`118节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\invertbuffer_118.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\invertbuffer_118_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过M1电流`：
+
+* 项目测试结果：
+
+<img src="picture\invertbuffer_M1.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\invertbuffer_M1_hspice.png" alt="转移特性" style="height:210px;" />
+
+##### 误差分析
+结果基本符合预期，DC扫描的结果验证正确。
+
+#### DCsweep测试用例3 `AmplifierSweep.sp`
+
+本用例电路图同 “DC测试用例4” 扫描条件为：
+
+`.dcsweep Vin [0,3] 0.01`
+
+##### 项目测试结果 & hspice仿真结果
+
+`16节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\Amplifier_16.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\Amplifier_16_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过M3电流`：
+
+* 项目测试结果：
+
+<img src="picture\Amplifier_M3.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\Amplifier_M3_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过Rout电流`：
+
+* 项目测试结果：
+
+<img src="picture\Amplifier_Rout.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\Amplifier_Rout_hspice.png" alt="转移特性" style="height:210px;" />
+
+#### DCsweep测试用例4 `diftestSweep.sp`
+
+本用例电路图同 “DC测试用例5” 扫描条件为：
+
+`.dcsweep VIN [1,2] 0.01`
+
+##### 项目测试结果 & hspice仿真结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftest_102.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftest_102_hspice.png" alt="转移特性" style="height:210px;" />
+
+`105节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftest_105.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftest_105_hspice.png" alt="转移特性" style="height:210px;" />
+
+`121节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftest_121.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftest_121_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过D1元件电流`：
+
+* 项目测试结果：
+
+<img src="picture\diftest_D1.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftest_D1_hspice.png" alt="转移特性" style="height:210px;" />
+
+`通过M1元件电流`：
+
+* 项目测试结果：
+
+<img src="picture\diftest_M1.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftest_M1_hspice.png" alt="转移特性" style="height:210px;" />
+
+结果基本符合预期，DC扫描的结果验证正确。
 
 ## 结束语
 
-要注意，我们的项目的仿真工具实现的只是一个较为简单的功能，部分地方细节并不完善，考虑也有欠妥的地方，还有不少改善空间。巴拉巴拉
+综上所述，第一部分dc分析功能均已实现。同时通过与hspice标准结果对比可以发现，模型缺陷主要存在于对衬偏效应、短沟道效应等mos器件二级效应的忽视。进一步可以从模型准确性和计算速度的角度进行优化。
+
+
+

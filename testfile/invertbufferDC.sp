@@ -1,4 +1,5 @@
 * invertbuffer
+
 VDD 103 0 DC 3
 Vin 101 0 DC 1.5
 Rin 101 107 10
@@ -21,4 +22,5 @@ C3 118 0 1e-12
 .PLOTNV 118
 .plotnc M1(d)
 .plotnc M2(d)
-.dcsweep Vin [0,3] 0.01
+
+.dc

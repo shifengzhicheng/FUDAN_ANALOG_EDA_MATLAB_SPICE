@@ -1,4 +1,4 @@
-* non-inverting buffer
+* buffer
 VDD 103 0 DC 3
 Vin 101 0 SIN 1.5 2 10e6 0
 Rin 101 102 10
