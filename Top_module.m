@@ -9,11 +9,6 @@ filename = 'testfile\bufferDC.sp';
     DIODEINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename);
 
-%% 生成DC线性网表
-
-[LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
-
 %% LinerNet
 % Name cell,'Name'
 % N1 double
@@ -42,6 +37,8 @@ filename = 'testfile\bufferDC.sp';
 %% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
+        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         Error = 1e-6;
         DeviceName = SPICEOperation{1}{2};
         range = eval(SPICEOperation{1}{3});
@@ -53,21 +50,39 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(InData,Res(i,:));
             title(Obj{i});
+            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
-    case '.hb'
+    case '.ac'
         % 这里进入AC分析
+        % 首先进行一次DC分析求出电路的解
+        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        Error = 1e-6;
+        % 到这里需要DC电路网表
+        [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
+        DCres('x')=[0;DCres('x')];
+        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+            generate_ACnetlist(LinerNet,MOSINFO,DIODEINFO,Node_Map,DCRes,w0);
+        [Obj,t,transRes] = AC();
         % 需要时间步长，AC频率
     case '.trans'
         % 设置判断解收敛的标识
         Error = 1e-6;
-        timestep = 1e-3;
+        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+            generate_Transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长
-        x=caculateDC(DCnetlist,Error);
-        plotnv=portMapping(PLOT);
-        [timeseries,Values]=trans(plotnv,x,transnetlist);
-        plot(timeseries,Values);
+        timestep = 1e-3;
+        [Obj,t,transRes]=Trans();
+        for i=1:size(Obj,1)
+            figure('Name',Obj{i})
+            plot(InData,transRes(i,:));
+            title(Obj{i});
+            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+        end
     case '.dc'
+        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);

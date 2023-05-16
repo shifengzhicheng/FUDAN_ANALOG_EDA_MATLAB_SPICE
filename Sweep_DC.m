@@ -41,12 +41,12 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
     ObjNum = ncNum + nvNum;
     Obj = cell(ObjNum, 1);   
     for i=1 : nvNum
-     Obj(i) = {['Node_Voltage: ' num2str(Node_Map(plotnv(i)))]};
+     Obj(i) = {['Node_' num2str(Node_Map(plotnv(i)))]};
     end
     for j = i + 1 : ObjNum
       dname = plotCurrent{j-i}{1};
       plotport = plotCurrent{j-i}{2};
-      Obj(j) = {[dname '_Current: ' num2str(plotport) ' Value: ']};
+      Obj(j) = {[dname '(' num2str(plotport) ')']};
     end
     %扫描的器件值
     InData = (start : step : stop);
