@@ -3,8 +3,6 @@
 function [LinerNet,MOSINFO,DIODEINFO,LCINFO,SinINFO,Node_Map]=...
     Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
 
-display(SourceINFO);
-
 %% 初始化变量
 % 器件名称
 RLCName = RCLINFO('Name');
@@ -40,7 +38,7 @@ DiodeID = str2double(DIODEINFO('ID'));
 DiodeMODEL = cell2mat(DIODEINFO('MODEL'));
 
 % 输出结果
-Length =  length(RLCName) + length(SourceName) + length(MOSName)*3 + length(DiodeName)*2;  % MOS的线性化模型有3个器件
+Length =  1;  % 初始长度不确定，因为不知道有多少个LC，但matlab里面好像cell和向量都可以动态延长，初始值不是很重要
 Name = cell(1,Length);
 N1 = zeros(1,Length);
 N2 = zeros(1,Length);
@@ -273,7 +271,7 @@ for i=1:length(SourceName)
         Name{kl} = SourceName{i};
         N1(kl) = Node1;
         N2(kl) = Node2;
-        Value(kl) = SourceDcValue(i);
+        Value(kl) = Sin_Calculator(SourceDcValue(i),SourceAcValue(i),SourceFreq(i),0,SourcePhase(i));
     end
 end
 
