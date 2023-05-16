@@ -6,7 +6,9 @@ function [RCLINFO,SourceINFO,MOSINFO,...
     =parse_netlist(filename)
 %% 读取网表文件
 fid = fopen(filename, 'r');
-Count=0;
+CountR=0;
+CountC=0;
+CountL=0;
 MCount=0;
 DCount=0;
 SourceCount=0;
@@ -15,11 +17,19 @@ DIODEMODELCount=0;
 PlotCount=0;
 OperationCount=0;
 %% 数据初始化
-RLCName=cell(0);
+RName=cell(0);
+RN1=cell(0);
+RN2=cell(0);
+RValue=cell(0);
+CName=cell(0);
+CN1=cell(0);
+CN2=cell(0);
+CValue=cell(0);
+LName=cell(0);
+LN1=cell(0);
+LN2=cell(0);
+LValue=cell(0);
 SourceName=cell(0);
-RLCN1=cell(0);
-RLCN2=cell(0);
-RLCValue=cell(0);
 SourceN1=cell(0);
 SourceN2=cell(0);
 Sourcetype=cell(0);
@@ -55,16 +65,24 @@ while ~feof(fid)
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
-    tokens_Operation = regexp(line, '^[(\.hb)(\.trans)(\.dc)(\.dcsweep)]', 'tokens', 'ignorecase');
+    tokens_Operation = regexp(line, '^[(\.ac)(\.trans)(\.dc)(\.dcsweep)]', 'tokens', 'ignorecase');
     if ~isempty(tokens_Device)
         % 提取关键字符
         keyword = tokens_Device{1}{1}(1);
         Device = strsplit(strtrim(line));
         switch keyword
-            case {'R','L','C'}
-                % RLC处理
-                Count = Count + 1;
-                [RLCName{Count},RLCN1{Count},RLCN2{Count},RLCValue{Count}]=Device{:};
+            case 'R'
+                % R处理
+                CountR = CountR + 1;
+                [RName{CountR},RN1{CountR},RN2{CountR},RValue{CountR}]=Device{:};
+            case 'C'
+                % C处理
+                CountC = CountC + 1;
+                [CName{CountC},CN1{CountC},CN2{CountC},CValue{CountC}]=Device{:};
+            case 'L'
+                % L处理
+                CountL = CountL + 1;
+                [LName{CountL},LN1{CountL},LN2{CountL},LValue{CountL}]=Device{:};
             case {'V','I'}
                 % 直流交流源处理
                 SourceCount = SourceCount + 1;
@@ -127,8 +145,13 @@ while ~feof(fid)
     end
 end
 
-RCLINFO=containers.Map({'Name','N1','N2','Value'},...
-    {RLCName,RLCN1,RLCN2,RLCValue});
+RINFO=containers.Map({'Name','N1','N2','Value'},...
+    {RName,RN1,RN2,RValue});
+CINFO=containers.Map({'Name','N1','N2','Value'},...
+    {CName,CN1,CN2,CValue});
+LINFO=containers.Map({'Name','N1','N2','Value'},...
+    {LName,LN1,LN2,LValue});
+RCLINFO=containers.Map({'RINFO','CINFO','LINFO'},{RINFO,CINFO,LINFO});
 SourceINFO=containers.Map({'Name','N1','N2',...
     'type','DcValue','AcValue',...
     'Freq','Phase'},...
@@ -141,6 +164,6 @@ MOSINFO=containers.Map({'Name','d','g','s',...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
     {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
-RCLINFO = newRCLINFO(RCLINFO,MOSINFO);
+RCLINFO('CINFO') = newRCLINFO(RCLINFO('CINFO'),MOSINFO);
 % 关闭文件
 fclose(fid);

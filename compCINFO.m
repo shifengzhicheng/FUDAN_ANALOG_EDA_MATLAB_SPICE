@@ -1,5 +1,5 @@
 %% 函数完成将MOS的信息提取出来并贴入寄生电容的功能
-function transRes =  newRCLINFO(RCLINFO, MOSINFO)
+function transRes =  compCINFO(CINFO, MOSINFO)
 %NO MOS DGS INFO
 MOSD = MOSINFO("d");
 MOSG = MOSINFO("g"); 
@@ -40,9 +40,9 @@ for i = 1 : MOSNum
     N2C(4 * i) = {[num2str(0)]};
     %Not include s=0 situation
 end
-RCLINFO('Name') = [RCLINFO('Name'), NameC];
-RCLINFO('Value') = [RCLINFO('Value'), ValuesC];
-RCLINFO('N1') = [RCLINFO('N1'), N1C];
-RCLINFO('N2') = [RCLINFO('N2'), N2C];
-transRes = RCLINFO;
+CINFO('Name') = [CINFO('Name'), NameC];
+CINFO('Value') = [CINFO('Value'), ValuesC];
+CINFO('N1') = [CINFO('N1'), N1C];
+CINFO('N2') = [CINFO('N2'), N2C];
+transRes = CINFO;
 end
