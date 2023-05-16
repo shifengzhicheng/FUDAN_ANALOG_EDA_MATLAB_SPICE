@@ -62,8 +62,8 @@ switch lower(SPICEOperation{1}{1})
         [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
         DCres('x')=[0;DCres('x')];
         [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-            generate_ACnetlist(LinerNet,MOSINFO,DIODEINFO,Node_Map,DCRes,w0);
-        [Obj,t,transRes] = AC();
+            Generate_ACnetlist(LinerNet,MOSINFO,DIODEINFO,Node_Map,DCRes,w0);
+        [Obj,t,transRes] = AC_sweep(LinerNet,MOSINFO,DIODEINFO,Node_Map);
         % 需要时间步长，AC频率
     case '.trans'
         % 设置判断解收敛的标识

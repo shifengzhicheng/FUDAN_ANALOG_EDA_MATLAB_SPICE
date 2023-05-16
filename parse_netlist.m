@@ -141,5 +141,6 @@ MOSINFO=containers.Map({'Name','d','g','s',...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
     {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
+RCLINFO = newRCLINFO(RCLINFO,MOSINFO);
 % 关闭文件
 fclose(fid);
