@@ -15,10 +15,10 @@ dependence = LinerNet('dependence');
 Value = LinerNet('Value');
 
 %% AC信息
-ACMode = SweepInfo{2};
-ACPoint = SweepInfo{3};
-fstart = SweepInfo{4};
-fstop = SweepInfo{5};
+ACMode = SweepInfo{1};
+ACPoint = SweepInfo{2};
+fstart = SweepInfo{3};
+fstop = SweepInfo{4};
 
 %要打印的序号值或者器件类型加端口名
 [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
@@ -42,31 +42,43 @@ end
 freq = [];
 switch lower(ACMode)
     case 'dec'
-        sampNum = log10(fstop/fstart);
-        freq = logspace(fstart,fstop,sampNum);
+        start=log10(fstart);
+        stop=log10(fstop);
+        sampNum = (stop-start)*ACPoint;
+        freq = logspace(start,stop,sampNum);
     case 'lin'
-        freq = linerspace(fstart,fstop,ACPoint);
+        freq = linspace(fstart,fstop,ACPoint);
 end
 
 %% 这一步进行AC的扫描
-length = size(freq,1);
-[A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
+length = size(freq,2);
 Lline = LINFO('LLine');
+LValue=LINFO('Value');
+LName = LINFO('Name');
 Cline = CINFO('CLine');
-Cnum = Lline - Cline;
-Lnum = size(A,1) - Lline + 1;
-Res = zeros(size(A,1),length);
+CValue=CINFO('Value');
+CName = CINFO('Name');
+Name = [Name,CName,LName];
+[A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
+
+Cnum = size(CName,2);
+Lnum = size(LName,2);
+Res = zeros(size(b,1)+1,length);
 for i = 1:length
-    Af=Gen_NextACmatrix(N1,N2,Value,Cline,Cnum,Lline,Lnum,A,freq);
-    Res(i) = [0,b\Af];
+    Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq(i));
+    Res(:,i) = [0;(b\Af)'];
 end
 
 %% 这一步计算结果
 Gain = zeros(size(Obj,1),length);
 Phase = zeros(size(Obj,1),length);
 for i = 1:length
-    Gain(j:nvNum,i) = abs(Res(plotnv));
-    Phase(j:nvNum,i) = angle(Res(plotnv));
-    Gain(nvNum + 1: ncNum,i) = abs(getCurrent(Device,Node_Map,LinerNet,x,Res));
-    Phase(nvNum + 1: ncNum,i) = angle(getCurrent(Device,Node_Map,LinerNet,x,Res));
+    for j = 1:nvNum
+        Gain(j,i) = abs(Res(plotnv(j)));
+        Phase(j,i) = angle(Res(plotnv(j)));
+    end
+    for j = nvNum+1:nvNum + ncNum
+        Gain(j,i) = abs(getCurrent(Device,Node_Map,LinerNet,x,Res));
+        Phase(j,i) = angle(getCurrent(Device,Node_Map,LinerNet,x,Res));
+    end
 end
