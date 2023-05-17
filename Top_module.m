@@ -70,6 +70,16 @@ switch lower(SPICEOperation{1}{1})
         ACinfo={ACsourceName,ACMode,ACPoint,fstart,fstop};
         [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,LCINFO,ACInfo,Node_Map,x_0);
         % 需要时间步长，AC频率
+        for i=1:size(Obj,1)
+            figure('Name',Obj{i})
+            plot(freq,Gain(i,:));
+            title(Obj{i});
+            saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+            figure('Name',Obj{i})
+            plot(freq,Gain(i,:));
+            title(Obj{i});
+            saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+        end
     case '.trans'
         % 设置判断解收敛的标识
         Error = 1e-6;

@@ -50,11 +50,14 @@ end
 
 %% 这一步进行AC的扫描
 length = size(freq,1);
-LCline = LCINFO('LCline');
 [A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
+Lline = LINFO('LLine');
+Cline = CINFO('CLine');
+Cnum = Lline - Cline;
+Lnum = size(A,1) - Lline + 1;
 Res = zeros(size(A,1),length);
 for i = 1:length
-    Af=Gen_NextACmatrix(Name,N1,N2,Value,LCline,A,freq);
+    Af=Gen_NextACmatrix(N1,N2,Value,Cline,Cnum,Lline,Lnum,A,freq);
     Res(i) = [0,b\Af];
 end
 
