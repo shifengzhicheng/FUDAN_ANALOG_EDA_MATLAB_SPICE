@@ -160,11 +160,11 @@ end
 CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
 
 %% 处理L
-% 记录C最后更改位置LLine
+% 记录L最后更改位置LLine
 LLine = kl+1;
 for t=1:length(LName)
-           Node1 = find(Node_Map==LN1(t));  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==LN2(t));  % 节点索引从0开始，∴要-1
+           Node1 = find(Node_Map==LN1(t))-1;  % 节点索引从0开始，∴要-1
+           Node2 = find(Node_Map==LN2(t))-1;  % 节点索引从0开始，∴要-1
            kl=kl+1;
            N1(kl) = Node1;
            N2(kl) = Node2;
