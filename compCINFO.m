@@ -1,9 +1,10 @@
 %% 函数完成将MOS的信息提取出来并贴入寄生电容的功能
 function transRes =  compCINFO(CINFO, MOSINFO)
 %NO MOS DGS INFO
-MOSD = MOSINFO("d");
-MOSG = MOSINFO("g"); 
-MOSS = MOSINFO("s");
+MOSD = MOSINFO('d');
+MOSG = MOSINFO('g'); 
+MOSS = MOSINFO('s');
+Name = MOSINFO('Name');
 % add MOS - C
 MOSW = str2double(MOSINFO('W'));
 MOSL = str2double(MOSINFO('L'));
@@ -22,10 +23,10 @@ ValuesC = cell(1, MOSNum * 4);
 N1C = cell(1, MOSNum * 4);
 N2C = cell(1, MOSNum * 4);
 for i = 1 : MOSNum
-    NameC(4 * i - 3) = {['Cgs' num2str(i)]};
-    NameC(4 * i - 2) = {['Cgd' num2str(i)]};
-    NameC(4 * i - 1) = {['Cd' num2str(i)]};
-    NameC(4 * i) = {['Cs' num2str(i)]};
+    NameC(4 * i - 3) = {['Cgs' Name(i)]};
+    NameC(4 * i - 2) = {['Cgd' Name(i)]};
+    NameC(4 * i - 1) = {['Cd' Name(i)]};
+    NameC(4 * i) = {['Cs' Name(i)]};
     ValuesC(4 * i - 3) = {[num2str(CgsSet(i))]};
     ValuesC(4 * i - 2) = {[num2str(CgdSet(i))]};
     ValuesC(4 * i - 1) = {[num2str(CdSet(i))]};
