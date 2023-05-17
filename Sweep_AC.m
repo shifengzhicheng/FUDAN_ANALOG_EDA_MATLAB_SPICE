@@ -2,7 +2,7 @@
 输入:
 输出:
 %}
-function [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,LCINFO,SweepInfo,Node_Map,PLOT)
+function [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,SweepInfo,Node_Map,PLOT)
 %% AC分析的目的是得到节点的幅频响应和相频响应，需要AC源以及节点来实现这个绘制
 % 整个AC过程只需要去计算矩阵的结果然后替换L、C的值即可
 %% 初始化变量

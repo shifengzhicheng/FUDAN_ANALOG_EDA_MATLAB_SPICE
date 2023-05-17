@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-filename = 'testfile\bufferDC.sp';
+filename = 'testfile\bufferAC.sp';
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,PLOT,SPICEOperation]...
@@ -61,14 +61,14 @@ switch lower(SPICEOperation{1}{1})
         % 到这里需要DC电路网表
         [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
         DCres('x')=[0;DCres('x')];
-        [LinerNet,LCINFO,ACsourceName]=...
+        [LinerNet,CINFO,LINFO]=...
             Generate_ACnetlist(LinerNet,SourceINFO,MOSINFO,DIODEINFO,DCRes,Node_Map,w0);
         ACMode = SPICEOperation{1}{2};
         ACPoint = str2double(SPICEOperation{1}{3});
         fstart = tranNumber(SPICEOperation{1}{4});
         fstop = tranNumber(SPICEOperation{1}{5});
         ACinfo={ACsourceName,ACMode,ACPoint,fstart,fstop};
-        [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,LCINFO,ACInfo,Node_Map,x_0);
+        [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,SweepInfo,Node_Map,PLOT);
         % 需要时间步长，AC频率
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
