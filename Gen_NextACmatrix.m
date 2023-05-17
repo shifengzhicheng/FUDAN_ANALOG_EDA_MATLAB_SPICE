@@ -1,5 +1,6 @@
-function Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq)
-Af = A;
+function Af=Gen_NextACmatrix(Name,N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq)
+Af=[zeros(size(A,1),1),A];
+Af=[zeros(1,size(A,1)+1);Af];
 for i=1:Cnum
     Index = Cline + i - 1;
     pNum1 = N1(Index) + 1;
@@ -25,4 +26,6 @@ for i = 1:Lnum
     Af(pNum2,pNum1)= Af(pNum2,pNum1)-1/cpValue;
     Af(pNum2,pNum2)= Af(pNum2,pNum2)+1/cpValue;
 end
+Af(1,:)=[];
+Af(:,1)=[];
 

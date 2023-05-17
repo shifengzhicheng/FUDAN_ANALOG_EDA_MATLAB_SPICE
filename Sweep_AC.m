@@ -29,7 +29,7 @@ ncNum = size(plotCurrent, 1);
 ObjNum = ncNum + nvNum;
 Obj = cell(ObjNum, 1);
 for i=1 : nvNum
-    Obj(i) = {['Node_' num2str(Node_Map(plotnv(i)))]};
+    Obj(i) = {['Node_' '{' num2str(Node_Map(plotnv(i))) '}']};
 end
 Device = cell(ncNum,1);
 for j = i + 1 : ObjNum
@@ -65,8 +65,8 @@ Cnum = size(CName,2);
 Lnum = size(LName,2);
 Res = zeros(size(b,1)+1,length);
 for i = 1:length
-    Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq(i));
-    Res(:,i) = [0;(b\Af)'];
+    Af=Gen_NextACmatrix(Name,N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq(i));
+    Res(:,i) = [0;Af\b];
 end
 
 %% 这一步计算结果
@@ -74,8 +74,8 @@ Gain = zeros(size(Obj,1),length);
 Phase = zeros(size(Obj,1),length);
 for i = 1:length
     for j = 1:nvNum
-        Gain(j,i) = abs(Res(plotnv(j)));
-        Phase(j,i) = angle(Res(plotnv(j)));
+        Gain(j,i) = abs(Res(plotnv(j),i));
+        Phase(j,i) = angle(Res(plotnv(j),i));
     end
     for j = nvNum+1:nvNum + ncNum
         Gain(j,i) = abs(getCurrent(Device,Node_Map,LinerNet,x,Res));

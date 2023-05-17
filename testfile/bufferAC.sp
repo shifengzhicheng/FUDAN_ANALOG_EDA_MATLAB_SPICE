@@ -1,6 +1,6 @@
 * non-inverting buffer
 VDD 103 0 DC 3
-Vin 101 0 AC 1.5 2 0
+Vin 101 0 ac 1.5 2 0
 Rin 101 102 10
 
 M1   107 102 103 p 30e-6 0.35e-6 1

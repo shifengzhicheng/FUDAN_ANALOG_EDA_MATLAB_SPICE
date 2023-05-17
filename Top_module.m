@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferAC';
+file='dbmixerAC';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -71,15 +71,20 @@ switch lower(SPICEOperation{1}{1})
         ACinfo={ACMode,ACPoint,fstart,fstop};
         [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,ACinfo,Node_Map,PLOT);
         % 需要时间步长，AC频率
+        switch lower(ACMode)
+            case 'dec'
+                freq = log10(freq);
+            case 'lin'
+        end
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(freq,Gain(i,:));
-            title(Obj{i});
-            saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+            title([Obj{i} 'Gain']);
+            % saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
-            plot(freq,Gain(i,:));
-            title(Obj{i});
-            saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+            plot(freq,Phase(i,:));
+            title([Obj{i} 'Phase']);
+            % saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识

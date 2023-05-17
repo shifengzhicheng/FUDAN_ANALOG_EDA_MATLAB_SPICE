@@ -80,50 +80,50 @@ for t=1:length(SourceName)
     N1(kl) = Node1;
     N2(kl) = Node2;
     if SourceType{t} == "ac"
-       Value(kl) = SourceAcValue(t) * exp(SourcePhase(t)/360*2*pi*1i);
+        Value(kl) = SourceAcValue(t) * exp(SourcePhase(t)/360*2*pi*1i);
     else
-       Value(kl) = 0;
+        Value(kl) = 0;
     end
 end
 
 %% 处理mos 根据直流工作点替换为交流小信号模型
 
 for t=1:length(MOSName)
-   Node1 = find(Node_Map==MOSN1(t))-1;
-   Node2 = find(Node_Map==MOSN2(t))-1;
-   Node3 = find(Node_Map==MOSN3(t))-1;
-   VD = x(Node1 + 1);
-   VG = x(Node2 + 1);
-   VS = x(Node3 + 1);
-   if MOStype{t} == 'n' && VD < VS || MOStype{t} == 'p' && VD > VS  %源漏互换
+    Node1 = find(Node_Map==MOSN1(t))-1;
+    Node2 = find(Node_Map==MOSN2(t))-1;
+    Node3 = find(Node_Map==MOSN3(t))-1;
+    VD = x(Node1 + 1);
+    VG = x(Node2 + 1);
+    VS = x(Node3 + 1);
+    if MOStype{t} == 'n' && VD < VS || MOStype{t} == 'p' && VD > VS  %源漏互换
         VDS = VS - VD;
         VGS = VG - VD;
         flag = -1;
-   else
+    else
         VDS = VD - VS;
         VGS = VG - VS;
         flag = 1;
-   end
-%    VDS
-%    VGS
-   [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
-%  [~,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
-   GMk =  GMk * flag;   
-   kl = kl+1;
-   Name{kl} = ['R',MOSName{t}];
-   N1(kl) = Node1;
-   N2(kl) = Node3;
-   Value(kl) = 1/GDSk;
-   kl = kl+1;
-   Name{kl} = ['G',MOSName{t}];
-   N1(kl) = Node1;
-   N2(kl) = Node3;
-   if(flag == -1)
-       dependence{kl} = [Node2,Node1];
-   else
-       dependence{kl} = [Node2,Node3];
-   end
-   Value(kl) = GMk;    
+    end
+    %    VDS
+    %    VGS
+    [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
+    %  [~,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
+    GMk =  GMk * flag;
+    kl = kl+1;
+    Name{kl} = ['R',MOSName{t}];
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    Value(kl) = 1/GDSk;
+    kl = kl+1;
+    Name{kl} = ['G',MOSName{t}];
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    if(flag == -1)
+        dependence{kl} = [Node2,Node1];
+    else
+        dependence{kl} = [Node2,Node3];
+    end
+    Value(kl) = GMk;
 end
 
 %% 处理Diode 根据直流工作点替换为交流小信号模型
@@ -149,12 +149,12 @@ end
 % 记录C最后更改位置CLine
 CLine = kl+1;
 for t=1:length(CName)
-           Node1 = find(Node_Map==CN1(t))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==CN2(t))-1;  % 节点索引从0开始，∴要-1
-           kl=kl+1;
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = 0;
+    Node1 = find(Node_Map==CN1(t))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==CN2(t))-1;  % 节点索引从0开始，∴要-1
+    kl=kl+1;
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = 0;
 end
 
 CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
@@ -163,12 +163,12 @@ CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
 % 记录L最后更改位置LLine
 LLine = kl+1;
 for t=1:length(LName)
-           Node1 = find(Node_Map==LN1(t))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==LN2(t))-1;  % 节点索引从0开始，∴要-1
-           kl=kl+1;
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = 0;
+    Node1 = find(Node_Map==LN1(t))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==LN2(t))-1;  % 节点索引从0开始，∴要-1
+    kl=kl+1;
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = 0;
 end
 
 LINFO = containers.Map({'Name','Value','LLine'},{LName, Larg, LLine});
