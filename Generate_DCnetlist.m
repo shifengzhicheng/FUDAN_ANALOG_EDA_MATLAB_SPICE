@@ -39,7 +39,7 @@ DiodeID = str2double(DIODEINFO('ID'));
 DiodeMODEL = cell2mat(DIODEINFO('MODEL'));
 
 % 输出结果
-Length =  length(RLCName) + length(SourceName) + length(MOSName)*3;  % MOS的线性化模型有3个器件
+Length =  1;  % MOS的线性化模型有3个器件
 Name = cell(1,Length);
 N1 = zeros(1,Length);
 N2 = zeros(1,Length);
