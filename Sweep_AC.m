@@ -32,10 +32,12 @@ for i=1 : nvNum
     Obj(i) = {['Node_' '{' num2str(Node_Map(plotnv(i))) '}']};
 end
 Device = cell(ncNum,1);
+port=cell(ncNum,1);
 for j = i + 1 : ObjNum
     dname = plotCurrent{j-i}{1};
-    Device(j-i) = dname;
+    Device{j-i} = dname;
     plotport = plotCurrent{j-i}{2};
+    port{j-i}=plotport;
     Obj(j) = {[dname '(' num2str(plotport) ')']};
 end
 %% 这一步生成采样的频率点
@@ -59,6 +61,8 @@ Cline = CINFO('CLine');
 CValue=CINFO('Value');
 CName = CINFO('Name');
 Name = [Name,CName,LName];
+LinerNet('Name')=Name;
+LinerNet('Value')=[Value(1:Cline-1),CValue,LValue];
 [A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
 
 Cnum = size(CName,2);
@@ -72,13 +76,13 @@ end
 %% 这一步计算结果
 Gain = zeros(size(Obj,1),length);
 Phase = zeros(size(Obj,1),length);
-for i = 1:length
-    for j = 1:nvNum
-        Gain(j,i) = abs(Res(plotnv(j),i));
-        Phase(j,i) = angle(Res(plotnv(j),i));
-    end
-    for j = nvNum+1:nvNum + ncNum
-        Gain(j,i) = abs(getCurrent(Device,Node_Map,LinerNet,x,Res));
-        Phase(j,i) = angle(getCurrent(Device,Node_Map,LinerNet,x,Res));
-    end
+for j = 1:nvNum
+    Voltage=Res(plotnv(j),:);
+    Gain(j,:) = abs(Voltage);
+    Phase(j,:) = angle(Voltage);
+end
+for j = nvNum+1:nvNum + ncNum
+    Current=getCurrent(Device{j-nvNum},port{j-nvNum},LinerNet,x,Res,freq);
+    Gain(j,:) = abs(Current);
+    Phase(j,:) = angle(Current);
 end
