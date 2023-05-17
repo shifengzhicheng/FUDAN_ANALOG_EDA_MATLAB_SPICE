@@ -80,11 +80,11 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(freq,Gain(i,:));
             title([Obj{i} 'Gain']);
-            % saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+            saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,Phase(i,:));
             title([Obj{i} 'Phase']);
-            % saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+            saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识
