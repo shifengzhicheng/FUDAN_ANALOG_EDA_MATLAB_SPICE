@@ -1,18 +1,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [LinerNet,LCINFO]=...
-    Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map,Freq_Init)
+function [LinerNet,CINFO,LINFO]=...
+    Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map)
 
 %% 初始化变量
+%RCL 拆开
+RINFO = RCLINFO('RINFO');
+CINFO = RCLINFO('CINFO');
+LINFO = RCLINFO('LINFO');
+
 % 器件名称
-RLCName = RCLINFO('Name');
+RName = RINFO('Name');
+CName = CINFO('Name');
+LName = LINFO('Name');
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
 
 % 节点序号
-RLCN1 = str2double(RCLINFO('N1'));
-RLCN2 = str2double(RCLINFO('N2'));
+RN1 = str2double(RINFO('N1'));
+RN2 = str2double(RINFO('N2'));
+CN1 = str2double(CINFO('N1'));
+CN2 = str2double(CINFO('N2'));
+LN1 = str2double(LINFO('N1'));
+LN2 = str2double(LINFO('N2'));
 SourceN1 = str2double(SourceINFO('N1'));
 SourceN2 = str2double(SourceINFO('N2'));
 MOSN1 = str2double(MOSINFO('d'));
@@ -22,7 +33,9 @@ DiodeN1 = str2double(DIODEINFO('N1'));
 DiodeN2 = str2double(DIODEINFO('N2'));
 
 %其他所需变量
-RLCarg = str2double(RCLINFO('Value'));
+Rarg = str2double(RINFO('Value'));
+Carg = str2double(CINFO('Value'));
+Larg = str2double(LINFO('Value'));
 MOStype = MOSINFO('type');
 MOSW = str2double(MOSINFO('W'));
 MOSL = str2double(MOSINFO('L'));
@@ -48,18 +61,14 @@ Value = zeros(1,Length);
 kl = 0; %遍历变量
 
 %% 处理R 不变
-NR = 0; %记录RLC中R数目
-for t=1:length(RLCName)
-   if RLCName{t}(1) == 'R'
-           Node1 = find(Node_Map==RLCN1(t))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(t))-1;  % 节点索引从0开始，∴要-1
-           kl=kl+1;
-           Name{kl} = RLCName{t};
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = RLCarg(t);
-           NR = NR+1;
-   end
+for t=1:length(RName)
+    Node1 = find(Node_Map==RN1(t))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==RN2(t))-1;  % 节点索引从0开始，∴要-1
+    kl=kl+1;
+    Name{kl} = RName{t};
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = Rarg(t);
 end
 
 %% 处理Source 仅保留ac值
@@ -136,40 +145,35 @@ for t=1:length(DiodeName)
     Value(kl) = 1/Gdk;
 end
 
-%% 处理LC
-% 记录LC最后更改位置LCLine
-LCLine = kl+1;
-NLC = length(RLCName) - NR;
-LCName = cell(1,NLC);
-LCValue = zeros(1,NLC);
-ncl=0;
-for t=1:length(RLCName)
-   if RLCName{t}(1) == 'L'
-           Node1 = find(Node_Map==RLCN1(t))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(t))-1;  % 节点索引从0开始，∴要-1
-           ncl = ncl+1;
-           LCName{ncl} = RLCName{t};
-           LCValue(ncl) = RLCarg(t);
+%% 处理C
+% 记录C最后更改位置CLine
+CLine = kl+1;
+for t=1:length(CName)
+           Node1 = find(Node_Map==CN1(t))-1;  % 节点索引从0开始，∴要-1
+           Node2 = find(Node_Map==CN2(t))-1;  % 节点索引从0开始，∴要-1
            kl=kl+1;
-           Name{kl} = ['R',RLCName{t}];         %RL……形式
+           Name{kl} = ['R',CName{t}];         %RL……形式
            N1(kl) = Node1;
            N2(kl) = Node2;
-           Value(kl) = Freq_Init*2*pi*RLCarg(t)*1i;
-   elseif RLCName{t}(1) == 'C'
-           Node1 = find(Node_Map==RLCN1(t))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(t))-1;  % 节点索引从0开始，∴要-1
-           ncl = ncl+1;
-           LCName{ncl} = RLCName{t};
-           LCValue(ncl) = RLCarg(t);
-           kl=kl+1;
-           Name{kl} = ['R',RLCName{t}];         %RC……形式
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = 1/(Freq_Init*2*pi*RLCarg(t)*1i);
-   end
+           Value(kl) = 0;
 end
 
-LCINFO = containers.Map({'Name','Value','LCLine'},{LCName, LCValue, LCLine});
+CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
+
+%% 处理L
+% 记录C最后更改位置LLine
+LLine = kl+1;
+for t=1:length(CName)
+           Node1 = find(Node_Map==LN1(t))-1;  % 节点索引从0开始，∴要-1
+           Node2 = find(Node_Map==LN2(t))-1;  % 节点索引从0开始，∴要-1
+           kl=kl+1;
+           Name{kl} = ['R',CName{t}];         %RL……形式
+           N1(kl) = Node1;
+           N2(kl) = Node2;
+           Value(kl) = 0;
+end
+
+LINFO = containers.Map({'Name','Value','LLine'},{LName, Larg, LLine});
 
 %% 打包输出
 LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});

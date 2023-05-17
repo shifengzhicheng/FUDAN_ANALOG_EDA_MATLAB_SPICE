@@ -4,15 +4,20 @@ function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
     Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
 
 %% 初始化变量
+%RCL 拆开
+RINFO = RCLINFO('RINFO');
+CINFO = RCLINFO('CINFO');
+LINFO = RCLINFO('LINFO');
+
 % 器件名称
-RLCName = RCLINFO('Name');
+RLCName = [RINFO('Name'),CINFO('Name'),LINFO('Name')];
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
 
 % 节点序号
-RLCN1 = str2double(RCLINFO('N1'));
-RLCN2 = str2double(RCLINFO('N2'));
+RLCN1 = str2double([RINFO('N1'),CINFO('N1'),LINFO('N1')]);
+RLCN2 = str2double([RINFO('N2'),CINFO('N2'),LINFO('N2')]);
 SourceN1 = str2double(SourceINFO('N1'));
 SourceN2 = str2double(SourceINFO('N2'));
 MOSN1 = str2double(MOSINFO('d'));
@@ -23,7 +28,7 @@ DiodeN2 = str2double(DIODEINFO('N2'));
 
 %其他所需变量
 SourceDcValue = str2double(SourceINFO('DcValue'));
-RLCarg = str2double(RCLINFO('Value'));
+RLCarg = str2double([RINFO('Value'),CINFO('Value'),LINFO('Value')]);
 MOStype = MOSINFO('type');
 MOSW = str2double(MOSINFO('W'));
 MOSL = str2double(MOSINFO('L'));
