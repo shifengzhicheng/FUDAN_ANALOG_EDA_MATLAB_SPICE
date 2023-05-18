@@ -1,6 +1,8 @@
 %{
 输入:
+线性网表，C，L，扫描参数，节点映射的结果，绘图信息
 输出:
+绘图所需参数，包括绘制对象，频率坐标轴，增益以及相位
 %}
 function [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,SweepInfo,Node_Map,PLOT)
 %% AC分析的目的是得到节点的幅频响应和相频响应，需要AC源以及节点来实现这个绘制
@@ -59,9 +61,9 @@ LName = LINFO('Name');
 Cline = CINFO('CLine');
 CValue=CINFO('Value');
 CName = CINFO('Name');
+LinerNet('Value')=[Value(1:size(Name,2)),CValue,LValue];
 Name = [Name,CName,LName];
 LinerNet('Name')=Name;
-LinerNet('Value')=[Value(1:Cline-1),CValue,LValue];
 [A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
 
 Cnum = size(CName,2);

@@ -1,6 +1,6 @@
 * non-inverting buffer
 VDD 103 0 DC 3
-Vin 101 0 ac 1.5 1 90
+Vin 101 0 ac 1.5 1e-3 90
 Rin 101 102 10
 
 M1   107 102 103 p 30e-6 0.35e-6 1
@@ -20,8 +20,9 @@ C3 118 0 1e-12
 .MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
 
 .PLOTNV 118
-.PLOTNC M1(g)
-.PLOTNC M1(d)
-.PLOTNC M1(s)
+.PLOTNC C3(+)
+.PLOTNC C1(+)
+.PLOTNC L1(+)
+.plotnc L2(+)
 
-.ac DEC 10 1k 10000000000MEG
+.ac DEC 10 10 1e12MEG

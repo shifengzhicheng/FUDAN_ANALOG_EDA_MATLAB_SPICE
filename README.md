@@ -71,7 +71,9 @@
 
      > 输入示例：
      >
-     > `.ac DEC 10 1K 1000MEG`
+     > 输入支持科学计数法
+     >
+     > `.ac DEC 10 1K 1e15MEG`
      >
      > `.ac LIN 100 1K 100HZ`
 
@@ -83,7 +85,7 @@
 
    - `.plotnv node `，可以得到节点的电压
 
-     > 输入示例：显示节点的电流
+     > 输入示例：显示节点的电压值
      >
      > `.plotnv 108 `
      >
@@ -116,7 +118,7 @@
 
 电路网表文件是一个文本文件，格式如下：
 
-要求，文件中`D, M, R, V, C, L, .`都是关键字，在给电阻电容电感命名的时候最好不要使用，避免被错误索引
+要求，文件中`D, M, R, V, C, L, .`等都是关键字，而且需要尽量避免器件之间的名字出现相互包含的情况，避免被错误识别
 
 ```css
 * non-inverting buffer
@@ -168,6 +170,8 @@ C3 118 0 1e-12
 ##### 工作文件夹
 ├── Top_module.m
 ├── parse_netlist.m
+│   ├── compCINFO.m
+│   └── tranNumber.m
 ├── Generate_DCnetlist.m
 │   ├── Gen_NodeInfo.m
 │   ├── Gen_DeviceInfo.m
@@ -175,11 +179,15 @@ C3 118 0 1e-12
 │   ├── Mos_Calculator.m
 │   └── Diode_Calculator.m
 ├── CalculateDC.m
-│   ├──Gen_nextRes.m
-│   │   ├──Mos_Calculator.m
-│   │   ├──Diode_Calculator.m
-│   ├──Gen_baseA.m
-│   └──Gen_nextA.m
+│   ├── Gen_nextRes.m
+│   │   ├── Mos_Calculator.m
+│   │   ├── Diode_Calculator.m
+│   ├── Gen_baseA.m
+│   └── Gen_nextA.m
+├── Sweep_AC.m
+│   ├── Gen_ACmatrix.m
+│   ├── Gen_NextACmatrix.m
+│   └── getCurrent.m
 ├── Sweep_DC.m
 ├── ValueCalc.m
 ├── portMapping.m
@@ -193,13 +201,13 @@ C3 118 0 1e-12
 
 ## 项目细节介绍
 
-#### 项目顶层文件与接口的定义
+### 项目顶层文件与接口的定义
 
 此部分由郑志宇同学维护，接口与功能与小组成员共同商议确定。最终实现了项目的并行推进与项目成员对函数的独立维护。
 
 ├── Top_module.m
 
-##### 顶层的实现
+#### 顶层的实现
 
 ```matlab
 %% 项目的顶层模块，用于实现整个项目的仿真流程
@@ -235,7 +243,7 @@ end
 
 ### Part 1 实现电路文件的读取与解析建立矩阵方程
 
-#### 电路文件的信息提取
+#### 电路文件的信息提取 -parse_netlist
 
 此功能由郑志宇同学完成
 
@@ -289,7 +297,7 @@ DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
 
 本部分使用了哈希表来装参数作为接口在函数中传递，加快了运行的速度，提高运行效率。文件主要使用正则表达式在文件中提取和匹配有效的信息并将有效信息打包给其他环节进行处理。这一部分在项目的开始阶段进行，为项目的实现搭建了一个整体的框架，同时定义了输入与输出的接口要求，以便于团队合作化工作以及推进。
 
-#### 节点映射
+#### 生成DC网表并完成节点映射 -Generate_DCnetlist
 此功能由朱瑞宸同学完成
 
 ├── Generate_DCnetlist.m
@@ -347,7 +355,7 @@ Node_Map double n*1
 
 同时，将提取到的所有节点信息储存为一个节点信息向量中，调用matlab的unique函数完成重复元素删除和由小到大排序。经此处理，除了地(0)之外，其余节点序号被映射为1~N，映射关系储存在向量Node_Map中。
 
-#### 电路初始解的生成
+#### 电路初始解的生成 -init_value
 此功能由张润洲同学完成
 
 在对非线性电路进行瞬态仿真或AC仿真前，一般需要先进行DC仿真。线性电路的DC分析可以直接通过求解矩阵方程得到结果，而非线性电路的DC分析等同于求解超越方程组，需要为程序提供一组各个待求变量的初始解，程序以这组初值为基础开始数值迭代运算。如果没有为非线性电路提供初始解，或初始解估计不准，则会导致DC分析的计算时间增加，甚至会解出不合适的解 (比如SRAM单元、环形振荡器等多稳态电路的DC分析)
@@ -410,7 +418,7 @@ x_0(i) = NodeInfo{i}.value;
 
    通过大量随机初始解可以测得几组可能的收敛解，从中选出合理的收敛解。这种方法得到也能得到更准确的DC分析结果，通过多次运行DC分析避免了对初始解的依赖，但多次运行DC算法复杂度高；同时还需要从多组解中人工选出合理的解，没有完全实现初始解的自动化给定
    
-#### 生成DC分析网表
+#### 生成DC分析网表 -Generate_DCnetlist
 此功能由朱瑞宸同学完成
 
 本部分功能为将所有器件按照dc分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的形式，从而可以贴入MNA方程中进行迭代求解。
@@ -419,15 +427,15 @@ x_0(i) = NodeInfo{i}.value;
 
 根据器件类型不同进行不同处理：
 
-● RLC： 
+###### RLC： 
 
 对于电阻R，保持不变；电容C替换为电流为0的独立电流源；电感L替换为电压为0的独立电压源。
 
-● 独立源：
+###### 独立源：
 
 保持不变
 
-● MOS器件： 
+###### MOS器件： 
 
 首先，对于非线性元件的处理，本项目目前采用牛顿迭代法的方法进行。因此，对于MOS器件，按照牛顿迭代法得到的递推式，将MOS管等效成d、s两极之间的独立电流源、电阻和受Vgs控制的压控电压源的并联的形式。
 
@@ -435,7 +443,7 @@ x_0(i) = NodeInfo{i}.value;
 
 另外，为了区分mos器件替换出来的线性元件与原本就在电路中存在的线性元件，决定哪些部分需要随着迭代过程更新，哪些部分不变，我们采取了两个措施：一是将MOS管替换出来的线性元件的命名规定为"R/L/C+Mosname"，从而可以根据名字的第二个字母判断是否是mos器件生成的线性元件；二是在填写DC分析网表的过程中先填入原本存在的线性元件，后填入替换非线性元件产生的线性元件，记录下开始填入非线性元件产生的线性元件的初始行数MOSLine，从而可以快速定位到需要替换的器件处。
 
-● 二极管器件：
+###### 二极管器件：
 
 二极管器件的处理思路同mos器件，根据牛顿迭代法得到的递推式，将其等效为独立电流源与电阻的并联。同时记录下线性元件开始替换的行数DiodeLine，从而在之后的迭代过程中快速定位替换。
 
@@ -447,7 +455,7 @@ x_0(i) = NodeInfo{i}.value;
 
 ├── Diode_Calculator.m
 
-##### 函数定义
+###### 函数定义
 计算mos器件线性参数：
 ```matlab
 function [Ikk,GMk,GDSk] = Mos_Calculator (VDSk,VGSk,Mosarg,W,L)
@@ -457,7 +465,7 @@ function [Ikk,GMk,GDSk] = Mos_Calculator (VDSk,VGSk,Mosarg,W,L)
 function [Gdk, Ieqk] = Diode_Calculator(Vpn, Is, T)
 ```
 
-##### 接口说明
+###### 接口说明
 
  `VDSk、VGSk、Vpn`：非线性器件的端口之间的电压差
 
@@ -467,43 +475,40 @@ function [Gdk, Ieqk] = Diode_Calculator(Vpn, Is, T)
 
  `Ikk、GMk、GDSk、Gdk, Ieqk`：相应得到的线性元件的值，如电阻阻值，电流源电流、受控源转移系数
 
-##### 技术细节
+###### 技术细节
 
 本部分需要额外注意变量类型，如向量方向、cell、mat、double等类型之间的转换。最后也将所有输出的值打包为哈希表的形式传给后级
 
-#### 矩阵方程的建立
+#### 矩阵方程的建立 -Gen_Matrix
 
 此功能由郑志宇、林与正同学完成，郑志宇同学写好了初版的线性电路矩阵的生成函数，由林与正同学运用到迭代中去
 
-├── Gen_baseA.m
+├── Gen_Matirx.m
 
-├── Gen_nextA.m
+├── Gen_ACmatrix.m
+
+├── Gen_nextACmatrix.m
 
 ##### 函数定义
 
 ```matlab
 %% 处理网表中的所有线性器件生成A、b
-function [A,x,b] = Gen_baseA(Name, N1, N2, dependence, Value)
-function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
+function [A,x,b] = Gen_Matrix(Name, N1, N2, dependence, Value)
 ```
 
 函数接受一个处理好的线性网表的参数，并生成电路的MNA方程
 
 ##### 接口说明
 
-`A`：电路矩阵方程，用于求解电路以及迭代
-
-`x`：解空间的命名，用于索引
-
-`b`：`Ax=b`，MNA方程的右边部分
-
-`Name`：器件名
-
-`N1，N2`：线性器件的端口
-
-`dependence`：器件的依赖，用于受控源
-
-`Value`：线性器件的的参数值
+1. 函数输入
+   - `Name`：器件名
+   - `N1，N2`：线性器件的端口
+   - `dependence`：器件的依赖，用于受控源
+   - `Value`：线性器件的的参数值
+2. 函数输出
+   - `A`：电路矩阵方程，用于求解电路以及迭代
+   - `x`：解空间的命名，用于索引
+   - `b`：`Ax=b`，MNA方程的右边部分
 
 ##### 技术细节
 
@@ -531,7 +536,7 @@ function [A, b] = Gen_nextA(pureA, pureb, Name, N1, N2, dependence, Value)
 
 ### Part 2 迭代求解电路的直流工作点
 
-#### 电路迭代求解直流解 - 单点DC
+#### 电路迭代求解直流解 -calculateDC
 
 CalculateDC.m迭代函数主体与每轮迭代具体过程Gen_nextRes.m由林与正同学完成，Gen_baseA.m，Gen_nextA.m在迭代过程中应用，已于Part1前述。
 
@@ -547,57 +552,30 @@ CalculateDC.m迭代函数主体与每轮迭代具体过程Gen_nextRes.m由林与
 
 │   ├──Gen_nextA.m
 
-##### 函数定义 - calculateDC
+##### 函数定义
 ```matlab
 function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
 ```
-##### 接口说明 - calculateDC
+##### 接口说明
 
-`DCres`：哈希表类型，内部数据索引
+1. 函数输入
+   - `LinerNet`: 预处理考虑迭代初始解后得到的线性网表哈希表信息。
+   - `MOSINFO`: MOS管的信息哈希表，需要索引。
+   - `DIODEINFO`: 二极管的信息哈希表。
+   - `Error`: 收敛判断值，相邻两轮迭代解向量之差的范数小于Error视为收敛。
+2. 函数输出
+   - `DCres`：哈希表类型，内部数据索引
+     - `x`: 非线性器件已经在牛顿迭代过程线性化后的最终收敛的MNA方程解      
+     - `mosCurrents`: 按解析网表的mos管顺序排好序的各mos管IDS电
+     - `diodeCurrents`: 按解析网表的Diode管顺序排好的二极管正向电流
+   - `x0`: `DCres('x')`中的数据名称，如`V_1`、`I_G1`等解析后的电压电流名
+   - `Value`: `LinerNet`中的器件信息`Value`，为了后续`Sweep_DC`的迭代方便提出
 
- `x`: 非线性器件已经在牛顿迭代过程线性化后的最终收敛的MNA方程解      
 
-`mosCurrents`: 按解析网表的mos管顺序排好序的各mos管IDS电
 
-`diodeCurrents`: 按解析网表的Diode管顺序排好的二极管正向电流
+##### 技术细节
 
-`x0`: DCres('x')中的数据名称，如V_1、I_G1等解析后的电压电流名
-
-`Value`: LinerNet中的器件信息Value，为了后续Sweep_DC的迭代方便提出
-
-`LinerNet`: 预处理考虑迭代初始解后得到的线性网表哈希表信息，此处需要索引:
-
-```matlab
-Name = LinerNet('Name');
-N1 = LinerNet('N1');
-N2 = LinerNet('N2');
-dependence = LinerNet('dependence');
-Value = LinerNet('Value');
-```
-
-`MOSINFO`: MOS管的信息哈希表，需要索引
-
-```matlab
-    MOSMODEL = MOSINFO('MODEL');
-    MOStype = MOSINFO('type');
-    MOSW = MOSINFO('W');
-    MOSL = MOSINFO('L');
-    MOSID = MOSINFO('ID');
-    MOSLine = MOSINFO('MOSLine');
-```
-
-`DIODEINFO`: 二极管的信息哈希表
-
-```matlab
-    Is = DIODEINFO('Is');
-    diodeLine = DIODEINFO('DiodeLine');
-```
-
-`Error`: 收敛判断值，相邻两轮迭代解向量之差的范数小于Error视为收敛
-
-##### 技术细节 - calculateDC
-
-使用牛顿迭代法对非线性电路进行DC分析，输入的LinerNet是由预处理过程已经将非线性器件替换为线性迭代模型的纯线性网表，初始解体现在各非线性器件衍生得到的线性器件值中。迭代思路是先利用Gen_baseA输入LinerNet但生成线性方程组时只应矩阵大小位置不跌入由非线性器件得到的线性器件。此后每轮迭代Gen_nextA将当前非线性器件得到的线性器件的值结合Gen_baseA得到的电路矩阵生成本轮实际的线性电路矩阵，这样避免了每轮重复贴入原网表中的线性器件，相当于只是每轮更新了电路矩阵中非线性器件影响的位置。求解出本轮的迭代结果，并据此计算出下一轮非线性器件得到的线性器件的值。这一轮迭代的过程也就是Gen_nextRes的功能。
+使用牛顿迭代法对非线性电路进行`DC`分析，输入的`LinerNet`是由预处理过程已经将非线性器件替换为线性迭代模型的纯线性网表，初始解体现在各非线性器件衍生得到的线性器件值中。迭代思路是先利用`Gen_baseA`输入`LinerNet`但生成线性方程组时只应矩阵大小位置不跌入由非线性器件得到的线性器件。此后每轮迭代`Gen_nextA`将当前非线性器件得到的线性器件的值结合`Gen_baseA`得到的电路矩阵生成本轮实际的线性电路矩阵，这样避免了每轮重复贴入原网表中的线性器件，相当于只是每轮更新了电路矩阵中非线性器件影响的位置。求解出本轮的迭代结果，并据此计算出下一轮非线性器件得到的线性器件的值。这一轮迭代的过程也就是`Gen_nextRes`的功能。
 
 迭代过程中保存上一轮与本轮线性电路方程的解，每轮迭代结束计算两向量差的范数，若小于Error设定的值，则认为收敛得到结果，此时将结果同利用非线性器件使用的迭代公式得到的最终非线性器件电路一同封装为DCres的哈希表。
 
@@ -607,7 +585,7 @@ Value = LinerNet('Value');
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, ... mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, A0, b0, Name, N1, ... N2, dependence, Value, zp)
 ```
 
-##### 接口说明 - Gen_nextRes
+###### 接口说明 - Gen_nextRes
 
 `zc`: 本轮A \ b的结果
 
@@ -623,11 +601,11 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 其余输入输出参数含义同calculateDC
 
-##### 技术细节 - Gen_nextRes
+###### 技术细节 - Gen_nextRes
 
 大致过程在CalculateDC中已给出，需要注意的是对MOS管而言源漏交换的可能性，原网表给定的NMOS管三端在实际电路激励下可能出现源端电压高于漏端电压的情况，此时原网表上MOS管的源端则变成实际的漏端。处理方法是，在每轮迭代更新MOS管生成线性器件的值的时候对漏源电压进行比较，如果发生漏源交换则以实际的三端电压给入Mos_Calculator中得到一组线性器件值，而为了不改变原网表三端顺序，对电流源、压控电流源值取反，更改压控电流源控制双端为实际GD端。
 
-#### 电路迭代求解直流解 - DC扫描
+#### 电路迭代求解直流解 -Sweep_DC
 
 此功能由林与正同学实现，根据PLOT要求进行DC扫描并给出观察对象与结果供后续作图打印输出
 
@@ -638,24 +616,14 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
 ```
 ##### 接口说明
 
-`InData`: DC扫描的信号离散值
-
-`obj`: 同ValueCalc中，被观测值的名称信息
-
-`Values`: 同ValueCalc中，被观测值的数据信息，obj里一个对象在各扫描点结果对应Values的一行
-
-`SweepInfo`: DC扫描信息Cell，如扫描器件名，扫描起止点及步长
-
-```matlab
-    SweepInName = SweepInfo{1};
-    start = SweepInfo{2}(1);
-    stop = SweepInfo{2}(2);
-    step = SweepInfo{3};
-```
-
-`PLOT`: 由原网表提取来的打印信息，结合Node_Map利用portMapping得到待打印电压节点或电流器件索引
-
-`Node_Map`: 原输入网表与解析后网表节点对应关系
+1. 函数输入
+   - `SweepInfo`: DC扫描信息Cell，如扫描器件名，扫描起止点及步长
+   - `PLOT`: 由原网表提取来的打印信息，结合Node_Map利用portMapping得到待打印电压节点或电流器件索引
+   - `Node_Map`: 原输入网表与解析后网表节点对应关系
+2. 函数输出
+   - `InData`: DC扫描的信号离散值
+   - `obj`: 同ValueCalc中，被观测值的名称信息
+   - `Values`: 同ValueCalc中，被观测值的数据信息，obj里一个对象在各扫描点结果对应Values的一行
 
 ##### 技术细节
 
@@ -673,21 +641,87 @@ Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosInde
 
 这一部分由郑志宇同学完成。
 
+├── Sweep_AC.m
+
+│   ├── Gen_ACmatrix.m
+
+│   ├── Gen_NextACmatrix.m
+
+│   └── getCurrent.m
+
+实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
+
 #### 生成小信号等效电路
 
-小信号等效电路由朱瑞宸同学在`Generate_ACnetlist.m`中进行替换。
+##### 函数定义 -Generate_ACnetlist
 
-#### 生成基本电路的方程
+小信号等效电路由朱瑞宸同学在Generate_ACnetlist.m中进行替换，替换AC源，DC源，生成能使用MNA方程生成函数的标准的线性电路网表。
 
-基本的电路方程的生成函数由郑志宇同学提供。
+#### AC扫描
 
-#### 根据扫描频率更新矩阵
+##### 函数定义 -Sweep_AC
 
-接收电容以及电感的信息，然后在矩阵中贴入对应的系数即可，由于电容和电感的线性，可以使用近似于电阻的处理方法。
+```matlab
+function [Obj,freq,Gain,Phase] =... Sweep_AC(LinerNet,CINFO,LINFO,SweepInfo,Node_Map,PLOT)
+```
 
-#### 根据需要绘图信息映射结果
+这个函数的目的是用于对线性电路进行`AC`分析，得到节点的幅频响应和相频响应，以便进行绘图。
 
-根据提取出的需要绘图的信息将生成的解映射到实际的电路物理量中。
+函数首先读取线性网表信息，然后根据扫描参数生成采样的频率点。接着进行AC扫描，将计算电路中各个元件的阻抗，根据阻抗值计算矩阵，使用矩阵求解得到电路中各个节点的电压或电流值。最后，根据这些节点的电压或电流值计算幅度响应和相位响应，并将结果存储在输出参数中。
+
+###### 接口说明
+
+1. 函数输入
+   - `LinerNet`：线性电路的网表，包括电路元件的名称、节点连接信息、元件类型和值等信息；
+   - `CINFO`：电容的信息，包括电容元件的名称、在网表中的位置信息和值；
+   - `LINFO`：电感的信息，包括电感元件的名称、在网表中的位置信息和值；
+   - `SweepInfo`：扫描参数，包括扫描模式、采样点数、起始频率和终止频率；
+   - `Node_Map`：节点映射的结果，用于将节点序号转换为节点名称的映射表；
+   - `PLOT`：绘图信息，包括要打印的序号值或者器件类型加端口名。
+2. 函数输出
+   - `Obj`：绘图所需参数，包括绘制对象，如节点和器件名称；
+   - `freq`：频率坐标轴，即采样的频率点；
+   - `Gain`：幅度响应，即各个节点的电压或电流的幅值；
+   - `Phase`：相位响应，即各个节点的电压或电流的相位。
+
+##### 技术细节
+
+###### 生成基本电路的方程
+
+基本的电路方程的生成函数由郑志宇同学提供。这部分处理根据朱瑞宸同学解析出来的`LLine`和`CLine`，会暂时忽略需要在每次扫描中替换的`L，C`的复数值，然后生成一个可以用于修改的基础矩阵。
+
+###### 根据扫描频率更新矩阵
+
+接收电容以及电感的信息，然后在矩阵中贴入对应的系数即可，由于我们考虑电容和电感的线性，故可以使用近似于电阻的处理方法。每次根据频率去更新生成的基础矩阵，然后求解线性方程。
+
+##### 根据需要绘图信息映射结果 -getCurrent
+
+节点电压的信息能够根据电路的解直接得到，但是电流的获取就没有那么方便了。我们定义了`getCurrent`函数来实现在任意频率下获取电路响应的电流。
+
+这个函数是用于计算器件对应节点的电流，以便在AC分析中计算幅度响应和相位响应。
+
+###### 函数说明
+
+```matlab
+function Current = getCurrent(Device,port,LinerNet,x,Res,freq)
+```
+
+1. 输入参数
+   - `Device`：要计算电流的器件名称，如MOSFET、二极管等；
+   - `port`：要计算电流的端口，如MOSFET的源端、栅极和漏极等；
+   - `LinerNet`：线性电路的网表，包括电路元件的名称、节点连接信息、元件类型和值等信息；
+   - `x`：矩阵求解得到的节点电压或电流值；
+   - `Res`：矩阵求解得到的电路的阻抗；
+   - `freq`：采样的频率点。
+2. 输出参数
+   - `Current`：要计算的器件对应的节点电流。 
+
+###### 技术细节
+
+函数首先根据输入的器件名称和端口查找对应的器件，并根据其类型和值计算电流。具体实现方式是根据器件的类型和名称从线性网表中查找对应的电路信息，然后根据电路信息计算电流。函数主要是在分类讨论不同的器件的端口电流的求解方式，使用了`find`和`strcmp`查找线性网表中对应的信息。
+
+- 函数中根据器件类型和名称的首字母来判断器件类型，如以`V`开头的器件为电压源，以`I`开头的器件为电流源等；
+- 函数中对于不同类型的器件，计算电流的方式也不同，如对于电阻元件计算电流需要根据其两端的电压差和电阻值使用欧姆定律计算，而对于电容和电感元件，需要根据其阻抗值和频率使用复数形式的欧姆定律计算等。
 
 ### Part 5 将电路生成的结果输出
 

@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='RC';
+file='bufferAC';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -79,10 +79,12 @@ switch lower(SPICEOperation{1}{1})
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(freq,Gain(i,:));
+            xlabel('lg(freq)'),ylabel('|H(2\pif)|');
             title([Obj{i} 'Gain']);
 %             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,rad2deg(Phase(i,:)));
+            xlabel('lg(freq)'),ylabel('\phi(2\pif)');
             title([Obj{i} 'Phase']);
 %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
