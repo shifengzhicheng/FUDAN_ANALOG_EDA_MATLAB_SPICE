@@ -9,8 +9,6 @@ Name = LinerNet('Name');
 N1 = LinerNet('N1');
 N2 = LinerNet('N2');
 Value = LinerNet('Value');
-MOSName = MOSINFO('Name');
-Diodes = DIODEINFO('Name'); 
 
 plotnv=plotnv';
 plotCurrent=plotCurrent';

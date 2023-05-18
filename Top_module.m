@@ -114,6 +114,6 @@ switch lower(SPICEOperation{1}{1})
         [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
             DCres,x_0, Node_Map, LinerNet);
         for i=1:size(Obj)
-            display([Obj{i}, num2str(Values(i))]);
+            display([Obj{i} ': ' num2str(Values(i))]);
         end
 end
