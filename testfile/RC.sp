@@ -11,4 +11,4 @@ M1 31 21 0 n 20e-6 0.35e-6 1
 .plotnc M1(d)
 .plotnc M1(g)
 .plotnc M1(s)
-.ac DEC 10 1 1e18MEG
+.ac DEC 10 1 1e20MEG

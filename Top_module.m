@@ -82,7 +82,7 @@ switch lower(SPICEOperation{1}{1})
             title([Obj{i} 'Gain']);
 %             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
-            plot(freq,Phase(i,:));
+            plot(freq,rad2deg(Phase(i,:)));
             title([Obj{i} 'Phase']);
 %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
@@ -112,7 +112,7 @@ switch lower(SPICEOperation{1}{1})
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
         [Obj, Values] = ValueCalc(plotnv, plotCurrent, ...
-            DCres,x_0, Node_Map, LinerNet, MOSINFO, DIODEINFO);
+            DCres,x_0, Node_Map, LinerNet);
         for i=1:size(Obj)
             display([Obj{i}, num2str(Values(i))]);
         end

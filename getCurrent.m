@@ -29,7 +29,14 @@ switch Device(1)
         % 第一步找到含有D命名的所有线性器件
         Mdevice = find(contains(Name,Device));
         % 第二步计算这些器件的电流
-        Current = sum(calcCurrent(Mdevice,Res,x,Name,N1,N2,dependence,value,freq));
+        switch port
+            case '+'
+                Current = calcCurrent(Mdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
+                    +calcCurrent(Mdevice(2),Res,x,Name,N1,N2,dependence,value,freq);
+            case '-'
+                Current = -calcCurrent(Mdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
+                    -calcCurrent(Mdevice(2),Res,x,Name,N1,N2,dependence,value,freq);
+        end
     case {'V','I','R','C','L','G','H','F','E'}
         % 第一步找到含有此命名的所有线性器件
         Mdevice = find(contains(Name,Device));
