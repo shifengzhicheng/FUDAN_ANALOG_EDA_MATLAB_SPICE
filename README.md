@@ -251,42 +251,48 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 
 ##### 接口说明
 
-`RCLINFO`：电阻，电容，电感的信息
+1. 函数输入
 
-```matlab
-RCLINFO={RINFO,CINFO,LINFO};
-%% RINFO,CINFO,LINFO都是如下所示的结构
-RINFO={Name,N1,N2,Value}
-```
+   - 文件名 -`filename`
 
-`SourceINFO`：电源的信息
+2. 函数输出
 
-```matlab
-SourceINFO={SourceName,SourceN1,SourceN2,...
-Sourcetype,SourceDcValue,SourceAcValue,...
-SourceFreq,SourcePhase};
-```
+   - `RCLINFO`：电阻，电容，电感的信息
 
-`MOSINFO`：MOS管的信息
+     ```matlab
+     RCLINFO={RINFO,CINFO,LINFO};
+     %% RINFO,CINFO,LINFO都是如下所示的结构
+     RINFO={Name,N1,N2,Value}
+     ```
 
-```matlab
-MOSINFO={MOSName,MOSN1,MOSN2,MOSN3,...
-MOStype,MOSW,MOSL,MOSID,MOSMODEL};
-```
+   - `SourceINFO`：电源的信息
 
-`DIODEINFO`：二极管的信息
+     ```matlab
+     SourceINFO={SourceName,SourceN1,SourceN2,...
+     Sourcetype,SourceDcValue,SourceAcValue,...
+     SourceFreq,SourcePhase};
+     ```
 
-```matlab
-DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
-```
+   - `MOSINFO`：MOS管的信息
 
-`PLOT`：需要进行绘图的信息
+     ```matlab
+     MOSINFO={MOSName,MOSN1,MOSN2,MOSN3,...
+     MOStype,MOSW,MOSL,MOSID,MOSMODEL};
+     ```
 
-`SPICEOperation`：电路所需要进行的操作
+   - `DIODEINFO`：二极管的信息
+
+     ```matlab
+     DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
+     ```
+
+   - `PLOT`：需要进行绘图的信息
+
+   - `SPICEOperation`：电路所需要进行的操作
 
 ##### 技术细节
 
-本部分使用了哈希表来装参数作为接口在函数中传递，加快了运行的速度，提高运行效率。文件主要使用正则表达式在文件中提取和匹配有效的信息并将有效信息打包给其他环节进行处理。这一部分在项目的开始阶段进行，为项目的实现搭建了一个整体的框架，同时定义了输入与输出的接口要求，以便于团队合作化工作以及推进。
+本部分使用了**哈希表**来装参数作为接口在函数中传递，加快了运行的速度，提高运行效率。函数主要使用**正则表达式**在文件中提取和匹配有效的信息并将有效信息打包给其他环节进行处理。这一部分在项目的开始阶段进行，为项目的实现**搭建了一个整体的框架**，同时**定义了输入与输出的接口要求**，以便于团队合作化工作以及推进。
 
 #### 生成DC网表并完成节点映射 -Generate_DCnetlist
 此功能由朱瑞宸同学完成
@@ -568,7 +574,7 @@ function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
 
 使用牛顿迭代法对非线性电路进行`DC`分析，输入的`LinerNet`是由预处理过程已经将非线性器件替换为线性迭代模型的纯线性网表，初始解体现在各非线性器件衍生得到的线性器件值中。迭代思路是先利用`Gen_baseA`输入`LinerNet`但生成线性方程组时只应矩阵大小位置不跌入由非线性器件得到的线性器件。此后每轮迭代`Gen_nextA`将当前非线性器件得到的线性器件的值结合`Gen_baseA`得到的电路矩阵生成本轮实际的线性电路矩阵，这样避免了每轮重复贴入原网表中的线性器件，相当于只是每轮更新了电路矩阵中非线性器件影响的位置。求解出本轮的迭代结果，并据此计算出下一轮非线性器件得到的线性器件的值。这一轮迭代的过程也就是`Gen_nextRes`的功能。
 
-迭代过程中保存上一轮与本轮线性电路方程的解，每轮迭代结束计算两向量差的范数，若小于Error设定的值，则认为收敛得到结果，此时将结果同利用非线性器件使用的迭代公式得到的最终非线性器件电路一同封装为DCres的哈希表。
+迭代过程中保存上一轮与本轮线性电路方程的解，每轮迭代结束计算两向量差的范数，若小于`Error`设定的值，则认为收敛得到结果，此时将结果同利用非线性器件使用的迭代公式得到的最终非线性器件电路一同封装为`DCres`的哈希表。
 
 ###### 函数定义 - Gen_nextRes
 
@@ -578,23 +584,23 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 ###### 接口说明 - Gen_nextRes
 
-`zc`: 本轮A \ b的结果
+`zc`: 本轮`A\b`的结果
 
-`mosNodeMat`: 各mos管原网表三端DGS顺序对应的线性解析后网表中索引，为mosNum*3的矩阵
+`mosNodeMat`: 各`mos`管原网表三端`DGS`顺序对应的线性解析后网表中索引，为`mosNum*3`的矩阵
 
-`diodeNodeMat`: 各二极管原网表正向双端顺序对应的线性解析后网表中索引，为diodeNum*3的矩阵
+`diodeNodeMat`: 各二极管原网表正向双端顺序对应的线性解析后网表中索引，为`diodeNum*3`的矩阵
 
-`A0`: Gen_baseA得到的不贴入由非线性器件得到的线性器件的电路矩阵
+`A0`: `Gen_baseA`得到的不贴入由非线性器件得到的线性器件的电路矩阵
 
-`b0`: Gen_baseA得到的不贴入由非线性器件得到的线性器件的电路方程等号右侧向量
+`b0`: `Gen_baseA`得到的不贴入由非线性器件得到的线性器件的电路方程等号右侧向量
 
-`zp`: 上一轮A \ b的结果   
+`zp`: 上一轮`A\b`的结果   
 
-其余输入输出参数含义同calculateDC
+其余输入输出参数含义同`calculateDC`
 
 ###### 技术细节 - Gen_nextRes
 
-大致过程在CalculateDC中已给出，需要注意的是对MOS管而言源漏交换的可能性，原网表给定的NMOS管三端在实际电路激励下可能出现源端电压高于漏端电压的情况，此时原网表上MOS管的源端则变成实际的漏端。处理方法是，在每轮迭代更新MOS管生成线性器件的值的时候对漏源电压进行比较，如果发生漏源交换则以实际的三端电压给入Mos_Calculator中得到一组线性器件值，而为了不改变原网表三端顺序，对电流源、压控电流源值取反，更改压控电流源控制双端为实际GD端。
+大致过程在`CalculateDC`中已给出，需要注意的是对`MOS`管而言源漏交换的可能性，原网表给定的`NMOS`管三端在实际电路激励下可能出现源端电压高于漏端电压的情况，此时原网表上`MOS`管的源端则变成实际的漏端。处理方法是，在每轮迭代更新`MOS`管生成线性器件的值的时候对漏源电压进行比较，如果发生漏源交换则以实际的三端电压给入`Mos_Calculator`中得到一组线性器件值，而为了不改变原网表三端顺序，对电流源、压控电流源值取反，更改压控电流源控制双端为实际`GD`端。
 
 #### 电路迭代求解直流解 -Sweep_DC
 
@@ -608,19 +614,19 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
 ##### 接口说明
 
 1. 函数输入
-   - `SweepInfo`: DC扫描信息Cell，如扫描器件名，扫描起止点及步长
-   - `PLOT`: 由原网表提取来的打印信息，结合Node_Map利用portMapping得到待打印电压节点或电流器件索引
+   - `SweepInfo`: `DC`扫描信息`Cell`，如扫描器件名，扫描起止点及步长
+   - `PLOT`: 由原网表提取来的打印信息，结合`Node_Map`利用`portMapping`得到待打印电压节点或电流器件索引
    - `Node_Map`: 原输入网表与解析后网表节点对应关系
 2. 函数输出
-   - `InData`: DC扫描的信号离散值
-   - `obj`: 同ValueCalc中，被观测值的名称信息
-   - `Values`: 同ValueCalc中，被观测值的数据信息，obj里一个对象在各扫描点结果对应Values的一行
+   - `InData`: `DC`扫描的信号离散值
+   - `obj`: 同`ValueCalc`中，被观测值的名称信息
+   - `Values`: 同`ValueCalc`中，被观测值的数据信息，`obj`里一个对象在各扫描点结果对应`Values`的一行
 
 ##### 技术细节
 
-用portMapping解析待打印的节点(电压)索引以及器件端口(电流)，并根据ValueCalc的思想提取每轮要从当前点DC结果mosCurrents、diodeCurrents、DCres、Value中得到的各值的索引向量们。并初始化Values的值，将器件端口电流正负的信息体现在初始化为正负1，之后每轮乘上索引到的器件电流值即可。
+用`portMapping`解析待打印的节点(电压)索引以及器件端口(电流)，并根据`ValueCalc`的思想提取每轮要从当前点`DC`结果`mosCurrents`、`diodeCurrents`、`DCres`、`Value`中得到的各值的索引向量们。并初始化`Values`的值，将器件端口电流正负的信息体现在初始化为正负1，之后每轮乘上索引到的器件电流值即可。
 
-如得到每轮MOS某端电流数据更新Values过程:
+如得到每轮`MOS`某端电流数据更新`Values`过程:
 ```matlab
 %mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流
 Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosIndexInmosCurrents);
