@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferAC';
+file='RC';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -60,7 +60,7 @@ switch lower(SPICEOperation{1}{1})
             Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, x_0] = calculateDC(LinerNet,MOS,DIODE, Error);
+        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
         DCres('x')=[0;DCres('x')];
         [LinerNet,CINFO,LINFO]=...
             Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
@@ -80,11 +80,11 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(freq,Gain(i,:));
             title([Obj{i} 'Gain']);
-            saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,Phase(i,:));
             title([Obj{i} 'Phase']);
-            saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识

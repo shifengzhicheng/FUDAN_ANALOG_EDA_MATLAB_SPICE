@@ -59,19 +59,21 @@
 
      > 输入示例：
      >
-     > .dc
+     > `.dc`
 
    - `.dcsweep`，直流扫描，生成转移曲线
 
      > 输入示例：
      >
-     > .dcsweep Vin [0,3] 0.01
+     > `.dcsweep Vin [0,3] 0.01`
 
-   - `.hb`，AC频率响应分析`暂未实现`
+   - `.ac`，AC频率响应分析
 
      > 输入示例：
      >
-     > `.hb 10e6 30`
+     > `.ac DEC 10 1K 1000MEG`
+     >
+     > `.ac LIN 100 1K 100HZ`
 
    - `.trans`，瞬态响应分析`暂未实现`
 
@@ -212,7 +214,7 @@ Generate_DCnetlist;
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
     %% DCSEWEEP操作的流程
-    case '.hb'
+    case '.ac'
     %% AC分析的流程
     case '.trans'
     %% 瞬态仿真的流程
@@ -253,7 +255,9 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 `RCLINFO`：电阻，电容，电感的信息
 
 ```matlab
-RCLINFO={RLCName,RLCN1,RLCN2,RLCValue};
+RCLINFO={RINFO,CINFO,LINFO};
+%% RINFO,CINFO,LINFO都是如下所示的结构
+RINFO={Name,N1,N2,Value}
 ```
 
 `SourceINFO`：电源的信息
@@ -665,7 +669,25 @@ Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosInde
 
 ### Part 3 实现trans仿真 (暂未实现)
 
-### Part 4 实现频率响应分析 (暂未实现)
+### Part 4 实现频率响应分析
+
+这一部分由郑志宇同学完成。
+
+#### 生成小信号等效电路
+
+小信号等效电路由朱瑞宸同学在`Generate_ACnetlist.m`中进行替换。
+
+#### 生成基本电路的方程
+
+基本的电路方程的生成函数由郑志宇同学提供。
+
+#### 根据扫描频率更新矩阵
+
+接收电容以及电感的信息，然后在矩阵中贴入对应的系数即可，由于电容和电感的线性，可以使用近似于电阻的处理方法。
+
+#### 根据需要绘图信息映射结果
+
+根据提取出的需要绘图的信息将生成的解映射到实际的电路物理量中。
 
 ### Part 5 将电路生成的结果输出
 

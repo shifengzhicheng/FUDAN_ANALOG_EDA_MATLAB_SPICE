@@ -17,14 +17,14 @@ function num = tranNumber(str)
 str = lower(str);
 
 % Extract the numerical value from the input string.
-numStr = regexp(str, '\d+(\.\d+)?', 'match');
+numStr = regexp(str, '\d+(\.\d+)?(e[+-]?\d+)?', 'match');
 if isempty(numStr)
     error('No numerical value found in the input string.');
 end
 num = str2double(numStr{1});
 
 % Extract the unit from the input string.
-unitStr = regexp(str, '[a-zA-Z]+', 'match');
+unitStr = regexp(str, 'meg|k|hz', 'match');
 if isempty(unitStr)
     return;
 end
