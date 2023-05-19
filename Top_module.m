@@ -97,11 +97,10 @@ switch lower(SPICEOperation{1}{1})
         % 瞬态仿真需要时间步长和仿真的时间
         timeScale = tranNum(SPICEOperation{1}{2});
         step = tranNum(SPICEOperation{1}{3});
-        TranInfo = [timeScale,step];
-        [Obj,t,transRes]=Trans();
+        [Obj, transRes, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, timeScale, step, PLOT);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
-            plot(InData,transRes(i,:));
+            plot(printTimePoint,transRes(i,:));
             title(Obj{i});
             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
