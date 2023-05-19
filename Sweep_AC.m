@@ -64,13 +64,13 @@ CName = CINFO('Name');
 LinerNet('Value')=[Value(1:size(Name,2)),CValue,LValue];
 Name = [Name,CName,LName];
 LinerNet('Name')=Name;
-[A,x,b]=Gen_ACmatrix(Name,N1,N2,dependence,Value);
+[A,x,b]=Gen_Matrix(Name,N1,N2,dependence,Value);
 
 Cnum = size(CName,2);
 Lnum = size(LName,2);
 Res = zeros(size(b,1)+1,length);
 for i = 1:length
-    Af=Gen_NextACmatrix(Name,N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq(i));
+    Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq(i));
     Res(:,i) = [0;Af\b];
 end
 

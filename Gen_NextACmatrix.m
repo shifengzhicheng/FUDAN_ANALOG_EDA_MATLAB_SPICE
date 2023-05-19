@@ -1,4 +1,4 @@
-function Af=Gen_NextACmatrix(Name,N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq)
+function Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq)
 Af=[zeros(size(A,1),1),A];
 Af=[zeros(1,size(A,1)+1);Af];
 for i=1:Cnum

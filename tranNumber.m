@@ -24,7 +24,7 @@ end
 num = str2double(numStr{1});
 
 % Extract the unit from the input string.
-unitStr = regexp(str, 'meg|k|hz', 'match');
+unitStr = regexp(str, 'meg|k|n|m|u|g', 'match');
 if isempty(unitStr)
     return;
 end
@@ -32,12 +32,18 @@ unit = unitStr{1};
 
 % Convert the unit to a scaling factor.
 switch unit
+    case 'g'
+        scaleFactor = 1e9;
+    case 'meg'
+        scaleFactor = 1e6;
     case 'k'
         scaleFactor = 1e3;
-    case {'m', 'meg'}
-        scaleFactor = 1e6;
-    case 'hz'
-        scaleFactor = 1;
+    case 'm'
+        scaleFactor = 1e-3;
+    case 'u'
+        scaleFactor = 1e-6;
+    case 'n'
+        scaleFactor = 1e-9;
     otherwise
         error('Unrecognized unit "%s".', unit);
 end

@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferAC';
+file='bufferSweep';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -43,7 +43,7 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         DeviceName = SPICEOperation{1}{2};
         range = eval(SPICEOperation{1}{3});
-        step = str2double(SPICEOperation{1}{4});
+        step = tranNumber(SPICEOperation{1}{4});
         OperationInfo = {DeviceName,range,step};
         [InData, Obj, Res] = Sweep_DC(LinerNet,...
             MOSINFO,DIODEINFO,Error,OperationInfo,PLOT,Node_Map);
@@ -51,7 +51,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(InData,Res(i,:));
             title(Obj{i});
-            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.ac'
         % 这里进入AC分析
@@ -94,8 +94,10 @@ switch lower(SPICEOperation{1}{1})
         [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
             generate_Transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 到这里需要进行瞬态仿真
-        % 瞬态仿真需要时间步长
-        timestep = 1e-3;
+        % 瞬态仿真需要时间步长和仿真的时间
+        timeScale = tranNum(SPICEOperation{1}{2});
+        step = tranNum(SPICEOperation{1}{3});
+        TranInfo = [timeScale,step];
         [Obj,t,transRes]=Trans();
         for i=1:size(Obj,1)
             figure('Name',Obj{i})

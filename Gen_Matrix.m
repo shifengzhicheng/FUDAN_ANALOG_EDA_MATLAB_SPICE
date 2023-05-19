@@ -1,5 +1,4 @@
-function [A,x,b] = Gen_ACmatrix(Name, N1, N2, dependence, Value)
-%% 处理网表中线性器件生成A0、b0
+function [A,x,b]=Gen_Matrix(Name, N1, N2, dependence, Value)
 % Name是一个cell，里面的元素应该是'Name'
 % N1与N2为double数组
 % dependence应该是一个cell，cell里面是数组[cp1 cp2]或者字符串'CdName'
@@ -38,6 +37,7 @@ for i=1:CellCount
             % 节点的净流出与净流入电流
             b(pNum1)=b(pNum1)-cpValue;
             b(pNum2)=b(pNum2)+cpValue;
+
         case 'V'
             %% 在电路上贴电压源
             cpValue=Value(i);
@@ -64,14 +64,12 @@ for i=1:CellCount
             cpValue=Value(i);
 
             %% 压控电流源 (VCCS) - G
-            if CellName(1)== 'G'
-                % 电压控制的电流源没有引入新的变量
-                % 会给一些端口引入电流
-                A(pNum1,cpNum1)= A(pNum1,cpNum1) + cpValue;
-                A(pNum1,cpNum2)= A(pNum1,cpNum2) - cpValue;
-                A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
-                A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
-            end
+            % 电压控制的电流源没有引入新的变量
+            % 会给一些端口引入电流
+            A(pNum1,cpNum1)= A(pNum1,cpNum1) + cpValue;
+            A(pNum1,cpNum2)= A(pNum1,cpNum2) - cpValue;
+            A(pNum2,cpNum1)= A(pNum2,cpNum1) - cpValue;
+            A(pNum2,cpNum2)= A(pNum2,cpNum2) + cpValue;
 
             %% 压控电压源 (VCVS) - E
             if CellName(1)== 'E'
@@ -204,4 +202,3 @@ A(:,1)=[];
 b(1)=[];
 x(1)=[];
 end
-

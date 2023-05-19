@@ -1,6 +1,5 @@
-% 此函数由郑志宇完成，读取网表文件并提取所有的有效信息
 %% 函数主体
-% 这个函数获得的数据来自网表
+% 这个函数是程序于文件的接口，负责解析来自网表的数据
 function [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename)

@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Gen_nextRes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
                                                diodeNum, diodeNodeMat, diodeLine, Is, ...
-                                               A0, b0, Name, N1, N2, dependence, Value, zp)
+                                               A0, b0, N1, N2, dependence, Value, zp)
     
 %% 处理MOS
     %已经得到了按顺序的每个MOS管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
@@ -47,7 +47,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
     end
 
 %% 将得到的新器件数据结合A0、b0得到新的矩阵
-    [Ac, bc] = Gen_nextA(A0, b0, Name, N1, N2, dependence, Value);
+    [Ac, bc] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosCount,diodeLine,diodeNum);
     %解得新一轮的x(z)cur
     zc = Ac \ bc;
 end
