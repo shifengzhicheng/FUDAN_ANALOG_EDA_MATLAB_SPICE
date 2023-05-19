@@ -44,8 +44,6 @@ if isempty(MOSINFO) && isempty(DIODEINFO)
     z_res = A0 \ b0;
     DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
     return;
-else
-
 end
 
 %% 生成仅贴入"MOS衍生的伴随器件" 以外 的器件的A0矩阵和b0
@@ -61,7 +59,6 @@ diodeNum = size(Is, 2);
 
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
-
 
 %% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号 - GM的端点信息可以读到
 mosNodeMat = zeros(mosNum, 3);
