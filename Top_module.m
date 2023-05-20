@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='dbmixerTrans';
+file='RC_V3';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -119,4 +119,15 @@ switch lower(SPICEOperation{1}{1})
             display([Obj{i} ': ' num2str(Values(i))]);
         end
     case '.pz'
+        % 这里进入AC分析
+        % 首先进行一次DC分析求出电路的解
+        [LinerNet,MOS,DIODE,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        Error = 1e-6;
+        % 到这里需要DC电路网表
+        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
+        DCres('x')=[0;DCres('x')];
+        [LinerNet,CINFO,LINFO]=...
+            Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
+        [zero, pole] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map);
 end
