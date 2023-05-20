@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferAC';
+file='bufferSweep';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -95,14 +95,13 @@ switch lower(SPICEOperation{1}{1})
             Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长和仿真的时间
-        timeScale = tranNum(SPICEOperation{1}{2});
-        step = tranNum(SPICEOperation{1}{3});
+        stopTime = tranNum(SPICEOperation{1}{2});
+        stepTime = tranNum(SPICEOperation{1}{3});
         TranInfo = [timeScale,step];
         [Obj, Values, printTimePoint] =...
-            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);
-        for i=1:size(Obj,1)
+            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);        for i=1:size(Obj,1)
             figure('Name',Obj{i})
-            plot(printTimePoint,Values(i,:));
+            plot(printTimePoint,transRes(i,:));
             title(Obj{i});
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end

@@ -12,7 +12,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
         vg = tempz(mosNodeMat(mosCount, 2) + 1);
         vs = tempz(mosNodeMat(mosCount, 3) + 1);
                         %NMOS源漏交换                  %PMOS源漏交换
-        if Mostype(mosCount) == 2 && vd < vs || Mostype(mosCount) == 1 && vd > vs  
+        if Mostype(mosCount) == 2 && vd < vs && vs ~= 0|| Mostype(mosCount) == 1 && vd > vs  
             %源漏交换，此为实际交换后的vds\vgs
             vds = vs - vd;
             vgs = vg - vd;

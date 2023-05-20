@@ -1,18 +1,32 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [LinerNet,MOSINFO,DIODEINFO,LCINFO,SinINFO,Node_Map]=...
+function [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
     Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
 
 %% 初始化变量
+%RCL 拆开
+RINFO = RCLINFO('RINFO');
+CINFO = RCLINFO('CINFO');
+LINFO = RCLINFO('LINFO');
+
 % 器件名称
-RLCName = RCLINFO('Name');
+RName = RINFO('Name');
+CName = CINFO('Name');
+LName = LINFO('Name');
+RLCName = [RName,CName,LName];
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
 
 % 节点序号
-RLCN1 = str2double(RCLINFO('N1'));
-RLCN2 = str2double(RCLINFO('N2'));
+RN1 = str2double(RINFO('N1'));
+RN2 = str2double(RINFO('N2'));
+CN1 = str2double(CINFO('N1'));
+CN2 = str2double(CINFO('N2'));
+LN1 = str2double(LINFO('N1'));
+LN2 = str2double(LINFO('N2'));
+RLCN1 = [RN1,CN1,LN1];
+RLCN2 = [RN2,CN2,LN2];
 SourceN1 = str2double(SourceINFO('N1'));
 SourceN2 = str2double(SourceINFO('N2'));
 MOSN1 = str2double(MOSINFO('d'));
@@ -22,12 +36,14 @@ DiodeN1 = str2double(DIODEINFO('N1'));
 DiodeN2 = str2double(DIODEINFO('N2'));
 
 %其他所需变量
+Rarg = str2double(RINFO('Value'));
+Carg = str2double(CINFO('Value'));
+Larg = str2double(LINFO('Value'));
 SourceDcValue = str2double(SourceINFO('DcValue'));
 SourceAcValue = str2double(SourceINFO('AcValue'));
 SourceFreq = str2double(SourceINFO('Freq'));
 SourcePhase = str2double(SourceINFO('Phase'));
 SourceType = SourceINFO('type');
-RLCarg = str2double(RCLINFO('Value'));
 MOStype = MOSINFO('type');
 MOSW = str2double(MOSINFO('W'));
 MOSL = str2double(MOSINFO('L'));
@@ -66,24 +82,20 @@ NodeNum = length(Node_Map); % Node_Map数目
 [NodeInfo,DeviceInfo] = Gen_NodeInfo(Node_Map,DeviceInfo);
 
 %% 处理R
-NR = 0; %记录RLC中R数目
-for i=1:length(RLCName)
-   if RLCName{i}(1) == 'R'
-           Node1 = find(Node_Map==RLCN1(i))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(i))-1;  % 节点索引从0开始，∴要-1
-           kl=kl+1;
-           Name{kl} = RLCName{i};
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = RLCarg(i);
-           NR = NR+1;
-   end
+for i=1:length(RName)
+    Node1 = find(Node_Map==RN1(i))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==RN2(i))-1;  % 节点索引从0开始，∴要-1
+    kl=kl+1;
+    Name{kl} = RName{i};
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = Rarg(i);
 end
 
 %% 处理直流Source
 Ndc = 0;    %记录直流源数目
 for i=1:length(SourceName)
-    if(SourceType{i} == "dc")
+    if(SourceType{i} == "dc" || SourceType{i} == "DC")
         Node1 = find(Node_Map==SourceN1(i))-1;
         Node2 = find(Node_Map==SourceN2(i))-1;
         kl=kl+1;
@@ -120,7 +132,7 @@ end
 %Gnd_node = 0;
 
 x_0 = init_value(NodeInfo,DeviceInfo,Vdd,Vdd_node,Gnd_node);
-
+x_0 = zeros(size(x_0));
 %% 处理mos 替换mos器件
 % 记录mos最后更改位置
 MOSLine = kl+1;
@@ -200,52 +212,47 @@ end
 
 DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName, Is, DiodeLine});
 
-%% 处理LC
-% 记录LC最后更改位置LCLine
-LCLine = kl+1;
-NLC = length(RLCName) - NR;
-LCName = cell(1,NLC);
-LCValue = zeros(1,NLC);
-ncl=0;
-for i=1:length(RLCName)
-   if RLCName{i}(1) == 'L'
-           Node1 = find(Node_Map==RLCN1(i))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(i))-1;  % 节点索引从0开始，∴要-1
-           ncl = ncl+1;
-           LCName{ncl} = RLCName{i};
-           LCValue(ncl) = RLCarg(i);
-           kl=kl+1;
-           Name{kl} = ['I',RLCName{i}];         %IL……形式
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = 0;
-           kl=kl+1;
-           Name{kl} = ['R',RLCName{i}];         %RL……形式
-           N1(kl) = Node1;
-           N2(kl) = Node2;
-           Value(kl) = 0;
-   elseif RLCName{i}(1) == 'C'
-           Node1 = find(Node_Map==RLCN1(i))-1;  % 节点索引从0开始，∴要-1
-           Node2 = find(Node_Map==RLCN2(i))-1;  % 节点索引从0开始，∴要-1
-           Node3 = NodeNum;                     %新增节点
-           NodeNum = NodeNum + 1;
-           ncl = ncl+1;
-           LCName{ncl} = RLCName{i};
-           LCValue(ncl) = RLCarg(i);
-           kl=kl+1;
-           Name{kl} = ['R',RLCName{i}];         %RC……形式
-           N1(kl) = Node1;
-           N2(kl) = Node3;
-           Value(kl) = 0;
-           kl=kl+1;
-           Name{kl} = ['V',RLCName{i}];         %VC……形式
-           N1(kl) = Node3;
-           N2(kl) = Node2;
-           Value(kl) = 0;
-   end
+%% 处理C
+% 记录C最后更改位置CLine
+CLine = kl+1;
+for i=1:length(CName)
+    Node1 = find(Node_Map==CN1(i))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==CN2(i))-1;  % 节点索引从0开始，∴要-1
+    Node3 = NodeNum;                     %新增节点
+    NodeNum = NodeNum + 1;
+    kl=kl+1;
+    Name{kl} = ['R',CName{i}];         %RC……形式
+    N1(kl) = Node1;
+    N2(kl) = Node3;
+    Value(kl) = 0;
+    kl=kl+1;
+    Name{kl} = ['V',CName{i}];         %VC……形式
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    Value(kl) = 0;
 end
 
-LCINFO = containers.Map({'Name','Value','LCLine'},{LCName, LCValue, LCLine});
+CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
+
+%% 处理L
+% 记录L最后更改位置LLine
+LLine = kl+1;
+for i=1:length(LName)
+    Node1 = find(Node_Map==LN1(i))-1;  % 节点索引从0开始，∴要-1
+    Node2 = find(Node_Map==LN2(i))-1;  % 节点索引从0开始，∴要-1
+    kl=kl+1;
+    Name{kl} = ['I',LName{i}];         %IL……形式
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = 0;
+    kl=kl+1;
+    Name{kl} = ['R',LName{i}];         %RL……形式
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = 0;
+end
+
+LINFO = containers.Map({'Name','Value','LLine'},{LName, Larg, LLine});
 
 %% 处理正弦Source
 % 记录LC最后更改位置LCLine
