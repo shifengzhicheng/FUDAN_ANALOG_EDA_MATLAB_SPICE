@@ -96,7 +96,8 @@ switch lower(SPICEOperation{1}{1})
         stopTime = tranNumber(SPICEOperation{1}{2});
         stepTime = tranNumber(SPICEOperation{1}{3});
         [Obj, Values, printTimePoint] =...
-            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);        for i=1:size(Obj,1)
+            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);       
+        for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(printTimePoint,transRes(i,:));
             title(Obj{i});
