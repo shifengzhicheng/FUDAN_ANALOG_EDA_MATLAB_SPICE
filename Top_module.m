@@ -93,9 +93,9 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长和仿真的时间
-        stopTime = tranNumber(SPICEOperation{1}{2});
-        stepTime = tranNumber(SPICEOperation{1}{3});
-        [Obj, Values, printTimePoint] =...
+        stopTime = str2double(SPICEOperation{1}{2});
+        stepTime = str2double(SPICEOperation{1}{3});
+        [Obj, transRes, printTimePoint] =...
             CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);       
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
