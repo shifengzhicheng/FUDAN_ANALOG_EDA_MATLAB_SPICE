@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferSweep';
+file='bufferAC';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -51,7 +51,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(InData,Res(i,:));
             title(Obj{i});
-%             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.ac'
         % 这里进入AC分析
@@ -81,29 +81,30 @@ switch lower(SPICEOperation{1}{1})
             plot(freq,Gain(i,:));
             xlabel('lg(freq)'),ylabel('|H(2\pif)|');
             title([Obj{i} 'Gain']);
-%             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+            %             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,rad2deg(Phase(i,:)));
             xlabel('lg(freq)'),ylabel('\phi(2\pif)');
             title([Obj{i} 'Phase']);
-%             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+            %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识
         Error = 1e-6;
-        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-            generate_Transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOSINFO,DIODEINFO,LCINFO,SinINFO,Node_Map]=...
+            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长和仿真的时间
         timeScale = tranNum(SPICEOperation{1}{2});
         step = tranNum(SPICEOperation{1}{3});
         TranInfo = [timeScale,step];
-        [Obj,t,transRes]=Trans();
+        [Obj, Values, printTimePoint] =...
+            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
-            plot(InData,transRes(i,:));
+            plot(printTimePoint,Values(i,:));
             title(Obj{i});
-            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.dc'
         [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...

@@ -25,4 +25,4 @@ C3 118 0 1e-12
 .PLOTNC L1(+)
 .plotnc L2(+)
 
-.ac DEC 10 10 1e12MEG
+.ac DEC 10 1K 1e12MEG
