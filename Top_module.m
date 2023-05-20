@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='RC_V3';
+file='RC';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -96,7 +96,7 @@ switch lower(SPICEOperation{1}{1})
         stopTime = str2double(SPICEOperation{1}{2});
         stepTime = str2double(SPICEOperation{1}{3});
         [Obj, transRes, printTimePoint] =...
-            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);       
+            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(printTimePoint,transRes(i,:));
@@ -129,5 +129,11 @@ switch lower(SPICEOperation{1}{1})
         DCres('x')=[0;DCres('x')];
         [LinerNet,CINFO,LINFO]=...
             Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
-        [zero, pole] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map);
+        [zeros, poles] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map);
+        for i=size(zeros,1)
+            display(['零点 ' num2str(zeros(i))]);
+        end
+        for i=size(poles,1)
+            display(['极点 ' num2str(poles(i))]);
+        end
 end
