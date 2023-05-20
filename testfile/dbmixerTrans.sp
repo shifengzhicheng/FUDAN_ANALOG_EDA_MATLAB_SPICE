@@ -41,7 +41,7 @@ Rs2 113 111 25
 .MODEL 1 VT -0.58281 MU 1.224952e-2 COX 6.058e-3 LAMBDA 0.05 CJ0 4.0e-14
 .MODEL 2 VT 0.386 MU 3.0238e-2 COX 6.058e-3 LAMBDA 0.05 CJ0 4.0e-14
 
-.trans 2e-9 2e-11
+.trans 1e-9 1e-11
 .plotnv  102
 .plotnv  103 
 *.plotnv  112 

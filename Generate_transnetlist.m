@@ -71,9 +71,7 @@ kl = 0; %遍历变量
 %% 节点映射
 Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2];
 Node_Map = zeros(length(Node),1);
-for i=1:length(Node)
-    Node_Map(i,1)=Node(i);
-end
+Node_Map(:,1)=Node;
 Node_Map = unique(Node_Map,"rows");
 
 NodeNum = length(Node_Map); % Node_Map数目

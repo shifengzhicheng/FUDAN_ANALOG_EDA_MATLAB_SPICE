@@ -67,7 +67,7 @@ end
 
 %% 获取每轮所需对DC结果的索引 以及Obj
 %随意跑一次伴随器件模型的Gen_baseA，只为获得x_0方便索引
-[~, x_0, ~] = Gen_baseA(LinerNetName, LinerNet('N1'), LinerNet('N2'), LinerNet('dependence'), LinerNet('Value')); 
+[~, x_0, ~] = Gen_Matrix(LinerNetName, LinerNet('N1'), LinerNet('N2'), LinerNet('dependence'), LinerNet('Value')); 
 %因为伴随器件都放最后，不允许打印伴随器件值，故复用PLOTIndexInRes 
 [mosIndexInValues, mosIndexInmosCurrents, ...
             dioIndexInValues, dioIndexIndiodeCurrents, ... 

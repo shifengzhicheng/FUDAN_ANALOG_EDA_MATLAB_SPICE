@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferSweep';
+file='dbmixerTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -91,13 +91,10 @@ switch lower(SPICEOperation{1}{1})
     case '.trans'
         % 设置判断解收敛的标识
         Error = 1e-6;
-        [LinerNet,MOSINFO,DIODEINFO,LCINFO,SinINFO,Node_Map]=...
-            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 到这里需要进行瞬态仿真
         % 瞬态仿真需要时间步长和仿真的时间
-        stopTime = tranNum(SPICEOperation{1}{2});
-        stepTime = tranNum(SPICEOperation{1}{3});
-        TranInfo = [timeScale,step];
+        stopTime = tranNumber(SPICEOperation{1}{2});
+        stepTime = tranNumber(SPICEOperation{1}{3});
         [Obj, Values, printTimePoint] =...
             CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);        for i=1:size(Obj,1)
             figure('Name',Obj{i})
@@ -120,4 +117,5 @@ switch lower(SPICEOperation{1}{1})
         for i=1:size(Obj)
             display([Obj{i} ': ' num2str(Values(i))]);
         end
+    case '.pz'
 end
