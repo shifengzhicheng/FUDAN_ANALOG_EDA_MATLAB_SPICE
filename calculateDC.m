@@ -34,9 +34,7 @@ Is = DIODEINFO('Is');
 diodeLine = DIODEINFO('DiodeLine');
 
 %% 生成初始矩阵
-length = MOSLine - 1;
-[~, x0, ~] = Gen_Matrix(Name, N1, N2, dependence, Value);
-[A0, ~, b0] = Gen_Matrix(Name(1:length), N1, N2, dependence, Value);
+[A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value); 
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A
 mosCurrents = [];
