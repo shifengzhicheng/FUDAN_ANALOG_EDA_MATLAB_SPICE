@@ -1,6 +1,6 @@
 %根据二极管反向饱和电流Is，本轮两端正向电压Vpn，温度(默认27℃=300K)
 %得到伴随器件值Gdk = 1/Rk, Ieqk
-function [zero, pole] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map)
+function [result] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map)
 %% 读出线性网表信息
 Name = LinerNet('Name');
 N1 = LinerNet('N1');
@@ -47,8 +47,19 @@ end
 C(1,:)=[];
 C(:,1)=[];
 
+
+%% 处理G矩阵不可逆的情况
+s0 = 1;     %s频移s0 rad/s
+flag = 0;
+if det(G)==0
+    G = G + s0*C;
+    flag = 1;
+end
+
+
 %% 特征值分解，求出所有零点
-GC=G\C; %用"\",尽量不用"inv()求逆"
+% GC = inv(G)*C;
+GC=G\C; %用"\",尽量不用"inv()求逆,inv(G)*C = G\C;
 
 [V,D]= eig(GC);
 d = diag(D);    % LAMDA
@@ -60,6 +71,9 @@ p  = -di;    % 全部极点，含0
 
 %% 输出匹配
 [plotnv,~] = portMapping(PLOT,Node_Map);
+node_all = zeros(1,length(plotnv));
+zeros_all = cell(1,length(plotnv));
+poles_all = cell(1,length(plotnv));
 
 %% 根据具体端点，求出对应传递函数的零极点
 
@@ -88,9 +102,20 @@ for t=1:length(plotnv)
     dz(dz~=1) = 0;
     k = r'*dz;
 
-    [num,den] = residue(ttr,ttp,k);
+    [num,den] = residue(ttr,ttp,k); %部分分式展开，求出零极点
     [zero,pole,~] = tf2zp(num,den);
+    
+    if(flag == 1)
+        zero = zero + s0 * ones(length(zero),1);
+        pole = pole + s0 * ones(length(pole),1);
+    end
+
+    zeros_all{t} = zero;    %存储结果
+    poles_all{t} = pole;
+    node_all(t) = Node_Map(plotnv(t));
 
 end
+
+result=containers.Map({'ID','zero','pole'},{node_all,zeros_all,poles_all});
 
 end
