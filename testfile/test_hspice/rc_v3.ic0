@@ -1,0 +1,17 @@
+* "simulator" "HSPICE" 
+* "version" "D-2010.03-SP1 32-BIT"
+* "format" "HSP"
+* "rundate" "05:39:25 05/22/2012 "
+* "netlist" "d:\synopsys\hspice\trytry\rc_v3.sp "
+* "runtitle" "* rc"
+* time =    0.            
+* temperature =   25.0000        
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc=   1.0000p       
+.nodeset
++ 1 =   0.            
++ 2 =   0.            
++ 3 =   0.            
++ 4 =   0.            
+***   END: Saved Operating Point ***                     

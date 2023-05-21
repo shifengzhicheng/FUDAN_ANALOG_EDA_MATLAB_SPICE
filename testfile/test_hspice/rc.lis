@@ -1,0 +1,217 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\rc.sp                                   
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                                            
+ element name        0:rin     0:rm1      0:rout     0:rs   
+ node1               0:11      0:32       0:31       0:33   
+ node2               0:21      0:33       0:32       0:0    
+ model                                                      
+ res eff            10.0000  623.1404k    1.0000k   10.0000 
+ tc1                 0.        0.         0.         0.     
+ tc2                 0.        0.         0.         0.     
+ scale               1.0000    1.0000     1.0000     1.0000 
+ m                   1.0000    1.0000     1.0000     1.0000 
+ ac                 10.0000  623.1404k    1.0000k   10.0000 
+ temp               25.0000   25.0000    25.0000    25.0000 
+ l                   0.        0.         0.         0.     
+ w                   0.        0.         0.         0.     
+ cap                 0.        0.         0.         0.     
+ noise            1.000e+00 1.000e+00  1.000e+00  1.000e+00 
+
+
+ **** capacitors
+  
+ 
+                                                              
+ element name        0:cgsm1    0:cgdm1    0:cdm1     0:csm1  
+ node1               0:21       0:21       0:32       0:33    
+ node2               0:33       0:32       0:0        0:0     
+ model                                                        
+ cap eff           105.0000a  105.0000a   40.0000f   40.0000f 
+ tc1                 0.         0.         0.         0.      
+ tc2                 0.         0.         0.         0.      
+ scale               1.0000     1.0000     1.0000     1.0000  
+ ic                  0.         0.         0.         0.      
+ m                   1.0000     1.0000     1.0000     1.0000  
+ w                   0.         0.         0.         0.      
+ l                   0.         0.         0.         0.      
+ temp               25.0000    25.0000    25.0000    25.0000  
+
+
+ **** voltage-controlled current sources
+      name        +             -          dimension  function  multiplier
+        0:gm1             0:32              0:33             1      poly       1.    
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vin  11                0                    1.0000     1.0000     0.      dc   
+  vdd  31                0                    3.0000     0.         0.      dc   
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  element node table
+                                                                                      
+ 0                rs               cdm1             csm1             vin              
+                  vdd                                                                 
+ 11               rin              vin                                                
+ 21               rin              cgsm1            cgdm1            gm1:+            
+ 31               rout             vdd                                                
+ 32               rm1              rout             cgdm1            cdm1             
+                  gm1                                                                 
+ 33               rm1              rs               cgsm1            csm1             
+                  gm1              gm1:-                                              
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  operating point information tnom=  25.000 temp=  25.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:11      =   1.0000  0:21      =   1.0000  0:31      =   3.0000 
+ +0:32      =   2.8481  0:33      =   1.5185m
+
+
+ ****  voltage sources
+
+ subckt                        
+ element  0:vin      0:vdd     
+  volts      1.0000     3.0000 
+  current    0.      -151.8533u
+  power      0.       455.5599u
+
+     total voltage source power dissipation=  455.5599u       watts
+
+
+
+ **** resistors
+
+ subckt                                              
+ element  0:rin      0:rm1      0:rout     0:rs      
+  r value   10.0000   623.1404k    1.0000k   10.0000 
+  v drop     0.         2.8466   151.8533m    1.5185m
+  current    0.         4.5682u  151.8533u  151.8533u
+  power      0.        13.0040u   23.0594u  230.5942n
+
+
+ **** voltage-controlled current sources
+
+
+ subckt             
+ element  0:gm1     
+  v drop     2.8466 
+  current  147.2851u
+
+
+
+ ***************************************************
+   ******   pole/zero analysis  
+ 
+ 
+    input =  0:vin          output = v(21)
+ 
+       poles (rad/sec)                 poles ( hertz)
+ real            imag            real            imag            
+ -24.9744g       0.              -3.97480g       0.              
+ 
+       zeros (rad/sec)                 zeros ( hertz)
+ real            imag            real            imag            
+ -24.9745g       0.              -3.97482g       0.              
+ 
+  ***** constant factor = 499.998m
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  job statistics summary tnom=  25.000 temp=  25.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =       6 # elements   =      11
+  # resistors   =       4 # capacitors =       4 # inductors   =       0
+  # mutual_inds =       0 # vccs       =       1 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       2
+  # curr_srcs   =       0 # diodes     =       0 # bjts        =       0
+  # jfets       =       0 # mosfets    =       0 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.05           1           4
+  readin             0.38
+  errchk             0.05
+  setup              0.11
+  output             0.00
+
+
+           total memory used           29  kbytes
+           total cpu time            0.70 seconds
+           total elapsed time        1.19 seconds
+           job started at     05:22:17 05/22/2012
+           job ended   at     05:22:18 05/22/2012
+
+
+  lic: Release hspice token(s) 

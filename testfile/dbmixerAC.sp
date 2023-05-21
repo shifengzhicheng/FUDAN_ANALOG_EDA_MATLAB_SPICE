@@ -49,9 +49,9 @@ Rs2 113 111 25
 * .plotnc M5(d)
 * .plotnc M6(d)
 .plotnv  102
-.plotnv  103 
-.plotnv  112 
-.plotnv  113 
-.plotnv  154 
-.plotnv  164
+.plotnv  108 
+*.plotnv  112 
+*.plotnv  113 
+*.plotnv  154 
+*.plotnv  164
 .end

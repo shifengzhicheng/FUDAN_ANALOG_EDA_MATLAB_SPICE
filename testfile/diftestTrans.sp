@@ -32,6 +32,10 @@ RSS 121 0 1e5
 
 .plotnv 102
 .plotnv 103 
+.plotnv 104
+.plotnv 105 
+.plotnv 112
+.plotnv 121
 .plotnc D1(+)
 .plotnc M1(d)
 

@@ -1,0 +1,21 @@
+* "simulator" "HSPICE" 
+* "version" "D-2010.03-SP1 32-BIT"
+* "format" "HSP"
+* "rundate" "16:46:07 05/07/2011 "
+* "netlist" "d:\synopsys\hspice\trytry\inverterbuffer.sp "
+* "runtitle" "* non-inverting buffer"
+* time =    0.            
+* temperature =   25.0000        
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc=   1.0000p       
+.nodeset
++ 101 =   1.5000        
++ 103 =   3.0000        
++ 104 =   2.5131        
++ 107 =   1.5000        
++ 115 =   2.5131        
++ 116 =   2.5131        
++ 117 =   2.5131        
++ 118 =   2.5131        
+***   END: Saved Operating Point ***                     
