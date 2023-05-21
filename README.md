@@ -687,9 +687,11 @@ Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosInde
 
 ├── CalculateTrans.m
 
-│   ├──CalculateDC.m
-│   ├──PLOTIndexInRes.m
-│   ├──updateValues.m
+│   ├── CalculateDC.m
+
+│   ├── PLOTIndexInRes.m
+
+│   ├── updateValues.m
 
 ##### 函数定义 - CalculateTrans
 
@@ -708,7 +710,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
    - `stopTime` : 瞬态停止时间
    - `stepTime` : 瞬态打印时间步长
    - `PLOT` : 待打印信息
-     以上信息是直接parse_netlist的结果，Generate_TransNetlist在函数内调用，因为Trans定初值方法或需要Generate_DCnetlist，故取名MOSINFO_ori、DIODEINFO_ori做区分。不过
+     以上信息是直接`parse_netlist`的结果，`Generate_TransNetlist`在函数内调用，因为`Trans`定初值方法或需要`Generate_DCnetlist`，故取名`MOSINFO_ori`、`DIODEINFO_ori`做区分。
 2. 函数输出
    - `printTimePoint`: Trans带打印的时间点离散值
    - `Obj`: 同`ValueCalc`中，被观测值的名称信息
@@ -720,7 +722,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 ###### 瞬态初值方法一
 
-直接使用DC分析模型，替换CL为零电源后做一次DC得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要Generate_DCnetlist的结果导致CalculateTrans不得不将parse_netlist的结果经Generate_Transnetlist的过程放到CalculateTrans里执行，这会为后续稳态反复执行CalculateTrans带来不必要的重复开销。
+直接使用`DC`分析模型，替换`CL`为零电源后做一次`DC`得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到`DC`模型与瞬态模型节点的对应关系，且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
 
 ###### 瞬态初值方法二
 
@@ -736,12 +738,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 ###### 瞬态推进过程方法二 - 动态步长
 
-改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算epsilon的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断CalculateDC是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
-
-
-```
-
-
+改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`，减小到下限仍然不收敛则取`Δt`上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大`Δt`超过打印步长，故规定`Δt`动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
 
 #### 结果索引生成函数 - PLOTIndexInRes
 
@@ -759,6 +756,7 @@ function [mosIndexInValues, mosIndexInmosCurrents, ...
     LIndexInValues, LIndexInLIp,...
     Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, Times, LinerNet, MOSName, DiodeName, CName, LName)
 ```
+
 ##### 接口说明
 
 1. 函数输入
@@ -775,29 +773,13 @@ function [mosIndexInValues, mosIndexInmosCurrents, ...
    - `Obj` : 待打印信息名称
    - `Values` ： 要给出的各待打印信息矩阵框架 在后续updateValues更新为最终输出结果
    - `plotnv` ： 待打印电压节点信息
-   其余输出如输出参数名称一般，表示需要打印输出某个值的话其在Values中对应那些行，获得其打印值需要在哪个量上做何种索引。如mosIndexInValues即待打印电流的各mos管对应于Values的哪几行，mosIndexInmosCurrents即待打印电流的各mos管需要在mosCurrents这一CalculateDC的输出结果的mosIndexInmosCurrents这些位置得到目标电流值。
+   其余输出如输出参数名称一般，表示需要打印输出某个值的话其在`Values`中对应那些行，获得其打印值需要在哪个量上做何种索引。如`mosIndexInValues`即待打印电流的各`mos`管对应于`Values`的哪几行，`mosIndexInmosCurrents`即待打印电流的各`mos`管需要在`mosCurrents`这一`CalculateDC`的输出结果的`mosIndexInmosCurrents`这些位置得到目标电流值。
 
 ##### 技术细节
 
-关键在电流索引的得到，通过遍历索引待打印电流的信息(plotCurrent)，每轮字符匹配某一器件，根据其电流获得所需的方法生成对应索引。如对待打印MOS电流，首先将其在plotCurrent中顺序加入更新mosIndexValues，而后通过MOS名称匹配找到待打印电流的MOS管在CalculateDC输出的mosCurrent中对应哪个位置，加入mosIndexInmosCurrents中。此外因为器件不同端电流打印正负不同，故再判断了待打印端口，生成Values框架，如MOS打印S端电流，则可以将Values对应行初始化为-1，则后续更新过程即拿mosCUrrent得到的实际IDS乘上Values初值更新Values就可以得到正确的打印电流方向。
+关键在电流索引的得到，通过遍历索引待打印电流的信息`(plotCurrent)`，每轮字符匹配某一器件，根据其电流获得所需的方法生成对应索引。如对待打印`MOS`电流，首先将其在`plotCurrent`中顺序加入更新`mosIndexValues`，而后通过`MOS`名称匹配找到待打印电流的`MOS`管在`CalculateDC`输出的`mosCurrent`中对应哪个位置，加入`mosIndexInmosCurrents`中。此外因为器件不同端电流打印正负不同，故再判断了待打印端口，生成`Values`框架，如`MOS`打印`S`端电流，则可以将`Values`对应行初始化为`-1`，则后续更新过程即拿`mosCUrrent`得到的实际`IDS`乘上`Values`初值更新`Values`就可以得到正确的打印电流方向。
 
-```matlab
-	switch dname(1)
-        case 'M'
-            %mosIndexInValues是表示Values中从mosCurrents得电流的位置的索引们
-            mosIndexInValues = [mosIndexInValues; j + nvNum];
-            %mosIndexInmosCurrents是表示mosCurrents要看的索引们
-            mosIndexInmosCurrents = [mosIndexInmosCurrents; find(strcmp(MOSName,dname))];
-            switch plotport
-                case 'd'
-                    Values(j + nvNum, :) = 1;
-                case 'g'
-                    Values(j + nvNum, :) = 0;
-                case 's'
-                    Values(j + nvNum, :) = -1;
-            end
-```
-#### 打靶法 shooting method 
+#### 打靶法 -shooting_method 
 
 此部分由郑志宇同学完成。
 
@@ -813,6 +795,40 @@ function [mosIndexInValues, mosIndexInmosCurrents, ...
 
 ```matlab
 function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
+```
+
+`shooting_method`函数沿用了部分瞬态分析的逻辑，然后使用牛顿迭代法做稳态分析，能直接找到电路一个周期的稳态响应。
+
+##### 接口说明
+
+1. 函数输入
+   - 线性网表，非线性器件信息，交流源信息
+   - 节点映射结果，步长，绘制参数
+2. 函数输出
+   - 绘制对象
+   - 绘制对象的结果值向量
+   - 时间步长
+
+##### 技术细节
+
+###### 求电路响应的周期
+
+逻辑上来讲，电路的稳态响应具有稳定的周期。这与所有的`AC`源直接相关。电路的节点的变化频率应该是电路中所有的周期源的频率的最大公约数。于是用这种原理可以求出电路的一个周期的长度。得到了周期的长度，接下来就是通过迭代使得瞬态响应的初始值等于瞬态响应的结束值。即电路的解`x0=xT`。
+
+###### 本程序采用牛顿迭代法实现求解
+
+通过线性条件不断进行一阶的逼近。求出不动点的关系式为
+
+$x_T=Trans(x_0)|_{pos=T}$
+
+$x_0=Trans(x_0)|_{pos=0}$
+
+利用这个条件进行简单的迭代就能得到一个以`shooting_method`为基础的迭代求解方式。这样的求解方式的好处是能用非常快的速度找到仿真结果的一个稳定的周期。但是这种方式无法求解非稳定的状态的结果。非稳定的状态还是需要从初始状态出发进行瞬态仿真一步步找到结果。
+
+###### 电路结果的求解
+
+本程序因为使用来自`Trans`的接口，所以在求解电流上做的比较臃肿而且部分端口电流无法求解，有待优化求解电路电流的逻辑。
+
 ### Part 4 实现频率响应分析
 
 这一部分由郑志宇同学完成。
@@ -825,13 +841,13 @@ function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEI
 
 │   └── getCurrent.m
 
-实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
+实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据小信号模型求解的方法得到电路的幅频响应与相频响应。
 
 #### 生成小信号等效电路
 
 ##### 函数定义 -Generate_ACnetlist
 
-小信号等效电路由朱瑞宸同学在Generate_ACnetlist.m中进行替换，替换AC源，DC源，生成能使用MNA方程生成函数的标准的线性电路网表。
+小信号等效电路由朱瑞宸同学在`Generate_ACnetlist.m`中进行替换，替换`AC`源，`DC`源，生成能使用`MNA`方程生成函数的标准的线性电路网表。
 
 #### AC扫描
 
@@ -949,26 +965,26 @@ Vin <node1> <node2> DC <Value>
 
 项目测试和分析部分由朱瑞宸同学完成，将测试结果与hspice标准仿真结果进行对照分析；部分测试电路由小组成员提供。
 
-### hspice测试原理
+### `hspice`测试原理
 
-《Star-Hspice Manual》一书详细介绍了hspice低阶模型参数和计算模型。同时，hspice提供了一系列低阶模型的默认参数，以及修改这些参数的接口，因此这为我们提供了运用hspcie验证结果正确性，以及对照和优化模型的可能性。
+`《Star-Hspice Manual》`一书详细介绍了`hspice`低阶模型参数和计算模型。同时，`hspice`提供了一系列低阶模型的默认参数，以及修改这些参数的接口，因此这为我们提供了运用`hspcie`验证结果正确性，以及对照和优化模型的可能性。
 
-因此，将网表修改为符合hspice语法的形式(testfile\hspice_testfile文件夹下)，使用hspice进行仿真测试，并将结果与我们自己写的spice结果进行对比，从而得到对模型性能的评估。
+因此，将网表修改为符合`hspice`语法的形式`(testfile\hspice_testfile文件夹下)`，使用`hspice`进行仿真测试，并将结果与我们自己写的`SPICE`结果进行对比，从而得到对模型性能的评估。
 
-在用hspice进行测试时，对于mosfet和diode我们均采用level 1模型。同时仅修改实例网表定义的模型参数，其余使用默认参数。需要注意的是，实例网表中的迁移率MU单位为m2/(V⋅s)，而spice标准参数中的迁移率UO单位为cm2/(V⋅s)，在替换参数时需要进行单位换算。
+在用`hspice`进行测试时，对于`mosfet`和`diode`我们均采用`level 1`模型。同时仅修改实例网表定义的模型参数，其余使用默认参数。需要注意的是，实例网表中的迁移率`MU`单位为`m2/(V⋅s)`，而`SPICE`标准参数中的迁移率`UO`单位为`cm2/(V⋅s)`，在替换参数时需要进行单位换算。
 
-对于mosfet的标准level 1模型，其与我们所做模型的主要差异在于：
+对于`mosfet`的标准`level 1`模型，其与我们所做模型的主要差异在于：
 
-* 考虑了衬底偏置效应，Vth需要随着Vsb变化
-* 考虑了沟道有效长度和有效宽度，Leff和Weff会收到相应的扩散系数和scaling的系数影响
+* 考虑了衬底偏置效应，`Vth`需要随着`Vsb`变化
+* 考虑了沟道有效长度和有效宽度，`Leff`和`Weff`会收到相应的扩散系数和`scaling`的系数影响
 
-对于diode的标准level 1模型，其与我们所做模型的主要差异在于：
+对于`diode`的标准`level 1`模型，其与我们所做模型的主要差异在于：
 
 * 提供了反向击穿的阈值电压
-* 电流分段，以-10vt为界，当vd<-10vt,I=-ISS
-* 考虑了二极管有效面积，将Is拆为Area和Js的乘积进行定义
+* 电流分段，以`-10vt`为界，当`vd<-10vt,I=-ISS`
+* 考虑了二极管有效面积，将`Is`拆为`Area`和`Js`的乘积进行定义
 
-除此之外，二阶的mosfet模型增加了非常数表面迁移率效应和速度饱和效应等，与我们所测试的结果相差更大。
+除此之外，二阶的`mosfet`模型增加了非常数表面迁移率效应和速度饱和效应等，与我们所测试的结果相差更大。
 
 ### `.dc`测试用例
 
