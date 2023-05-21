@@ -736,6 +736,26 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算epsilon的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断CalculateDC是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
 
+#### 打靶法 shooting method 
+
+此部分由郑志宇同学完成。
+
+`Trans`基于林与正同学的`CalculateTrans`进行修改，合并以及简化了部分逻辑。求解一个周期的稳态响应。
+
+├── shooting_method.m
+
+│   ├── Trans.m
+
+│   └── initTrans.m
+
+##### 函数定义
+
+```matlab
+function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
+```
+
+
+
 ### Part 4 实现频率响应分析
 
 这一部分由郑志宇同学完成。
