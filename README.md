@@ -228,7 +228,7 @@ Generate_DCnetlist;
 %% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
-    %% DCSEWEEP操作的流程
+    %% DCSWEEP操作的流程
     case '.ac'
     %% AC分析的流程
     case '.trans'
@@ -718,7 +718,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 ##### 技术细节
 
-瞬态初值与推进过程都分别尝试了两种方式实现，具体见代码注释部分，提交的运行代码为模拟电源打开梯形法固定步长推进，若需测试其他方法则更换注释内容即可。
+瞬态初值与推进过程都分别尝试了两种方式实现，具体见代码注释部分，提交的运行代码为模拟电源打开后向欧拉动态步长推进。
 
 ###### 瞬态初值方法一
 
@@ -740,61 +740,6 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`，减小到下限仍然不收敛则取`Δt`上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大`Δt`超过打印步长，故规定`Δt`动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
 
-#### 结果索引生成函数 - PLOTIndexInRes
-
-该功能由林与正同学实现，得到待打印信息的各值获取索引。
-
-##### 函数定义
-
-```matlab
-function [mosIndexInValues, mosIndexInmosCurrents, ...
-    dioIndexInValues, dioIndexIndiodeCurrents, ...
-    VIndexInValues, VIndexInDCres, ...
-    IIndexInValues, IIndexInValue, ...
-    RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-    CIndexInValues, CIndexInCIp,...
-    LIndexInValues, LIndexInLIp,...
-    Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, Times, LinerNet, MOSName, DiodeName, CName, LName)
-```
-
-##### 接口说明
-
-1. 函数输入
-   - `x_0` : CalculateDC得到的Res对应名称，如V_1、I_VL1等
-   - `Node_Map` : 解析后线性网表节点对应原网表节点
-   - `Time`: 待打印次数
-   - `LinerNet`: 线性网表信息
-   - `MOSName`: MOS管名称信息
-   - `DiodeName`: 二极管名称信息
-   - `CName` : 电容名称信息
-   - `LName` : 电感名称信息
-   - `PLOT` : 待打印信息
-2. 函数输出
-   - `Obj` : 待打印信息名称
-   - `Values` ： 要给出的各待打印信息矩阵框架 在后续updateValues更新为最终输出结果
-   - `plotnv` ： 待打印电压节点信息
-   其余输出如输出参数名称一般，表示需要打印输出某个值的话其在`Values`中对应那些行，获得其打印值需要在哪个量上做何种索引。如`mosIndexInValues`即待打印电流的各`mos`管对应于`Values`的哪几行，`mosIndexInmosCurrents`即待打印电流的各`mos`管需要在`mosCurrents`这一`CalculateDC`的输出结果的`mosIndexInmosCurrents`这些位置得到目标电流值。
-
-##### 技术细节
-
-关键在电流索引的得到，通过遍历索引待打印电流的信息`(plotCurrent)`，每轮字符匹配某一器件，根据其电流获得所需的方法生成对应索引。如对待打印`MOS`电流，首先将其在`plotCurrent`中顺序加入更新`mosIndexValues`，而后通过`MOS`名称匹配找到待打印电流的`MOS`管在`CalculateDC`输出的`mosCurrent`中对应哪个位置，加入`mosIndexInmosCurrents`中。此外因为器件不同端电流打印正负不同，故再判断了待打印端口，生成`Values`框架，如`MOS`打印`S`端电流，则可以将`Values`对应行初始化为`-1`，则后续更新过程即拿`mosCUrrent`得到的实际`IDS`乘上`Values`初值更新`Values`就可以得到正确的打印电流方向。
-
-#### 打靶法 -shooting_method 
-
-此部分由郑志宇同学完成。
-
-`Trans`基于林与正同学的`CalculateTrans`进行修改，合并以及简化了部分逻辑。求解一个周期的稳态响应。
-
-├── shooting_method.m
-
-│   ├── Trans.m
-
-│   └── initTrans.m
-
-##### 函数定义
-
-```matlab
-function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
 ```
 
 `shooting_method`函数沿用了部分瞬态分析的逻辑，然后使用牛顿迭代法做稳态分析，能直接找到电路一个周期的稳态响应。
@@ -841,6 +786,7 @@ $x_0=Trans(x_0)|_{pos=0}$
 
 │   └── getCurrent.m
 
+实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
 实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据小信号模型求解的方法得到电路的幅频响应与相频响应。
 
 #### 生成小信号等效电路
