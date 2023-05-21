@@ -27,7 +27,7 @@ LINFO = RCLINFO('LINFO');   %Node(原网表) Name Value - 全string
 CN1 = str2double(CINFO('N1'));
 CN2 = str2double(CINFO('N2'));
 LN1 = str2double(LINFO('N1'));
-LN2 = str2double(LINFO('N2'));  
+LN2 = str2double(LINFO('N2'));
 CValue = str2double(CINFO('Value'));
 LValue = str2double(LINFO('Value'));
 CName = CINFO('Name');
@@ -56,27 +56,27 @@ SINFreq = SinINFO('Freq');
 SINNum = size(SINAcValues, 2);  %都为行向量
 %display(LinerNet('Name'))
 %CL节点 - 线性网表中节点
-for i = 1 : CNum   
-            CNodeMat(i, 1) = find(Node_Map == CN1(i));
-            CNodeMat(i, 2) = find(Node_Map == CN2(i));    %相当于已经考虑零节点，不再加1
+for i = 1 : CNum
+    CNodeMat(i, 1) = find(Node_Map == CN1(i));
+    CNodeMat(i, 2) = find(Node_Map == CN2(i));    %相当于已经考虑零节点，不再加1
 end
-for i = 1 : LNum   
-            LNodeMat(i, 1) = find(Node_Map == LN1(i));
-            LNodeMat(i, 2) = find(Node_Map == LN2(i));    %相当于已经考虑零节点，不再加1
+for i = 1 : LNum
+    LNodeMat(i, 1) = find(Node_Map == LN1(i));
+    LNodeMat(i, 2) = find(Node_Map == LN2(i));    %相当于已经考虑零节点，不再加1
 end
 
 %% 获取每轮所需对DC结果的索引 以及Obj
 %随意跑一次伴随器件模型的Gen_baseA，只为获得x_0方便索引
-[~, x_0, ~] = Gen_Matrix(LinerNetName, LinerNet('N1'), LinerNet('N2'), LinerNet('dependence'), LinerNet('Value')); 
-%因为伴随器件都放最后，不允许打印伴随器件值，故复用PLOTIndexInRes 
+[~, x_0, ~] = Gen_Matrix(LinerNetName, LinerNet('N1'), LinerNet('N2'), LinerNet('dependence'), LinerNet('Value'));
+%因为伴随器件都放最后，不允许打印伴随器件值，故复用PLOTIndexInRes
 [mosIndexInValues, mosIndexInmosCurrents, ...
-            dioIndexInValues, dioIndexIndiodeCurrents, ... 
-            VIndexInValues, VIndexInDCres, ...
-            IIndexInValues, IIndexInValue, ...
-            RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-            CIndexInValues, CIndexInCIp,...
-            LIndexInValues, LIndexInLIp,...
-            Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, printTimeNum, LinerNet, MOSINFO('Name'), DIODEINFO('Name'), CName ,LName);
+    dioIndexInValues, dioIndexIndiodeCurrents, ...
+    VIndexInValues, VIndexInDCres, ...
+    IIndexInValues, IIndexInValue, ...
+    RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
+    CIndexInValues, CIndexInCIp,...
+    LIndexInValues, LIndexInLIp,...
+    Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, printTimeNum, LinerNet, MOSINFO('Name'), DIODEINFO('Name'), CName ,LName);
 nvNum = size(plotnv, 1);
 
 % %% 零时刻值 - 可优化
@@ -194,23 +194,19 @@ display(curTimeResData)
 %加入零时刻输出结果
 mosCurrents = curTimeRes('MOS');
 diodeCurrents = curTimeRes('Diode');
-Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, LIp,...
-                                plotnv,...
-                                mosIndexInValues, mosIndexInmosCurrents, ...
-                                dioIndexInValues, dioIndexIndiodeCurrents, ...
-                                VIndexInValues, VIndexInDCres, ...
-                                IIndexInValues, IIndexInValue, ...
-                                RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-                                CIndexInValues, CIndexInCIp,...
-                                LIndexInValues, LIndexInLIp,...
-                                Values, nvNum, 1);
+%% 初始化获取的电流值
+ResData = [curTimeResData,zeros(size(x_0,1)+1,round(stopTime/stepTime))];
+mosCurrents = [mosCurrents,zeros(size(mosCurrents,1),round(stopTime/stepTime))];
+diodeCurrents = [diodeCurrents,zeros(size(diodeCurrents,1),round(stopTime/stepTime))];
+LData=[LIp',zeros(size(LName,2),round(stopTime/stepTime))];
+CData=[CIp',zeros(size(CName,2),round(stopTime/stepTime))];
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %% 开始推进 - 可变推进时间步长delta_t情况 - 尚未完成
 % curPlotTime = stepTime; %下次要打印的时间
 % %前已加入零时刻值Values(:, 1)
 % plotCount = 1;
 % curTime = 0;    %当前推进到的时间
-% 
+%
 % while(curTime < stopTime)
 %     display(delta_t)
 %     curTime = curTime + delta_t;
@@ -233,7 +229,7 @@ Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, 
 %     LinerValue(LCLine + 2 * (LIndex - 1) + 1) = RL.';
 %     %LinerNet中SINLine之后是SIN电源
 %     LinerValue(SINLine + (1 : SINNum) - 1) = SINV.';
-% 
+%
 %     LinerNet('Value') = LinerValue;
 % %     display(SINV.')
 % %     display(LinerNet('Name'))
@@ -241,7 +237,7 @@ Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, 
 % %     display(LinerNet('N2'))
 % %     display(LinerNet('Value'))
 % %     display(keys(LinerNet))
-% 
+%
 %     [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
 %     if(isempty(curTimeRes('x')))    %DC不收敛 减小步长再来一次
 %         curTime = curTime - delta_t;
@@ -263,14 +259,14 @@ Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, 
 %     end
 %     LIp = IL + LVp ./ RL;
 %     CIp = (CVp - VC) ./ RC;
-% 
+%
 %     %% 每到要打印的时间点才存下待打印信息
 %     if(abs(curTime - curPlotTime) < delta_t / 2)    %delta_t则出bug%%%%
 %         plotCount = plotCount + 1;
 %         display(plotCount)
 %         mosCurrents = curTimeRes('MOS');
 %         diodeCurrents = curTimeRes('Diode');
-% 
+%
 %         %% 尚未加入寄生电容的电流，时间瞬态三端电流要加上电容漏电 - HOW？
 %         Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, LIp,...
 %                                 plotnv,...
@@ -283,7 +279,7 @@ Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, 
 %                                 LIndexInValues, LIndexInLIp,...
 %                                 Values, nvNum, plotCount);
 %         %更新下次需打印时间
-%         curPlotTime = curPlotTime + stepTime;      
+%         curPlotTime = curPlotTime + stepTime;
 %     end
 % end
 
@@ -300,7 +296,7 @@ curTime = 0;    %当前推进到的时间
 while(curPlotTime <= stopTime)
     curTime = curTime + delta_t;
     %利用上轮电容电感的电流电压得到当前时刻伴随器件值
-%    display(curTime)
+    %    display(curTime)
     VC = CVp + RC .* CIp;
     IL = LIp + delta_t * 0.5 * (LVp ./ LValue);
     %当前时刻可变SIN电源值
@@ -317,22 +313,20 @@ while(curPlotTime <= stopTime)
     LinerValue(SINLine + (1 : SINNum) - 1) = SINV.';
 
     LinerNet('Value') = LinerValue;
-%     display(SINV.')
-%      display(LinerNet('Name'))
-%      display(LinerNet('N1'))
-%      display(LinerNet('N2'))
-%     display(LinerNet('Value'))
-%     display(keys(LinerNet))
+    %     display(SINV.')
+    %      display(LinerNet('Name'))
+    %      display(LinerNet('N1'))
+    %      display(LinerNet('N2'))
+    %     display(LinerNet('Value'))
+    %     display(keys(LinerNet))
 
     [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
-    if(isempty(curTimeRes('x')))
-        break;
-    end
+
     %tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;
     %当前结果作下一轮前值
     curTimeResData = [0; curTimeRes('x')];
-%    display(curTimeResData)
+    %    display(curTimeResData)
     %因为原网表CL的端点在res靠前，索引不用变，伴随器件新增节点不关心
     if(~isempty(LNodeMat))
         LVp = curTimeResData(LNodeMat(:, 1)) - curTimeResData(LNodeMat(:, 2));
@@ -344,27 +338,17 @@ while(curPlotTime <= stopTime)
     end
     LIp = IL + LVp ./ RL;
     CIp = (CVp - VC) ./ RC;
-    
+
     %% 每到要打印的时间点才存下待打印信息
     if(abs(curTime - curPlotTime) <= delta_t / 2)
         plotCount = plotCount + 1;
-        display(plotCount)
-        mosCurrents = curTimeRes('MOS');
-        diodeCurrents = curTimeRes('Diode');
-
-        %% 尚未加入寄生电容的电流，时间瞬态三端电流要加上电容漏电 - HOW？
-        Values = updateValues( curTimeResData, Valuep, mosCurrents, diodeCurrents, CIp, LIp,...
-                                plotnv,...
-                                mosIndexInValues, mosIndexInmosCurrents, ...
-                                dioIndexInValues, dioIndexIndiodeCurrents, ...
-                                VIndexInValues, VIndexInDCres, ...
-                                IIndexInValues, IIndexInValue, ...
-                                RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-                                CIndexInValues, CIndexInCIp,...
-                                LIndexInValues, LIndexInLIp,...
-                                Values, nvNum, plotCount);
+        mosCurrents(:,plotCount) = curTimeRes('MOS');
+        diodeCurrents(:,plotCount) = curTimeRes('Diode');
+        ResData(:,plotCount) = curTimeResData;
+        LData(:,plotCount) = LIp';
+        CData(:,plotCount) = CIp';
         %更新下次需打印时间
-        curPlotTime = curPlotTime + stepTime;      
+        curPlotTime = curPlotTime + stepTime;
     end
 end
 %     if(printTimeNum ~= plotCount)
@@ -374,4 +358,16 @@ end
 %             title(Obj{i});
 %         end
 %     end
+%% 尚未加入寄生电容的电流，时间瞬态三端电流要加上电容漏电 - HOW？
+% 在外面同一获取所有需要的电流
+Values = updateValues( ResData, Valuep, mosCurrents, diodeCurrents, CData, LData,...
+    plotnv,...
+    mosIndexInValues, mosIndexInmosCurrents, ...
+    dioIndexInValues, dioIndexIndiodeCurrents, ...
+    VIndexInValues, VIndexInDCres, ...
+    IIndexInValues, IIndexInValue, ...
+    RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
+    CIndexInValues, CIndexInCIp,...
+    LIndexInValues, LIndexInLIp,...
+    Values, nvNum);
 end
