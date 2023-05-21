@@ -535,7 +535,7 @@ function [A,x,b] = Gen_Matrix(Name, N1, N2, dependence, Value)
 
 #### 电路迭代求解直流解 -calculateDC
 
-CalculateDC.m迭代函数主体与每轮迭代具体过程Gen_nextRes.m由林与正同学完成，Gen_baseA.m，Gen_nextA.m在迭代过程中应用，已于Part1前述。
+此功能由林与正同学完成，包含迭代求直流点函数主体与Gen_nextRes的实现，同时Gen_baseA.m，Gen_nextA.m在迭代过程中应用，已于Part1前述。
 
 ├── CalculateDC.m
 
@@ -604,7 +604,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 #### 电路迭代求解直流解 -Sweep_DC
 
-此功能由林与正同学实现，根据PLOT要求进行DC扫描并给出观察对象与结果供后续作图打印输出
+此功能由林与正同学实现，可以根据PLOT要求进行DC扫描并给出观察对象与结果供后续作图打印输出
 
 ##### 函数定义
 
@@ -632,7 +632,62 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
 Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosIndexInmosCurrents);
 ```
 
-### Part 3 实现trans仿真 (暂未实现)
+### Part 3 实现trans仿真 
+
+#### 瞬态仿真函数 CalculateTrans
+
+此部分由林与正同学完成。
+
+├── CalculateTrans.m
+
+│   ├──CalculateDC.m
+
+##### 函数定义 - CalculateTrans
+
+```matlab
+function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOSINFO_ori, DIODEINFO_ori, Error, stopTime, stepTime, PLOT)
+```
+
+##### 接口说明
+
+1. 函数输入
+   - `RCLINFO` : 预处理得到的RCL相关信息。
+   - `SourceINFO` : 预处理得到的电源相关信息，包括恒流源和可变源。
+   - `MOSINFO_ori`: MOS管的信息哈希表，需要索引。
+   - `DIODEINFO_ori`: 二极管的信息哈希表。
+   - `Error`: 收敛判断值，相邻两轮迭代解向量之差的范数小于Error视为收敛。
+   - `stopTime` : 瞬态停止时间
+   - `stepTime` : 瞬态打印时间步长
+   - `PLOT` : 待打印信息
+   以上信息是直接parse_netlist的结果，Generate_TransNetlist在函数内调用，因为Trans定初值方法或需要Generate_DCnetlist，故取名MOSINFO_ori、DIODEINFO_ori做区分。不过
+2. 函数输出
+   - `printTimePoint`: Trans带打印的时间点离散值
+   - `Obj`: 同`ValueCalc`中，被观测值的名称信息
+   - `Values`: 同`ValueCalc`中，被观测值的数据信息，`obj`里一个对象在各扫描点结果对应`Values`的一行
+
+##### 技术细节
+
+瞬态初值与推进过程都分别尝试了两种方式实现，具体见代码注释部分，提交的运行代码为模拟电源打开后向欧拉动态步长推进。
+
+###### 瞬态初值方法一
+
+直接使用DC分析模型，替换CL为零电源后做一次DC得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要Generate_DCnetlist的结果导致CalculateTrans不得不将parse_netlist的结果经Generate_Transnetlist的过程放到CalculateTrans里执行，这会为后续稳态反复执行CalculateTrans带来不必要的重复开销。
+
+###### 瞬态初值方法二
+
+模拟电源打开过程，将所有电源改为斜坡源，做一个1000Δt的固定步长trans仿真，仿真终点各电源值是t=0的值，终止时各节点电源做瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
+
+###### 瞬态推进过程方法一 - 固定步长
+
+使用梯形法瞬态模型，固定步长为0.5倍打印步长，在每个时间点利用瞬态模型求DC直流解，并以此更新下一时刻的瞬态模型值，上一轮DC的结果作为下一轮DC初值，加速收敛。
+
+###### 一些debug经历
+
+不过在编写过程中buffer出现推进到某一时间点无法收敛的情况，检测后发现此时buffer恰处于反省临界，观察CalculateDC发现其DCres反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取0.5倍推进步长，再小无法收敛，推测是buffer跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。
+
+###### 瞬态推进过程方法二 - 动态步长
+
+改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算epsilon的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断CalculateDC是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
 
 ### Part 4 实现频率响应分析
 
