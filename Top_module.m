@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferTrans';
+file='bufferShoot';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -135,5 +135,18 @@ switch lower(SPICEOperation{1}{1})
         end
         for i=size(poles,1)
             display(['极点 ' num2str(poles(i))]);
+        end
+    case '.shoot'
+        [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
+            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        Error = 1e-6;
+        stepTime = tranNumber(SPICEOperation{1}{2});
+        [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map,...
+            Error,stepTime,PLOT);
+        for i=1:size(Obj,1)
+            figure('Name',Obj{i})
+            plot(printTimePoint,Values(i,:));
+            title(Obj{i});
+            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
 end

@@ -230,7 +230,7 @@ for i=1:length(CName)
     Value(kl) = 0;
 end
 
-CINFO = containers.Map({'Name','Value','CLine'},{CName, Carg, CLine});
+CINFO = containers.Map({'Name','Value','CLine','N1','N2'},{CName, Carg, CLine,CN1,CN2});
 
 %% 处理L
 % 记录L最后更改位置LLine
@@ -250,7 +250,7 @@ for i=1:length(LName)
     Value(kl) = 0;
 end
 
-LINFO = containers.Map({'Name','Value','LLine'},{LName, Larg, LLine});
+LINFO = containers.Map({'Name','Value','LLine','N1','N2'},{LName, Larg, LLine,LN1,LN2});
 
 %% 处理正弦Source
 % 记录LC最后更改位置LCLine
