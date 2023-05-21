@@ -19,11 +19,13 @@
 
 在`Diode`模型中，使用了简化版的`SPICE Level = 1`的`Diode`模型。默认二极管工作在`27℃`下。
 
+在`Diode`模型基础上拓展了`BJT`模型，根据`Ebers-Moll` `(EM-1)`模型描述的`I-V`关系得到`BJT`模型的伴随器件，`BJT`模型的功能还有很多需要完善的地方，包括瞬态仿真、交流仿真中`BJT`模型伴随器件的加入，以及直流仿真中`BJT`模型收敛性的改善等。
+
 ## 创新点
 
 1. 电流打印。 除了项目提供网表中打印电压的功能，额外完成了电流的输出、索引和打印； 
 2. 源漏互换。迭代过程考虑了`MOS`管源漏交换的情况，可以处理输入网表源漏与电路实际源漏情况相反的情况；
-3. 二极管仿真。依据`MOS`管迭代求解思路，完成了如二极管等其他非线性器件的引入； 
+3. 二极管仿真。依据`MOS`管迭代求解思路，完成了如二极管等其他非线性器件的引入；初步完成了双极型晶体管的引入，但双极型晶体管的收敛性需要进一步改善 
 4. 直流扫描。在单点`dc`分析的基础上增加了直流扫描的功能，可以以所需步长考察所需端点电压/器件电流随输入电压的变化
 5. `hspice`仿真分析。利用`hspice`对每个实例电路进行了分析，并通过与查阅的标准`spice`模型对比，进行误差分析、正确性评估与优化
 6. 时间复杂度较低。运行`bufferDC.sp`文件，计算直流工作点时，仅用时`0.275s`，主要优化体现在：
@@ -72,7 +74,7 @@
      >
      > `.ac LIN 100 1K 100HZ`
 
-   - `.trans`，瞬态响应分析`暂未实现`
+   - `.trans`，瞬态响应分析
 
      > 输入示例：
      >
@@ -106,6 +108,16 @@
      >
      > `.MODEL 1 VT -0.75 MU 5e-2 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14`
      > `.MODEL 2 VT 0.83 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14`
+   - `.DIODE <diodeID> Is <Value>`创建一个二极管模型，可以根据需求创建不同的二极管模型，输入要求：MODEL的标号从1开始递增
+
+     > 示例输入：
+     >
+     > `.DIODE 1 Is 1e-5`
+   - `.BIPOLAR <bjtID> Js <Value> alpha_f <Value> alpha_r <Value>`创建一个双极型晶体管模型，可以根据需求创建不同的双极型晶体管模型，输入要求：MODEL的标号从1开始递增
+
+     > 示例输入：
+     >
+     > `.BIPOLAR 1 Js 1e-16 alpha_f 0.9981 alpha_r 0.981`
 
 3. 修改`Top_module`中的`file`，在`MATLAB`中运行`Top_module.m` 脚本得到仿真的结果。
 
@@ -155,6 +167,8 @@ C3 118 0 1e-12
 │   ├── hspice_testfile #hspice测试所用网表
 │   ├── AmplifierDC.sp      		
 │   ├── AmplifierSweep.sp         	
+│   ├── bjtAmpliferDC.sp 
+│   ├── bjtAmpliferSweep.sp 
 │   ├── bufferDC.sp
 │   ├── bufferSweep.sp
 │   ├── dbmixerDC.sp 
@@ -172,11 +186,13 @@ C3 118 0 1e-12
 │   ├── Gen_DeviceInfo.m
 │   ├── init_value.m
 │   ├── Mos_Calculator.m
-│   └── Diode_Calculator.m
+│   ├── Diode_Calculator.m
+│   └── BJT_Calculator.m
 ├── CalculateDC.m
 │   ├── Gen_nextRes.m
 │   │   ├── Mos_Calculator.m
 │   │   ├── Diode_Calculator.m
+│   │   └── BJT_Calculator.m
 │   ├── Gen_baseA.m
 │   └── Gen_nextA.m
 ├── Sweep_AC.m
@@ -243,7 +259,7 @@ end
 ##### 函数定义
 
 ```matlab
-function [RCLINFO, SourceINFO, MOSINFO, DIODEINFO,...
+function [RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO...
 PLOT, SPICEOperation] = parse_netlist(filename);
 ```
 
@@ -285,7 +301,13 @@ PLOT, SPICEOperation] = parse_netlist(filename);
      ```matlab
      DIODEINFO={Diodes,DiodeN1,DiodeN2,DiodeID,DIODEModel};
      ```
+   - `BJTINFO`：双极型晶体管的信息
 
+     ```matlab
+     BJTINFO={BJTName,BJTN1,BJTN2,BJTN3,...
+     BJTtype,BJTJunctionarea,BJTID,BJTMODEL});
+     ```
+     
    - `PLOT`：需要进行绘图的信息
 
    - `SPICEOperation`：电路所需要进行的操作
@@ -312,8 +334,8 @@ PLOT, SPICEOperation] = parse_netlist(filename);
 ##### 函数定义
 
 ```matlab
-function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
+function [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO)
 ```
 
 函数根据dc分析所需要的网表形式，将节点映射为从0开始的序号，便于后续统计器件等数目。将各个器件的节点和值等信息从元胞数组中提取出，完成类型转换。根据初始解将器件按照牛顿迭代法的思路依次替换为线性元件，交给后续生成矩阵和迭代求解。
@@ -334,10 +356,16 @@ LinerNet={Name,N1,N2,dependence,Value,MOSLine};
 MOSINFO={Name,MODEL,type,W,L,ID,MOSLine}
 ```
 
-`DIODEINFO`：二级管详细参数信息
+`DIODEINFO`：二极管详细参数信息
 
 ```matlab
-DIODEINFO={Name,IS,DiodeLine}
+DIODEINFO={Name,MODEL,IS,DiodeLine}
+```
+
+`BJTINFO`：双极型晶体管详细参数信息
+
+```matlab
+BJTINFO={Name,MODEL,type,JS,Junctionarea,ID,BJTLine}
 ```
 
 `Node_Map`：节点映射向量
@@ -365,7 +393,7 @@ Node_Map double n*1
 
 1. 找**源极接Gnd的NMOS管 (源极接Vdd的PMOS管)**，如果MOS管的节点已赋过值 (在NodeInfo中查找到的value为正值，不为-1) 则跳过该节点，否则为这些MOS管的源极电压赋值为0或Vdd，|Vgs|赋为Vdd *  2/3, |Vds|赋为Vdd / 2
 
-   找**发射极接Gnd的npn型BJT管 (发射极接Vcc的pnp型BJT管)**，如果BJT管的节点已赋过值 (在NodeInfo中查找到的value为正值，不为-1) 则跳过该节点，否则为这些BJT管的发射极电压赋值为0或Vcc，|Vbe|赋为0.6667V，|Vce|赋为0.5V
+   找**发射极接Gnd的npn型BJT管 (发射极接Vcc的pnp型BJT管)**，如果BJT管的节点已赋过值 (在NodeInfo中查找到的value为正值，不为-1) 则跳过该节点，否则为这些BJT管的发射极电压赋值为0或Vcc，|Vbe|赋为0.7V，|Vce|赋为0.1V
 
 2. 找**源极未连接Gnd的NMOS管 (源极未连接Vdd的PMOS管)**，如果MOS管的节点已赋过值则跳过该节点，否则和上述MOS管赋一样的|Vgs|和|Vds|
 
@@ -404,12 +432,13 @@ x_0(i) = NodeInfo{i}.value;
 
 1. 计算初始解的函数认为，电路网表文件中的第一个直流电压源是Vdd (Vcc)
 2. 初始解只能尽量满足各个器件的节点电压赋值要求 (包括MOS管的|Vgs|与|Vds|，电压源的两端节点电压等)
+2. 双极型晶体管的收敛条件比较苛刻，在生成第1次迭代前的伴随器件时目前没有使用初始解，而是设置|Vbe| = 0.7V与|Vbc| = 0.1V得到迭代前的伴随器件
 
 ##### 初始解可能的优化方法
 
 1. 采用瞬态分析得到初始解
 
-   可以将直流分析的输入电压源视为具有较长上升时间的斜坡输入信号，将所有节点电压初始化为零后进行1次瞬态分析。使用本次瞬态分析结束时刻的解作为DC分析的初始解。通过这种方法得到的初始解准确，同时可以直接根据瞬态分析得到的初始解判断输入电路是否合理，但瞬态分析需要将L、C计入，算法复杂度较高，而DC分析中L、C都得到了简化，求解初始解的时间相对整个DC分析过程占比较大
+   可以将直流分析的输入电压源视为具有较长上升时间的斜坡输入信号，将所有节点电压初始化为零后进行1次瞬态分析。使用本次瞬态分析结束时刻的解作为DC分析的初始解。瞬态分析需要将L、C计入，算法复杂度较高，而DC分析中L、C都得到了简化，求解初始解的时间相对整个DC分析过程占比较大，但是通过这种方法得到的初始解准确，同时可以直接根据瞬态分析得到的初始解判断输入电路是否合理
 
 2. 采用随机初始解
 
@@ -444,6 +473,10 @@ x_0(i) = NodeInfo{i}.value;
 
 二极管器件的处理思路同mos器件，根据牛顿迭代法得到的递推式，将其等效为独立电流源与电阻的并联。同时记录下线性元件开始替换的行数DiodeLine，从而在之后的迭代过程中快速定位替换。
 
+###### 双极型晶体管器件：
+
+双极型晶体管器件的处理思路是在二极管模型的基础上进行扩展，根据EM-1模型I-V关系代入牛顿迭代法得到的递推式，将其等效为独立电流源、电阻与压控电流源的并联。同时记录下线性元件开始替换的行数BJTLine，从而可以在之后的迭代过程中快速定位到需要替换的器件处。
+
 ##### 计算模块打包
 
 根据牛顿迭代法得到的递推式，我们需要根据非线性元件的原本性能参数和此时元件端口的电压关系得到替换后线性元件的相应的值。由于在之后的迭代过程中，这样的操作依然需要多次重复，因此我们将根据非线性元件参数、非线性元件端口电压得到替换线性元件值的功能打包为以下函数，在之后的迭代过程中依然可以继续使用：
@@ -451,6 +484,8 @@ x_0(i) = NodeInfo{i}.value;
 ├── Mos_Calculator.m
 
 ├── Diode_Calculator.m
+
+├── BJT_Calculator.m
 
 ###### 函数定义
 计算mos器件线性参数：
@@ -461,16 +496,20 @@ function [Ikk,GMk,GDSk] = Mos_Calculator (VDSk,VGSk,Mosarg,W,L)
 ```matlab
 function [Gdk, Ieqk] = Diode_Calculator(Vpn, Is, T)
 ```
+计算双极型晶体管器件线性参数：
+```matlab
+function [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE, VBC, BJTarg, BJTJunctionarea, BJTflag, T)
+```
 
 ###### 接口说明
 
- `VDSk、VGSk、Vpn`：非线性器件的端口之间的电压差
+ `VDSk、VGSk、Vpn、VBE、VBC`：非线性器件的端口之间的电压差
 
- `Mosarg、Is`：非线性器件的固有参数
+ `Mosarg、Is、BJTarg、BJTJunctionarea`：非线性器件的固有参数
 
  `W、L、T`：非线性器件会根据实际情况调整的参数，如mos管的长宽、二极管工作的温度
 
- `Ikk、GMk、GDSk、Gdk, Ieqk`：相应得到的线性元件的值，如电阻阻值，电流源电流、受控源转移系数
+ `Ikk、GMk、GDSk、Gdk, Ieqk、Rbe_k、Gbc_e_k、Ieq_k、Rbc_k、Gbe_c_k、Icq_k`：相应得到的线性元件的值，如电阻阻值，电流源电流、受控源转移系数
 
 ###### 技术细节
 
@@ -535,7 +574,7 @@ function [A,x,b] = Gen_Matrix(Name, N1, N2, dependence, Value)
 
 #### 电路迭代求解直流解 -calculateDC
 
-此功能由林与正同学完成，包含迭代求直流点函数主体与Gen_nextRes的实现，同时Gen_baseA.m，Gen_nextA.m在迭代过程中应用，已于Part1前述。
+CalculateDC.m迭代函数主体与每轮迭代具体过程Gen_nextRes.m由林与正同学完成，Gen_baseA.m，Gen_nextA.m在迭代过程中应用，已于Part1前述。
 
 ├── CalculateDC.m
 
@@ -544,6 +583,8 @@ function [A,x,b] = Gen_Matrix(Name, N1, N2, dependence, Value)
 │   │   ├──Mos_Calculator.m
 
 │   │   ├──Diode_Calculator.m
+
+│   │   ├──BJT_Calculator.m
 
 │   ├──Gen_baseA.m
 
@@ -559,12 +600,16 @@ function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
    - `LinerNet`: 预处理考虑迭代初始解后得到的线性网表哈希表信息。
    - `MOSINFO`: MOS管的信息哈希表，需要索引。
    - `DIODEINFO`: 二极管的信息哈希表。
+   - `BJTINFO`: 双极型晶体管的信息哈希表。
    - `Error`: 收敛判断值，相邻两轮迭代解向量之差的范数小于Error视为收敛。
 2. 函数输出
    - `DCres`：哈希表类型，内部数据索引
      - `x`: 非线性器件已经在牛顿迭代过程线性化后的最终收敛的MNA方程解      
-     - `mosCurrents`: 按解析网表的mos管顺序排好序的各mos管IDS电
+     - `mosCurrents`: 按解析网表的mos管顺序排好序的各mos管Ids电流
      - `diodeCurrents`: 按解析网表的Diode管顺序排好的二极管正向电流
+     - `bjtIeCurrents`: 按解析网表的双极型晶体管流入发射极的Ie电流
+     - `bjtIcCurrents`: 按解析网表的双极型晶体管流入集电极的Ic电流
+     - `bjtIbCurrents`: 按解析网表的双极型晶体管流入发射极的Ib电流
    - `x0`: `DCres('x')`中的数据名称，如`V_1`、`I_G1`等解析后的电压电流名
    - `Value`: `LinerNet`中的器件信息`Value`，为了后续`Sweep_DC`的迭代方便提出
 
@@ -579,7 +624,7 @@ function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
 ###### 函数定义 - Gen_nextRes
 
 ```matlab
-function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, ... mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, A0, b0, Name, N1, ... N2, dependence, Value, zp)
+function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, ... mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, ... BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ... A0, b0, Name, N1, ... N2, dependence, Value, zp)
 ```
 
 ###### 接口说明 - Gen_nextRes
@@ -588,7 +633,9 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 `mosNodeMat`: 各`mos`管原网表三端`DGS`顺序对应的线性解析后网表中索引，为`mosNum*3`的矩阵
 
-`diodeNodeMat`: 各二极管原网表正向双端顺序对应的线性解析后网表中索引，为`diodeNum*3`的矩阵
+`diodeNodeMat`: 各二极管原网表正向双端顺序对应的线性解析后网表中索引，为`diodeNum*2`的矩阵
+
+`bjtNodeMat`: 各双极型晶体管原网表正向双端顺序对应的线性解析后网表中索引，为`bjtNum*3`的矩阵
 
 `A0`: `Gen_baseA`得到的不贴入由非线性器件得到的线性器件的电路矩阵
 
@@ -604,12 +651,12 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 
 #### 电路迭代求解直流解 -Sweep_DC
 
-此功能由林与正同学实现，可以根据PLOT要求进行DC扫描并给出观察对象与结果供后续作图打印输出
+此功能由林与正同学实现，根据PLOT要求进行DC扫描并给出观察对象与结果供后续作图打印输出
 
 ##### 函数定义
 
 ```matlab
-function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, SweepInfo, PLOT, Node_Map)
+function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error, SweepInfo, PLOT, Node_Map)
 ```
 ##### 接口说明
 
@@ -624,7 +671,7 @@ function [InData, Obj, Values] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, S
 
 ##### 技术细节
 
-用`portMapping`解析待打印的节点(电压)索引以及器件端口(电流)，并根据`ValueCalc`的思想提取每轮要从当前点`DC`结果`mosCurrents`、`diodeCurrents`、`DCres`、`Value`中得到的各值的索引向量们。并初始化`Values`的值，将器件端口电流正负的信息体现在初始化为正负1，之后每轮乘上索引到的器件电流值即可。
+用`portMapping`解析待打印的节点(电压)索引以及器件端口(电流)，并根据`ValueCalc`的思想提取每轮要从当前点`DC`结果`mosCurrents`、`diodeCurrents`、`bjtIeCurrents`、`bjtIcCurrents`、`bjtIbCurrents`、`DCres`、`Value`中得到的各值的索引向量们。并初始化`Values`的值，将器件端口电流正负的信息体现在初始化为正负1，之后每轮乘上索引到的器件电流值即可。
 
 如得到每轮`MOS`某端电流数据更新`Values`过程:
 ```matlab
@@ -659,7 +706,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
    - `stopTime` : 瞬态停止时间
    - `stepTime` : 瞬态打印时间步长
    - `PLOT` : 待打印信息
-   以上信息是直接parse_netlist的结果，Generate_TransNetlist在函数内调用，因为Trans定初值方法或需要Generate_DCnetlist，故取名MOSINFO_ori、DIODEINFO_ori做区分。不过
+     以上信息是直接parse_netlist的结果，Generate_TransNetlist在函数内调用，因为Trans定初值方法或需要Generate_DCnetlist，故取名MOSINFO_ori、DIODEINFO_ori做区分。不过
 2. 函数输出
    - `printTimePoint`: Trans带打印的时间点离散值
    - `Obj`: 同`ValueCalc`中，被观测值的名称信息
@@ -1158,22 +1205,96 @@ RSS 121 0 1e5
 
 ##### 项目测试结果 & hspice仿真结果
 
-| 测试项目            | 项目测试结果       | hspice仿真结果  | 
-|-----------------|--------------|-------------|
-| 102 节点电压        | 0.18108V     | 180.1583mV  |
-| 103 节点电压        | 0.10141V     | 100.7527mV  |
-| 104 节点电压        | 0.17607V     | 175.2094mV  |
-| 105 节点电压        | 0.002261V    | 2.2614mV    |
-| 121 节点电压        | 0.097246V    | 96.5883mV   |
-| D1  元件电流        | -1.7607e-06A | -1.7521uA   |
-| D2  元件电流        | 0.0004522A   | 452.2701uA  |
-| M1  元件电流        | 0.00096045V  | 960.5029uA  |
-| M2  元件电流        | 4.0519e-05V  | 40.4630uA   |
-| M3  元件电流        | -0.00096221V | -962.2550uA |
-| M4  元件电流        | -0.00049272V | -492.7331uA |
-| Rload2(+)  元件电流 | 0.0004522A   | 452.2701uA  |
-| RSS(+)  元件电流    | 9.7246e-07A  | 965.8828nA  |
-| Iref(+)  元件电流   | 0.001A       | 1.0000mA    |
+| 测试项目            | 项目测试结果 | hspice仿真结果 |
+| ------------------- | ------------ | -------------- |
+| 102 节点电压        | 0.18108V     | 180.1583mV     |
+| 103 节点电压        | 0.10141V     | 100.7527mV     |
+| 104 节点电压        | 0.17607V     | 175.2094mV     |
+| 105 节点电压        | 0.002261V    | 2.2614mV       |
+| 121 节点电压        | 0.097246V    | 96.5883mV      |
+| D1  元件电流        | -1.7607e-06A | -1.7521uA      |
+| D2  元件电流        | 0.0004522A   | 452.2701uA     |
+| M1  元件电流        | 0.00096045V  | 960.5029uA     |
+| M2  元件电流        | 4.0519e-05V  | 40.4630uA      |
+| M3  元件电流        | -0.00096221V | -962.2550uA    |
+| M4  元件电流        | -0.00049272V | -492.7331uA    |
+| Rload2(+)  元件电流 | 0.0004522A   | 452.2701uA     |
+| RSS(+)  元件电流    | 9.7246e-07A  | 965.8828nA     |
+| Iref(+)  元件电流   | 0.001A       | 1.0000mA       |
+
+#### DC测试用例6 `bjtAmplifierDC.sp`
+
+本测试用例为张润洲同学提供。双极型晶体管的测试样例还需要在改善模型的收敛性后再进行测试
+
+##### 网表文件
+
+```css
+* bjt amplifier circuit
+
+Vcc 101 0 dc 9
+Vbb 102 0 dc 4.0
+R1 103 0 1.0e3
+R2 101 104 1.0e4
+R3 105 0 3e4
+R4 101 106 5e2
+R5 107 0 5e3
+R6 101 108 6e3
+
+* bjt
+Q1 106 102 103 npn 6.1285 1
+Q2 104 103 107 npn 5.64458 1
+Q3 108 104 105 npn 0.732447 1
+
+* bjt models
+.BIPOLAR 1 Js 1e-16 alpha_f 0.9981 alpha_r 0.981
+
+.dc
+.plotnv  108
+.plotnv  107
+.plotnv  106
+.plotnv  105
+.plotnv  104
+.plotnv  103
+.plotnv  102
+.plotnc Q1(c)
+.plotnc Q1(b)
+.plotnc Q1(e)
+.plotnc Q2(c)
+.plotnc Q2(b)
+.plotnc Q2(e)
+.plotnc Q3(c)
+.plotnc Q3(b)
+.plotnc Q3(e)
+.end
+
+```
+
+##### 电路图
+
+<img src="picture/bjtAmplifierDC.png" alt="电路图" style="height:300px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+| 测试项目      | 项目测试结果 |
+| ------------- | ------------ |
+| 102 节点电压  | 4.0V         |
+| 103 节点电压  | 3.2518V      |
+| 104 节点电压  | 3.8929V      |
+| 105 节点电压  | 3.1863V      |
+| 106 节点电压  | 7.3767V      |
+| 107 节点电压  | 2.5574V      |
+| 108节点电压   | 8.3639A      |
+| Q1 发射极电流 | -0.0022522A  |
+| Q1 基极电流   | 4.2792e-06A  |
+| Q1 集电极电流 | 0.0022479A   |
+| Q2 发射极电流 | -0.00025925A |
+| Q2 基极电流   | 4.9257e-07A  |
+| Q2 集电极电流 | 0.00022522A  |
+| Q3 发射极电流 | -5.384e-05A  |
+| Q3 基极电流   | 1.023e-07A   |
+| Q3 集电极电流 | 5.3737e-05A  |
+
+
 
 ### `.dcsweep`测试用例
 
@@ -1375,6 +1496,52 @@ RSS 121 0 1e5
 <img src="picture\diftest_M1_hspice.png" alt="转移特性" style="height:210px;" />
 
 结果基本符合预期，DC扫描的结果验证正确。
+
+#### DCsweep测试用例5 `bjtAmplifierSweep.sp`
+
+本用例电路图同 “DC测试用例6” 扫描条件为：
+
+`.dcsweep Vbb [2,4] 0.01`
+
+##### 项目测试结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Node_102.png" alt="转移特性" style="height:250px;" />
+
+`105节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Node_105.png" alt="转移特性" style="height:250px;" />
+
+`108节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Node_108.png" alt="转移特性" style="height:250px;" />
+
+`Q1发射极电流`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Q1(e).png" alt="转移特性" style="height:250px;" />
+
+`Q1基极元件电流`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Q1(b).png" alt="转移特性" style="height:250px;" />
+
+`Q1集电极元件电流`：
+
+* 项目测试结果：
+
+<img src="picture\bjtAmplifierSweep_Q1(c).png" alt="转移特性" style="height:250px;" />
+
+* 结果需要在双极型晶体管模型收敛性改善后再与hspice的仿真结果进行对比。
 
 ## 结束语
 
