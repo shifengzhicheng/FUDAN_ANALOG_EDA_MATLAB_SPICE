@@ -140,8 +140,12 @@ LVp = zeros(1, LNum);
 CIp = zeros(1, CNum);
 CVp = zeros(1, CNum);
 %Generate_transnetlist中CL伴随电源器件本来就为0
-RC = 0.5 * delta_t ./ CValue;
-RL = 2 .*  LValue ./ delta_t;
+%梯形法时 - 固定步长
+% RC = 0.5 * delta_t ./ CValue;
+% RL = 2 .* LValue ./ delta_t;
+%后向欧拉时 - 动态步长
+RC = delta_t ./ CValue;
+RL = LValue ./ delta_t;
 %Generate_transnetlist中使用全0为初值 - mos全截止不用改
 %获得电源信息 改斜坡源方法瞬态
 SourceName = SourceINFO('Name');
@@ -326,7 +330,7 @@ curPlotTime = stepTime; %下次要打印的时间
 plotCount = 1;
 curTime = 0;    %当前推进到的时间
 
-while(curPlotTime <= stopTime)
+while(plotCount < printTimeNum)
     curTime = curTime + delta_t;
     %利用上轮电容电感的电流电压得到当前时刻伴随器件值
     %    display(curTime)
