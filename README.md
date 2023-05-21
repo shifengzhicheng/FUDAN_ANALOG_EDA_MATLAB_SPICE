@@ -228,7 +228,7 @@ Generate_DCnetlist;
 %% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
-    %% DCSWEEP操作的流程
+    %% DCSEWEEP操作的流程
     case '.ac'
     %% AC分析的流程
     case '.trans'
@@ -681,17 +681,119 @@ Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosInde
 
 ### Part 3 实现trans仿真 
 
+#### 生成瞬态分析网表 Generate_transnetlist
+
+此部分由朱瑞宸同学完成。
+
+├── Generate_transnetlist.m
+
+│   ├──Sin_Calculator.m
+
+##### 函数定义 - Generate_transnetlist
+
+```matlab
+function [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
+```
+
+这个函数的目的是生成瞬态分析所需网表，将所有器件按照瞬态分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的线性网表形式，从而可以贴入MNA方程中进行迭代求解。函数基本逻辑与Generate_DCnetlist相近，初始解共用相同的初始解生成模块和mos、diode计算模块，但增加了对LC元件和瞬态源处理的要求。
+
+###### 接口说明
+函数输入：
+
+- `RCLINFO`：parse_netlist后得到的以字符形式存储的R、L、C元件基本信息；
+- `SourceINFO`：parse_netlist后得到的以字符形式存储的独立源基本信息；
+- `MOSINFO`：parse_netlist后得到的以字符形式存储的mos基本信息；
+- `DIODEINFO`：parse_netlist后得到的以字符形式存储的二极管基本信息；
+
+函数输出：
+
+`LinerNet`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+
+`MOSINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+
+`DIODEINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+
+`Node_Map`：节点映射向量，同Generate_DCnetlist.m输出的格式
+
+`CINFO`：电容详细参数信息,其中CLine表示等效为电阻元件后，电容所在行数
+
+```matlab
+CINFO={Name,Value,CLine,N1,N2}
+```
+
+`LINFO`：电感详细参数信息,其中LLine表示等效为电阻元件后，电感所在行数
+
+```matlab
+LINFO={Name,Value,LLine,N1,N2}
+```
+
+`SININFO`：正弦源详细参数信息,其中SinLine表示等效为直流源后，正弦源所在行数
+
+```matlab
+SININFO={Name,DcValue,AcValue,Freq,Phase,SinLine}
+```
+
+##### 功能处理思路
+
+根据器件类型，按照AC分析要求进行不同处理：
+
+###### R：
+
+保持不变。
+
+###### 直流源：
+
+保持不变。同时，为了区分瞬态源和dc源，这里记下直流源数目，方便后续生成存瞬态源参数的向量/矩阵。
+
+###### MOS器件：
+
+处理同DC分析方法，依据初始解生成。
+
+###### 二极管器件：
+
+处理同DC分析方法，依据初始解生成。
+
+###### C：
+
+根据梯形法，C在瞬态分析中根据时间步长被替换为一个阻值电阻和电压源的串联。为了提高代码框架的解耦度，在这部分并不带入具体的时间步长，而是仅仅相当于在生成的线性网表中保留一个替换C的位置，因此将Value均赋为0。
+
+另外，串联的RV会引入一个新的端点，其节点号即根据Node_Map维数自动延申所得。因为不需要考察这一点的电压，因此不用将其放入Node_Map中。
+
+将C的真实值和替换的位置CLine打包在CINFO中，便于后续循环替换处理。
+
+###### L：
+
+与C相同的处理思路，替换为一个电阻与电流源的并联，且值均赋为0。
+
+###### 正弦源：
+
+替换为其当下值的直流源，根据时间以及其偏置、振幅、频率、初始相位的基本信息计算得到0时刻的电压值，作为直流源放入网表。
+
+其相关参数及替换位置SinLine打包在SININFO中，便于后续循环替换处理。
+
+##### 正弦源计算函数
+
+计算当前正弦源的值，在后续迭代过程中同样使用。
+
+```matlab
+function [Vt] = Sin_Calculator(Vdc, Vac, Freq, t, Phase)
+```
+
+###### 接口说明
+函数输入：
+- `Vdc, Vac, Freq, Phase`：正弦源属性；
+- `t`：当前时间；
+- 函数输入：
+- `Vt`：电压；
+
+
 #### 瞬态仿真函数 CalculateTrans
 
 此部分由林与正同学完成。
 
 ├── CalculateTrans.m
 
-│   ├── CalculateDC.m
-
-│   ├── PLOTIndexInRes.m
-
-│   ├── updateValues.m
+│   ├──CalculateDC.m
 
 ##### 函数定义 - CalculateTrans
 
@@ -710,7 +812,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
    - `stopTime` : 瞬态停止时间
    - `stepTime` : 瞬态打印时间步长
    - `PLOT` : 待打印信息
-     以上信息是直接`parse_netlist`的结果，`Generate_TransNetlist`在函数内调用，因为`Trans`定初值方法或需要`Generate_DCnetlist`，故取名`MOSINFO_ori`、`DIODEINFO_ori`做区分。
+     以上信息是直接parse_netlist的结果，Generate_TransNetlist在函数内调用，因为Trans定初值方法或需要Generate_DCnetlist，故取名MOSINFO_ori、DIODEINFO_ori做区分。不过
 2. 函数输出
    - `printTimePoint`: Trans带打印的时间点离散值
    - `Obj`: 同`ValueCalc`中，被观测值的名称信息
@@ -722,7 +824,7 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 ###### 瞬态初值方法一
 
-直接使用`DC`分析模型，替换`CL`为零电源后做一次`DC`得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到`DC`模型与瞬态模型节点的对应关系，且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
+直接使用DC分析模型，替换CL为零电源后做一次DC得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要Generate_DCnetlist的结果导致CalculateTrans不得不将parse_netlist的结果经Generate_Transnetlist的过程放到CalculateTrans里执行，这会为后续稳态反复执行CalculateTrans带来不必要的重复开销。
 
 ###### 瞬态初值方法二
 
@@ -738,44 +840,82 @@ function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOS
 
 ###### 瞬态推进过程方法二 - 动态步长
 
-改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`，减小到下限仍然不收敛则取`Δt`上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大`Δt`超过打印步长，故规定`Δt`动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
+改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算epsilon的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断CalculateDC是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
 
+### Part 4 实现频率响应分析(ac分析)
+
+实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
+
+#### 生成ac分析网表
+这一部分由朱瑞宸同学完成。
+
+├── Generate_ACnetlist.m
+
+##### 函数定义 -Generate_ACnetlist
+
+```matlab
+function [LinerNet,CINFO,LINFO] = Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map)
 ```
 
-`shooting_method`函数沿用了部分瞬态分析的逻辑，然后使用牛顿迭代法做稳态分析，能直接找到电路一个周期的稳态响应。
+这个函数的目的是根据DC分析结果，将所有器件按照AC分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的线性网表形式，从而可以贴入MNA方程中进行迭代求解。函数基本逻辑与Generate_DCnetlist相近，但同时为了节省时间，直接输入之前DC flow中生成的Node_Map，节省了节点映射的时间
 
-##### 接口说明
+###### 接口说明
+函数输入：
 
-1. 函数输入
-   - 线性网表，非线性器件信息，交流源信息
-   - 节点映射结果，步长，绘制参数
-2. 函数输出
-   - 绘制对象
-   - 绘制对象的结果值向量
-   - 时间步长
+- `RCLINFO`：parse_netlist后得到的以字符形式存储的R、L、C元件基本信息；
+- `SourceINFO`：parse_netlist后得到的以字符形式存储的独立源基本信息；
+- `MOSINFO`：parse_netlist后得到的以字符形式存储的mos基本信息；
+- `DIODEINFO`：parse_netlist后得到的以字符形式存储的二极管基本信息；
+- `DCres`：DC分析后得到的电路的直流解
+- `Node_Map`：节点映射的结果，用于将节点序号转换为节点名称的映射表；
 
-##### 技术细节
+函数输出：
 
-###### 求电路响应的周期
+`LinerNet`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
 
-逻辑上来讲，电路的稳态响应具有稳定的周期。这与所有的`AC`源直接相关。电路的节点的变化频率应该是电路中所有的周期源的频率的最大公约数。于是用这种原理可以求出电路的一个周期的长度。得到了周期的长度，接下来就是通过迭代使得瞬态响应的初始值等于瞬态响应的结束值。即电路的解`x0=xT`。
+`CINFO`：电容详细参数信息,其中CLine表示等效为电阻元件后，电容所在行数
 
-###### 本程序采用牛顿迭代法实现求解
+```matlab
+CINFO={Name,Value,CLine}
+```
 
-通过线性条件不断进行一阶的逼近。求出不动点的关系式为
+`LINFO`：电感详细参数信息,其中LLine表示等效为电阻元件后，电感所在行数
 
-$x_T=Trans(x_0)|_{pos=T}$
+```matlab
+LINFO={Name,Value,LLine}
+```
 
-$x_0=Trans(x_0)|_{pos=0}$
+##### 功能处理思路
 
-利用这个条件进行简单的迭代就能得到一个以`shooting_method`为基础的迭代求解方式。这样的求解方式的好处是能用非常快的速度找到仿真结果的一个稳定的周期。但是这种方式无法求解非稳定的状态的结果。非稳定的状态还是需要从初始状态出发进行瞬态仿真一步步找到结果。
+根据器件类型，按照AC分析要求进行不同处理：
 
-###### 电路结果的求解
+###### R：
 
-本程序因为使用来自`Trans`的接口，所以在求解电流上做的比较臃肿而且部分端口电流无法求解，有待优化求解电路电流的逻辑。
+保持不变
 
-### Part 4 实现频率响应分析
+###### 独立源：
 
+dc源和sin值均置零，仅保留ac源的交流value
+
+###### MOS器件：
+
+根据直流解生成小信号等效模型。直流解从DC_Res中提取，因为贴MNA方程时DC_Res的排列顺即为映射后的节点序号V_1 V_2 V_3...，因此，在此仅需根据查找Node_Map得到的mos器件三端结点映射序号，即可得到所需要的电压值。
+
+具体的小信号模型替换的计算公式与DC分析的基本相同，唯一区别在于在小信号模型中需要将独立源置零，因此每个mos器件仅替换出一个电阻与一个压控电流源。
+
+另外，与DC分析处理不同的地方在于，生成的AC网表中都是准确的线性元件信息，不需要再进行牛顿迭代，所以不用再记录mos器件原本的信息及替换后所处的行数。
+
+###### 二极管器件：
+
+二极管器件的处理思路同mos器件，将独立源置零后，小信号模型仅保留一个电阻；同样，不需要再记录下二极管器件原本的信息以及替换后所处的行数。
+
+###### LC：
+
+LC在AC分析中根据频率大小被替换为一个阻值为虚数的电阻。为了提高代码框架的解耦度，在这部分并不带入具体的频率值，而是仅仅相当于在生成的线性网表中保留一个替换L和C器件的位置，在Sweep_AC部分再根据频率带入具体的值。因此这部分在将L和C以电阻的形式("R+Name")加入线性网表后，将其Value赋为0。
+
+另外，将LC的真实值和替换的位置LLine、CLine打包在LINFO和CINFO中，便于后续扫描过程中将LC作为电阻的真实值替换到MNA方程中。
+
+#### AC扫描
 这一部分由郑志宇同学完成。
 
 ├── Sweep_AC.m
@@ -785,17 +925,6 @@ $x_0=Trans(x_0)|_{pos=0}$
 │   ├── Gen_NextACmatrix.m
 
 │   └── getCurrent.m
-
-实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
-实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据小信号模型求解的方法得到电路的幅频响应与相频响应。
-
-#### 生成小信号等效电路
-
-##### 函数定义 -Generate_ACnetlist
-
-小信号等效电路由朱瑞宸同学在`Generate_ACnetlist.m`中进行替换，替换`AC`源，`DC`源，生成能使用`MNA`方程生成函数的标准的线性电路网表。
-
-#### AC扫描
 
 ##### 函数定义 -Sweep_AC
 
@@ -861,7 +990,68 @@ function Current = getCurrent(Device,port,LinerNet,x,Res,freq)
 - 函数中根据器件类型和名称的首字母来判断器件类型，如以`V`开头的器件为电压源，以`I`开头的器件为电流源等；
 - 函数中对于不同类型的器件，计算电流的方式也不同，如对于电阻元件计算电流需要根据其两端的电压差和电阻值使用欧姆定律计算，而对于电容和电感元件，需要根据其阻抗值和频率使用复数形式的欧姆定律计算等。
 
-### Part 5 将电路生成的结果输出
+### Part 5 零极点分析
+此功能由朱瑞宸同学完成
+
+├── GenPZ.m
+
+计算极点的过程与课程中介绍的一致，根据AC分析网表，分别存储下仅含有线性元件R的矩阵G和含有LC元件的矩阵C，然后使用特征值分解即可得到传递函数的所有极点以及展开了的部分分式。
+
+计算零点的过程是借助上一步所得到的分式结果，调用matlab内置的reside()函数即可将部分分式的结果转化为传输函数的形式，再调用tf2zp()函数得到对应的零点。
+
+##### 函数定义
+
+```matlab
+
+function [result] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map)
+
+```
+
+##### 接口说明
+函数输入：
+
+- `LinerNet`：parse_ACnetlist后得到的ac线性网表(不含独立源)；
+- `CINFO`：parse_ACnetlist后得到的电容的信息，包括电容元件的名称、在网表中的位置信息和值；
+- `LINFO`：parse_ACnetlist后得到的电感的信息，包括电感元件的名称、在网表中的位置信息和值；
+- `PLOT`：绘图信息，包括需要计算零极点的序号值
+- `Node_Map`：节点映射的结果，用于将节点序号转换为节点名称的映射表；
+
+函数输出：
+
+`result`：记录求出的零极点
+
+```matlab
+result={Zeros,Poles};
+```
+其中Zeros和Poles都是n*1的cell,每个cell里面装有一个存储该对应序号所有零点/极点的向量
+
+##### 技术细节
+
+###### GC矩阵的生成
+
+GC矩阵的生成过程与AC_Sweep中迭代的思路相接近。通过Gen_Matrix()函数预定矩阵规模，但暂时先不贴入L和C，从而得到G矩阵；然后再根据LINFO和CINFO的信息生C矩阵。
+
+###### 部分分式结果匹配
+
+通过课程方法计算零极点得到的分式结果与标准的分式形式并不一致，分母为(1+s*LAMBDA)而非(s-p)，因此需要对LAMBDA的值进行讨论。
+
+当LAMBDA为0时，得到的分式将转变为一个s的零次项合并到向量k中进行逆向的部分分式转化；当LAMBDA非0时，分子分母同时除以LAMBDA得到标准形式。
+
+###### 系数情况讨论
+
+通过实验发现，residue()函数功能与预想的存在一定差异，当系数为0时，residue函数并不能直接排除掉这个无效的分式，而是会使得解出的零极点多一维度，因此需要对这种情况也进行特殊讨论。
+
+当系数为0时，才为有效极点，使用`rz(rz~=0) = 1; tp = rz.*p;`语句取出有效极点，再通过nonzeros()完成降维，即可得到正确所需的r、p和k。
+
+###### G矩阵不满秩情况的处理
+
+通过课程方法计算零极点的过程存在一个缺陷，当电路中存在结点连接的元件均为LC元件时，则G矩阵将不满秩。由此G矩阵在后续计算中将不可逆，则该方法失效。经过老师提示，可以采用以下方法一定程度上解决这个问题：
+
+讲s频移一个单位s0，因此可以在G矩阵上加一个s0*C得矩阵，将其补位满秩，然后按照原本方法求解。此时相当于是求(s+s0)变量的传递函数，因此，由`s-p=s+s0-(s0+p)`，在求出的零极点上基础上再补上这个偏置s0，即可得到正确结果。
+
+但该方法并不能完全解决问题，因为C矩阵通常既包含电容得信息，又包含电感得信息，因此其元素取值跨度很大，而G矩阵中都是线性元件R，其值相对适中，加上一个正负偏差极大得矩阵后，G矩阵虽然可逆，但其也接近奇异，计算精度并不高，因此在实际测试中发现，其会引入一些不需要的零极点，同时对于存在虚部情况的零极点计算偏差较大。
+
+### Part 6 将电路生成的结果输出
 
 #### `.dc`/`.dcsweep`中输出结果
 
@@ -911,26 +1101,32 @@ Vin <node1> <node2> DC <Value>
 
 项目测试和分析部分由朱瑞宸同学完成，将测试结果与hspice标准仿真结果进行对照分析；部分测试电路由小组成员提供。
 
-### `hspice`测试原理
+### hspice测试原理
 
-`《Star-Hspice Manual》`一书详细介绍了`hspice`低阶模型参数和计算模型。同时，`hspice`提供了一系列低阶模型的默认参数，以及修改这些参数的接口，因此这为我们提供了运用`hspcie`验证结果正确性，以及对照和优化模型的可能性。
+参考资料中的几本hspice使用说明书详细介绍了hspice低阶模型参数和计算模型。同时，hspice提供了一系列低阶模型的默认参数，以及修改这些参数的接口，因此这为我们提供了运用hspcie验证结果正确性，以及对照和优化模型的可能性。
 
-因此，将网表修改为符合`hspice`语法的形式`(testfile\hspice_testfile文件夹下)`，使用`hspice`进行仿真测试，并将结果与我们自己写的`SPICE`结果进行对比，从而得到对模型性能的评估。
+因此，将网表修改为符合hspice语法的形式(testfile\hspice_testfile文件夹下)，使用hspice进行仿真测试，并将结果与我们自己写的spice结果进行对比，从而得到对模型性能的评估。
 
-在用`hspice`进行测试时，对于`mosfet`和`diode`我们均采用`level 1`模型。同时仅修改实例网表定义的模型参数，其余使用默认参数。需要注意的是，实例网表中的迁移率`MU`单位为`m2/(V⋅s)`，而`SPICE`标准参数中的迁移率`UO`单位为`cm2/(V⋅s)`，在替换参数时需要进行单位换算。
+在用hspice进行测试时，对于mosfet和diode我们均采用level 1模型。同时仅修改实例网表定义的模型参数，其余使用默认参数。需要注意的是，实例网表中的迁移率MU单位为m2/(V⋅s)，而spice标准参数中的迁移率UO单位为cm2/(V⋅s)，在替换参数时需要进行单位换算。
 
-对于`mosfet`的标准`level 1`模型，其与我们所做模型的主要差异在于：
+对于mosfet的标准level 1模型，其与我们所做模型的主要差异在于：
 
-* 考虑了衬底偏置效应，`Vth`需要随着`Vsb`变化
-* 考虑了沟道有效长度和有效宽度，`Leff`和`Weff`会收到相应的扩散系数和`scaling`的系数影响
+* 考虑了衬底偏置效应，Vth需要随着Vsb变化
+* 考虑了沟道有效长度和有效宽度，Leff和Weff会收到相应的扩散系数和scaling的系数影响
 
-对于`diode`的标准`level 1`模型，其与我们所做模型的主要差异在于：
+对于diode的标准level 1模型，其与我们所做模型的主要差异在于：
 
 * 提供了反向击穿的阈值电压
-* 电流分段，以`-10vt`为界，当`vd<-10vt,I=-ISS`
-* 考虑了二极管有效面积，将`Is`拆为`Area`和`Js`的乘积进行定义
+* 电流分段，以-10vt为界，当vd<-10vt,I=-ISS
+* 考虑了二极管有效面积，将Is拆为Area和Js的乘积进行定义
 
-除此之外，二阶的`mosfet`模型增加了非常数表面迁移率效应和速度饱和效应等，与我们所测试的结果相差更大。
+除此之外，二阶的mosfet模型level 2增加了非常数表面迁移率效应和速度饱和效应等，与我们所测试的结果相差更大。
+
+在瞬态和AC分析中，mos管寄生电容的不同是测试结果与仿真结果相差较大的主要原因。其中结电容Cj0可以通过改变参数Cj进行调整，但栅极寄生电容的模型就与我们的简化模型相去甚远了。
+
+在hspice中，mos管栅极寄生电容模型是独立与mos管模型level n定义的。存在参数CAPOP n，用于表示不同阶数的"Gate Capacitance Models"，但即使是最简单的CAPOP=0的零阶模型，其寄生电容计算方式也远远复杂于我们的简化模型，比如说其会根据工作区的不同给Cgs和Cgd附不同的值，同时它还考虑了Cgb，而且计算公式也复杂于我们的简化模型。
+
+因此，瞬态仿真和ac分析的测试结果与hspice中结果相差较大也就不足为奇了，而为了尽量贴合我们的简化模型，经过经验分析，在hspice中进行瞬态分析时，我们采用CAPOP=0模型进行仿真；进行AC分析时，我们采用CAPOP=2模型进行仿真。
 
 ### `.dc`测试用例
 
@@ -1581,6 +1777,442 @@ Q3 108 104 105 npn 0.732447 1
 <img src="picture\bjtAmplifierSweep_Q1(c).png" alt="转移特性" style="height:250px;" />
 
 * 结果需要在双极型晶体管模型收敛性改善后再与hspice的仿真结果进行对比。
+
+### `.trans`测试用例
+
+#### Trans测试用例1 `bufferTrans.sp`
+
+本用例电路图同 “DC测试用例1” 扫描条件为：
+
+`.trans 2e-7 1e-9`
+
+##### 项目测试结果 & hspice仿真结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bufferTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferTrans_102_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`104节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bufferTrans_104.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferTrans_104_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`116节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\bufferTrans_116.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferTrans_104_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`通过R2电流`：
+
+* 项目测试结果：
+
+<img src="picture\bufferTrans_R2.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferTrans_R2_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+结果基本符合预期，由于mos管寄生电容不一样，第一个峰值有所差异
+
+#### Trans测试用例2 `dbmixerTrans.sp`
+
+本用例电路图同 “DC测试用例2” 扫描条件为：
+
+`.trans 1e-9 1e-11`
+
+##### 项目测试结果 & hspice仿真结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\dbmixerTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\dbmixerTrans_102_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`104节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\dbmixerTrans_104.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\dbmixerTrans_104_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`108节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\dbmixerTrans_108.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\dbmixerTrans_108_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`109节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\dbmixerTrans_109.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\dbmixerTrans_109_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+#### Trans测试用例3 `diftestTrans.sp`
+
+本用例电路图同 “DC测试用例5” 扫描条件为：
+
+`.trans 2e-7 1e-9`
+
+##### 项目测试结果 & hspice仿真结果
+
+`102节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftestTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftestTrans_102_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`105节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftestTrans_105.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftestTrans_105_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`112节点电压`：
+
+* 项目测试结果：
+
+<img src="picture\diftestTrans_112.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftestTrans_112_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+`通过D1的电流`：
+
+* 项目测试结果：
+
+<img src="picture\diftestTrans_D1.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\diftestTrans_D1_hspice.jpg" alt="转移特性" style="height:210px;" />
+
+### `.ac`测试用例
+
+#### AC测试用例1 `bufferAC.sp`
+
+本用例电路图同 “DC测试用例1” 扫描条件为：
+
+`.ac DEC 10 1K 1e12MEG`
+
+##### 项目测试结果 & hspice仿真结果
+
+`108节点电压`：
+
+【幅频响应】
+
+* 项目测试结果：
+
+<img src="picture\bufferAC_Mag_118.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferAC_Mag_118_hspice.png" alt="转移特性" style="height:210px;" />
+
+`108节点电压相频响应`：
+
+【相频响应】
+
+* 项目测试结果：
+
+<img src="picture\bufferAC_Pha_118.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\bufferAC_Pha_118_hspice.png" alt="转移特性" style="height:210px;" />
+
+#### AC测试用例2 `SmosAC.sp`
+
+本测试用例为郑志宇同学提供
+
+##### 网表文件
+
+```css
+* Smos
+Vin 11 0 ac 1 1 0
+
+VDD 31 0 DC 3
+
+Rin 11 21 10
+
+M1 32 21 33 n 20e-6 0.35e-6 1
+
+Rout 31 32 1000
+
+Rs 33 0 10
+.MODEL 1 VT 0.5 MU 1.5e-1 COX 0.3e-4 LAMBDA 0.05 CJ0 4.0e-14
+
+.plotnv 32
+.plotnv 33
+
+.AC DEC 10 1 1e18MEG
+```
+
+##### 电路图
+
+<img src="picture/Smos.png" alt="电路图" style="height:300px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+`32节点电压`：
+
+【幅频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Mag_32.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Mag_32_hspice.png" alt="转移特性" style="height:210px;" />
+
+【相频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Pha_32.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Pha_32_hspice.png" alt="转移特性" style="height:210px;" />
+
+可以看到，由于之前所述的寄生电容模型的不同，导致这里的幅频曲线差异较大，由于该电路规模较小，这种误差被进一步放大了。
+
+为了进一步验证结果的正确性，我直接将mos管经过Generate_ACnetlist后得到的Linernet改为标准网表的形式(如下所示)，此时电路即为一个只含有R和C的线性网表，寄生电容的影响就不用再被考虑。
+
+```css
+* Smos_RC
+.OPTIONS LIST NODE POST 
+.OP 
+.AC DEC 10 10 1e18MEG
+
+Vin 11 0 DC=1 AC=1,0
+VDD 31 0 3
+Rin 11 21 10
+
+*M1 32 21 33 0 MODN W=20e-6 L=0.35e-6
+RM1 32 33 6.231403950062208e+05
+GM1 32 33 cur='v(21,33)*1.475090858166613e-04'
+
+Rout 31 32 1000
+Rs   33 0  10
+
+CgsM1 21   33  1.05e-16
+CgdM1 21   32  1.05e-16
+CdM1  32   0   4e-14	
+CsM1  33   0   4e-14
+
+.end
+
+```
+
+将此网表放入hspice再次进行仿真：
+
+`32节点电压`：
+
+【幅频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Mag_32.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Mag_32_RC_hspice.png" alt="转移特性" style="height:210px;" />
+
+【相频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Pha_32.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Pha_32_RC_hspice.png" alt="转移特性" style="height:210px;" />
+
+`33节点电压`：
+
+【幅频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Mag_33.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Mag_33_RC_hspice.png" alt="转移特性" style="height:210px;" />
+
+【相频响应】
+
+* 项目测试结果：
+
+<img src="picture\SmosAC_Pha_33.png" alt="转移特性" style="height:250px;" />
+
+* hspice仿真结果：
+
+<img src="picture\SmosAC_Pha_33_RC_hspice.png" alt="转移特性" style="height:210px;" />
+
+可以看到，无论是曲线形状还是具体数值，测试结果与仿真结果均贴合的十分完美，这有力地证明了AC分析算法的正确性。
+
+### `.pz`测试用例
+
+#### 零极点分析用例1 `SmosPZ.sp`
+
+本用例电路图同 “AC测试用例2” (替换为线性元件后)
+
+##### 项目测试结果 & hspice仿真结果
+
+`32节点`：
+
+| 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
+|------------------------|-------|-----------|----------|
+| -2.49744e+10 | -24.9744g | -2.49821e+12  |          |
+| -2.49716e+12 |       | 1.40217e+12 |          |
+| -4.77443e+14 |       |  |          |
+
+`21节点`：
+
+| 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
+|------------------------|-------|-----------|----------|
+| -2.49744e+10 | -24.9744g | -2.49745e+10  |  -24.9745g        |
+| -2.49716e+12 |       | -2.49717e+12 |          |
+| -4.77443e+14 |       |  |          |
+
+可以看到，hspice中对于较远，与其他零极点相差较大的零极点，会进行忽略。因此，对于主极点，本方法求得的结果十分准确，而对于hspice未给出地次极点，本方法同样能准确预测。
+
+同时，本例也尝试使用mos原本的电路图带入到hspice中进行零极点分析，结果无法找到任何零极点。说明零极点位置都靠远很多，由此之前ac分析地结果差异也就不足为奇了。
+
+#### 零极点分析用例2 `RCPZ.sp`
+
+本测试用例为朱瑞宸同学提供
+
+##### 网表文件
+
+```css
+* RC
+Vin 1 0 ac 1 1 0
+
+R1 1 2 10
+C1 2 0 4e-6
+
+R2 2 3 20
+C2 3 0 7e-8
+
+R3 3 4 1000
+C3 3 4 5e-12
+
+C4 4 0 8e-10
+
+.pz
+
+.plotnv 3
+.plotnv 4
+```
+
+##### 电路图
+
+<img src="picture/RC.png" alt="电路图" style="height:300px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+`3节点`：
+
+| 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
+|------------------------|-------|-----------|----------|
+| -2.45497e+04 | -24.5497k | -1.24223e+06  |   -1.24224x        |
+| -7.08789e+05 | -708.790k     | 6.44753e+19 |          |
+| -1.27473e+06 | -1.27474x     |  |          |
+
+`4节点`：
+
+| 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
+|------------------------|-------|-----------|----------|
+| -2.45497e+04 | -24.5497k | -2.00000e+08  |  -200.000x        |
+| -7.08789e+05 | -708.790k      | -2.30951e+17 |          |
+| -1.27473e+06 | -1.27474x      |  |          |
+
+同样，对于多级RC网络计算十分准确
+
+#### 零极点分析用例3 `RCLPZ.sp`
+
+本测试用例为朱瑞宸同学提供
+
+##### 网表文件
+
+```css
+* RCL
+Vin 1 0 ac 1 1 0
+
+R1 1 2 10
+C1 2 0 4e-6
+
+R2 2 3 20
+C2 3 0 7e-8
+
+R3 3 4 1000
+
+L1 4 5 8e-4
+C3 5 0 5e-12
+
+.pz
+.plotnv 4
+```
+
+##### 电路图
+
+<img src="picture/RCL.png" alt="电路图" style="height:300px;" />
+
+##### 项目测试结果 & hspice仿真结果
+
+`4节点`：
+
+| 项目测试极点                 | hspice极点            | 项目测试零点    | hspice零点   | 
+|------------------------|---------------------|-----------|------------|
+| -2.45549e+04 | -24.5550k           | 6.37322e+07-1.65031e+13i | 15.8114xi  |
+| -7.27179e+05 | -727.180k           | 6.37322e+07+1.65031e+13i | -15.8114xi |
+| -1.99925e+08 | -625.026k-15.7996xi |-2.04036e+18  |            |
+| 1.11022e-16 | -625.026k+15.7996xi | 1.96287e-13 |            |
+
+本电路即存在之前讨论的G矩阵不满秩的情况，计算之后发现，最近两个极点的计算仍然十分可靠，体现了方法的可行性。但对于复数极点和零点的估计与hspice差距较大，因此更好的方法还有待探索。
 
 ## 结束语
 
