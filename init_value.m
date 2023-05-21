@@ -165,7 +165,7 @@ function [zp] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
         zp(i) = NodeInfo{i}.value;
     end
     
-    fprintf("InitValue: \n\n");
-    disp(zp);
+%     fprintf("InitValue: \n\n");
+%     disp(zp);
 end
 

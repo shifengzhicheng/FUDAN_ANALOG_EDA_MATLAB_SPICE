@@ -140,12 +140,14 @@ LVp = zeros(1, LNum);
 CIp = zeros(1, CNum);
 CVp = zeros(1, CNum);
 %Generate_transnetlist中CL伴随电源器件本来就为0
+
 %梯形法时 - 固定步长
-% RC = 0.5 * delta_t ./ CValue;
-% RL = 2 .* LValue ./ delta_t;
+ RC = 0.5 * delta_t ./ CValue;
+ RL = 2 .* LValue ./ delta_t;
 %后向欧拉时 - 动态步长
-RC = delta_t ./ CValue;
-RL = LValue ./ delta_t;
+% RC = delta_t ./ CValue;
+% RL = LValue ./ delta_t;
+
 %Generate_transnetlist中使用全0为初值 - mos全截止不用改
 %获得电源信息 改斜坡源方法瞬态
 SourceName = SourceINFO('Name');
@@ -161,8 +163,14 @@ end
 %开始模拟电源打开
 for i = 1 : 100
     %利用上轮电容电感的电流电压得到当前时刻伴随器件值
+    
+    %梯形法时 - 固定步长
     VC = CVp + RC .* CIp;
     IL = LIp + delta_t * 0.5 * (LVp ./ LValue);
+%    %后向欧拉时 - 动态步长
+%    VC = CVp;
+%    IL = LIp;
+
     LinerValue = LinerNet('Value');
     %LinerNet中C与L顺序不分类,要依据索引找对应伴随器件
     %LinerNet中C伴随器件按R, V的顺序
