@@ -40,6 +40,8 @@ for i = 1 : LNum
 end
 
 %% 根据init生成矩阵
+LVp=[];
+CVp=[];
 tempValue = init('x');
 if(~isempty(LNodeMat))
     LVp = tempValue(LNodeMat(:, 1)) - tempValue(LNodeMat(:, 2));

@@ -57,8 +57,12 @@ while(var(xT - x0)>Error)
     InitDiode = ResData('Diode');
     Init('Diode') = InitDiode(:,1);
     ResSolve = ResData('x');
-    CIp = CData(end);
-    LIp = LData(end);
+    if(~isempty(LData))
+        LIp = LData(end);
+    end
+    if(~isempty(CData))
+        CIp = CData(end);
+    end
     xT = ResSolve(:,end);
 end
 
