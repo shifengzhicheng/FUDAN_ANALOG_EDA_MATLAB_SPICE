@@ -173,54 +173,85 @@ C3 118 0 1e-12
 ## 项目的结构
 
 ```bash
-├── picture # README文档的说明图片
-├── projectfile # 项目要求文档与参考资料
-│   ├── HSPICE简明教程(复旦大学).pdf
-│   ├── proj1_v03_tj.pdf	
-│   ├── hspice_sa.pdf	
-│   ├── HspiceManual完全手册.pdf		
-├── testfile # 测试文件目录
-│   ├── test_ori #项目所给的运行网表
-│   ├── hspice_testfile #hspice测试所用网表
-│   ├── AmplifierDC.sp      		
-│   ├── AmplifierSweep.sp         	
-│   ├── bjtAmpliferDC.sp 
-│   ├── bjtAmpliferSweep.sp 
-│   ├── bufferDC.sp
-│   ├── bufferSweep.sp
-│   ├── dbmixerDC.sp 
-│   ├── diftestDC.sp      		
-│   ├── diftestSweep.sp         	
-│   ├── invertbufferDC.sp
-│   └── invertbufferSweep.sp
-##### 工作文件夹
-├── Top_module.m
-├── parse_netlist.m
-│   ├── compCINFO.m
-│   └── tranNumber.m
-├── Generate_DCnetlist.m
-│   ├── Gen_NodeInfo.m
-│   ├── Gen_DeviceInfo.m
-│   ├── init_value.m
-│   ├── Mos_Calculator.m
-│   ├── Diode_Calculator.m
-│   └── BJT_Calculator.m
-├── CalculateDC.m
-│   ├── Gen_nextRes.m
-│   │   ├── Mos_Calculator.m
-│   │   ├── Diode_Calculator.m
-│   │   └── BJT_Calculator.m
-│   ├── Gen_baseA.m
-│   └── Gen_nextA.m
-├── Sweep_AC.m
-│   ├── Gen_ACmatrix.m
-│   ├── Gen_NextACmatrix.m
-│   └── getCurrent.m
-├── Sweep_DC.m
-├── ValueCalc.m
-├── portMapping.m
-##### 
-├── README.md # 项目说明文件
+FUDAN_ANALOG_EDA_MATLAB_SPICE
+### 项目主文件目录
+│   calculateDC.m
+│   CalculateTrans.m
+│   compCINFO.m
+│   Diode_Calculator.m
+│   frameDC.m
+│   Generate_ACnetlist.m
+│   Generate_DCnetlist.m
+│   Generate_transnetlist.m
+│   Gen_baseA.m
+│   Gen_DeviceInfo.m
+│   Gen_Matrix.m
+│   Gen_nextA.m
+│   Gen_NextACmatrix.m
+│   Gen_nextRes.m
+│   Gen_NodeInfo.m
+│   Gen_PZ.m
+│   getCurrent.m
+│   init_value.m
+│   Mos_Calculator.m
+│   parse_netlist.m
+│   PLOTIndexInRes.m
+│   portMapping.m
+│   shooting_method.m
+│   Sin_Calculator.m
+│   sparcity.m
+│   Sweep_AC.m
+│   Sweep_DC.m
+│   Top_module.m
+│   TranInit.m
+│   tranNumber.m
+│   Trans.m
+│   updateValues.m
+│   ValueCalc.m
+#### 项目文档
+│   README.md 
+#### 展示PPT
+│   基于MATLAB实现的模拟电路SPICE工具.pptx 
+├───picture # README图片以及程序图片输出位置
+├───projectfile # 参考资料
+│       HspiceManual完全手册.pdf
+│       hspice_mosfet.pdf
+│       hspice_sa.pdf
+│       HSPICE简明教程(复旦大学).pdf
+│       proj1_v03_tj.pdf
+└───testfile # 测试文件目录
+    │   ABORTAmplifier.sp
+    │   Amplifier.sp
+    │   AmplifierAC.sp
+    │   AmplifierDC.sp
+    │   AmplifierSweep.sp
+    │   buffer.sp
+    │   bufferAC.sp
+    │   bufferDC.sp
+    │   bufferPZ.sp
+    │   bufferShoot.sp
+    │   bufferSweep.sp
+    │   bufferTrans.sp
+    │   dbmixer.sp
+    │   dbmixerAC.sp
+    │   dbmixerDC.sp
+    │   dbmixerTrans.sp
+    │   diftest.sp
+    │   diftestDC.sp
+    │   diftestShoot.sp
+    │   diftestSweep.sp
+    │   diftestTrans.sp
+    │   invertbufferDC.sp
+    │   invertbufferSweep.sp
+    │   RC.sp
+    │   RCLPZ.sp
+    │   RCPZ.sp
+    │   RC_V3.sp
+    │   SmosAC.sp
+    │   SmosPZ.sp
+    ├───testG_BaseA
+    ├───test_hspice
+    └───test_ori
 ```
 
 ## 项目细节介绍
