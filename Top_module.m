@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='diftestTrans';
+file='diftestShoot';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -151,6 +151,6 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(printTimePoint,Values(i,:));
             title(Obj{i});
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+            saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
 end

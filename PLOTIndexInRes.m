@@ -27,7 +27,7 @@ end
 for j = i + 1 : ObjNum
     dname = plotCurrent{j-i}{1};
     plotport = plotCurrent{j-i}{2};
-    Obj(j) = {[dname '(' plotport ')' ': ']};
+    Obj(j) = {[dname '(' plotport ')']};
 end
 %初始化Value
 Values =  zeros(ObjNum, Times);
