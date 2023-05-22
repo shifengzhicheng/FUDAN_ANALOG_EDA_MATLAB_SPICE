@@ -20,10 +20,17 @@ function [Ikk,GMk,GDSk]=Mos_Calculator(VDSk,VGSk,Mosarg,W,L)
         GDSk = Type*MU*COX*(W/L)*(VGSk-Vth-VDSk);
         Ikk = Ik - GMk*VGSk -GDSk*VDSk;
     else                    %饱和区
-        Ik = Type*(1/2)*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*(1+LAMBDA*VDSk*Type);
-        GMk = Type*MU*COX*(W/L)*(VGSk-Vth)*(1+LAMBDA*VDSk*Type);
-        GDSk = 1/2*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*LAMBDA;
-        Ikk = Ik - GMk*VGSk -GDSk*VDSk;
+        if  Vth*Type - (VGSk-VDSk)*Type < 0.01 %交界处，换为连续
+            Ik = Type*(1/2)*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*(1+LAMBDA*(VDSk-VGSk+Vth)*Type);
+            GMk = Type*MU*COX*(W/L)*(VGSk-Vth)*(1+LAMBDA*VDSk*Type)-3/2*Type*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*LAMBDA;
+            GDSk = 1/2*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*LAMBDA;
+            Ikk = Ik - GMk*VGSk -GDSk*VDSk;
+        else
+            Ik = Type*(1/2)*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*(1+LAMBDA*VDSk*Type);
+            GMk = Type*MU*COX*(W/L)*(VGSk-Vth)*(1+LAMBDA*VDSk*Type);
+            GDSk = 1/2*MU*COX*(W/L)*(VGSk-Vth)*(VGSk-Vth)*LAMBDA;
+            Ikk = Ik - GMk*VGSk -GDSk*VDSk;
+        end
     end
 
 end
