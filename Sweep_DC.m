@@ -50,7 +50,7 @@ for i = 1 : sweepTimes
     DeviceValue(:,i) = Value';
     x_res(:,i) = [0; DCres('x')];
 end
-LinerNet('Value') = DeviceValue';
-[Obj,ResPlotData] = ValueCalc(plotnv,plotCurrent,x_res,x_0,Node_Map,LinerNet);
+LinerNet('Value') = DeviceValue;
+[Obj,ResPlotData] = ValueCalcDC(plotnv,plotCurrent,x_res,x_0,Node_Map,LinerNet);
 %mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流
 end

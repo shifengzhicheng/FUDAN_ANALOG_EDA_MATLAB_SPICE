@@ -2,16 +2,15 @@
 function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
 %% 模仿Trans获取数据
 %初始化
-
-
 delta_t = stepTime * 0.5;
 
-[Init,CIp,LIp,SINFreq] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, delta_t);
+[Init,CIp,LIp] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,Node_Map, Error, delta_t);
 
 % 零时刻输出结果记为x0
 x0 = Init('x');
 %% 首先获取电路的周期T
 % 这个周期通过遍历所有的瞬态源来确定
+SINFreq = SinINFO('Freq');
 result = SINFreq(1);
 for i = 2:length(SINFreq)
     % 使用gcd函数计算当前元素与当前最大公约数的最大公约数

@@ -1,4 +1,4 @@
-function [ResInit,CIp,LIp,SINFreq] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, delta_t)
+function [ResInit,CIp,LIp] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,Node_Map, Error, delta_t)
 %RCL 拆开
 CN1 = CINFO('N1');
 CN2 = CINFO('N2');
@@ -14,7 +14,7 @@ LNodeMat = zeros(LNum, 2);
 CLine = CINFO('CLine');
 LLine = LINFO('LLine');
 %建立对SourceINFO的索引
-SINFreq = SinINFO('Freq');
+
 
 %CL节点 - 线性网表中节点
 for i = 1 : CNum
