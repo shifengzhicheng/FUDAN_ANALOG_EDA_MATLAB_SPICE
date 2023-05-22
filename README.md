@@ -13,7 +13,7 @@
 
 ## 功能说明
 
-该工具可以读入电路网表文件，然后执行`DC` 分析、瞬态分析等，生成对应的输出结果。支持的电路元件包括`MOSFET`、二极管、电阻、电容、电感等。
+该工具可以读入电路网表文件，然后执行`DC` 分析、瞬态分析、`AC` 分析、零极点分析、稳态分析，生成对应的输出结果。支持的电路元件包括`MOSFET`、二极管、电阻、电容、电感等。
 
 在`MOSFET` 模型中，使用了简化版的`SPICE Level = 1`的`MOS`模型。`MOSFET`的源端和漏端不是固定的，需要由两个端口当前的电压值来判断。
 
@@ -175,83 +175,89 @@ C3 118 0 1e-12
 ```bash
 FUDAN_ANALOG_EDA_MATLAB_SPICE
 ### 项目主文件目录
-│   calculateDC.m
-│   CalculateTrans.m
-│   compCINFO.m
-│   Diode_Calculator.m
-│   frameDC.m
-│   Generate_ACnetlist.m
-│   Generate_DCnetlist.m
-│   Generate_transnetlist.m
-│   Gen_baseA.m
-│   Gen_DeviceInfo.m
-│   Gen_Matrix.m
-│   Gen_nextA.m
-│   Gen_NextACmatrix.m
-│   Gen_nextRes.m
-│   Gen_NodeInfo.m
-│   Gen_PZ.m
-│   getCurrent.m
-│   init_value.m
-│   Mos_Calculator.m
-│   parse_netlist.m
-│   PLOTIndexInRes.m
-│   portMapping.m
-│   shooting_method.m
-│   Sin_Calculator.m
-│   sparcity.m
-│   Sweep_AC.m
-│   Sweep_DC.m
-│   Top_module.m
-│   TranInit.m
-│   tranNumber.m
-│   Trans.m
-│   updateValues.m
-│   ValueCalc.m
+├── Top_module.m
+├── parse_netlist.m
+│   ├── compCINFO.m
+│   └── tranNumber.m
+├── Generate_DCnetlist.m
+│   ├── Gen_NodeInfo.m
+│   ├── Gen_DeviceInfo.m
+│   ├── init_value.m
+│   ├── Mos_Calculator.m
+│   └── Diode_Calculator.m
+├── CalculateDC.m
+│   ├── Gen_nextRes.m
+│   │   ├── Mos_Calculator.m
+│   │   └── Diode_Calculator.m
+│   ├── Gen_baseA.m
+│   └── Gen_nextA.m
+├── Generate_ACnetlist.m
+│   ├── Mos_Calculator.m
+│   └── Diode_Calculator.m
+├── Sweep_AC.m
+│   ├── Gen_ACmatrix.m
+│   ├── Gen_NextACmatrix.m
+│   └── getCurrent.m
+├── Generate_transnetlist.m
+│   ├── Gen_NodeInfo.m
+│   ├── Gen_DeviceInfo.m
+│   ├── Sin_Calculator.m
+│   ├── Mos_Calculator.m
+│   └── Diode_Calculator.m
+├── CalculateTrans.m
+│   ├── PLOTIndexInRes.m
+│   ├── updateValues.m
+│   ├── Sin_Calculator.m
+│   └── TranInit.m
+├── Gen_PZ.m
+│   └── portMapping.m
+├── shooting_method.m
+│   └──Trans.m
+├── sparcity.m
+├── Sweep_DC.m
+├── ValueCalc.m
+├── portMapping.m
 #### 项目文档
-│   README.md 
+├── README.md 
 #### 展示PPT
-│   基于MATLAB实现的模拟电路SPICE工具.pptx 
-├───picture # README图片以及程序图片输出位置
-├───projectfile # 参考资料
-│       HspiceManual完全手册.pdf
-│       hspice_mosfet.pdf
-│       hspice_sa.pdf
-│       HSPICE简明教程(复旦大学).pdf
-│       proj1_v03_tj.pdf
-└───testfile # 测试文件目录
-    │   ABORTAmplifier.sp
-    │   Amplifier.sp
-    │   AmplifierAC.sp
-    │   AmplifierDC.sp
-    │   AmplifierSweep.sp
-    │   buffer.sp
-    │   bufferAC.sp
-    │   bufferDC.sp
-    │   bufferPZ.sp
-    │   bufferShoot.sp
-    │   bufferSweep.sp
-    │   bufferTrans.sp
-    │   dbmixer.sp
-    │   dbmixerAC.sp
-    │   dbmixerDC.sp
-    │   dbmixerTrans.sp
-    │   diftest.sp
-    │   diftestDC.sp
-    │   diftestShoot.sp
-    │   diftestSweep.sp
-    │   diftestTrans.sp
-    │   invertbufferDC.sp
-    │   invertbufferSweep.sp
-    │   RC.sp
-    │   RCLPZ.sp
-    │   RCPZ.sp
-    │   RC_V3.sp
-    │   SmosAC.sp
-    │   SmosPZ.sp
-    ├───testG_BaseA
-    ├───test_hspice
-    └───test_ori
+├── 基于MATLAB实现的模拟电路SPICE工具.pptx 
+├── picture # README图片以及程序图片输出位置
+├── projectfile # 参考资料
+│   ├── HspiceManual完全手册.pdf
+│   ├── hspice_mosfet.pdf
+│   ├── hspice_sa.pdf
+│   ├── HSPICE简明教程(复旦大学).pdf
+│   └── proj1_v03_tj.pdf
+└── testfile # 测试文件目录
+    ├── test_hspice  # hspice测试文件目录
+    ├── test_ori    # 课程示例文件目录
+    ├── Amplifier.sp
+    ├── AmplifierDC.sp
+    ├── AmplifierSweep.sp
+    ├── buffer.sp
+    ├── bufferAC.sp
+    ├── bufferDC.sp
+    ├── bufferPZ.sp
+    ├── bufferShoot.sp
+    ├── bufferSweep.sp
+    ├── bufferTrans.sp
+    ├── dbmixer.sp
+    ├── dbmixerAC.sp
+    ├── dbmixerDC.sp
+    ├── dbmixerTrans.sp
+    ├── diftest.sp
+    ├── diftestDC.sp
+    ├── diftestShoot.sp
+    ├── diftestSweep.sp
+    ├── diftestTrans.sp
+    ├── invertbufferDC.sp
+    ├── invertbufferSweep.sp
+    ├── RC.sp
+    ├── RCLPZ.sp
+    ├── RCPZ.sp
+    ├── RC_V3.sp
+    ├── SmosAC.sp
+    └── SmosPZ.sp
 ```
 
 ## 项目细节介绍
@@ -2308,7 +2314,9 @@ C3 5 0 5e-12
 
 ## 结束语
 
-综上所述，第一部分dc分析功能均已实现。同时通过与hspice标准结果对比可以发现，模型缺陷主要存在于对衬偏效应、短沟道效应等mos器件二级效应的忽视。进一步可以从模型准确性和计算速度的角度进行优化。第二部分实现了AC、Trans、零极点分析等多种功能。项目完成度整体比较高，但是部分逻辑有待优化与整合。
+第一部分dc分析功能均已实现。同时通过与hspice标准结果对比可以发现，模型缺陷主要存在于对衬偏效应、短沟道效应等mos器件二级效应的忽视。
+
+第二部分实现了AC、Trans、零极点分析、shootingmethod等多种功能。同时通过与hspice标准结果对比可以发现，主要差别在于对于mos寄生电容模型处理的不同。项目完成度整体比较高，但是部分逻辑有待优化与整合。
 
 
 
