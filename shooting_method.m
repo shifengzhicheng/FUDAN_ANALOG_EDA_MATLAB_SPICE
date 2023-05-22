@@ -1,13 +1,44 @@
 %% shooting method求解电路稳态响应
-function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
+% 代码作者：郑志宇
+% 代码重构自CalculateTrans
+function [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
 %% 模仿Trans获取数据
 %初始化
 delta_t = stepTime * 0.5;
 
-[Init,CIp,LIp] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,Node_Map, Error, delta_t);
+LinerNet('Value') = LinerNet('Value')';
+%% 首先处理一下L，C器件的一些生成参数
+CValue = CINFO('Value')';
+LValue = LINFO('Value')';
+CN1 = CINFO('N1');
+CN2 = CINFO('N2');
+LN1 = LINFO('N1');
+LN2 = LINFO('N2');
+CNum = size(CN1, 2);
+LNum = size(LN1, 2);
+CNodeMat = zeros(CNum, 2);
+LNodeMat = zeros(LNum, 2);
+CINFO('R') = 0.5 * delta_t ./ CValue;
+LINFO('R') = 2 .*  LValue ./ delta_t;
 
+% CL节点 - 线性网表中节点
+for i = 1 : CNum
+    CNodeMat(i, 1) = find(Node_Map == CN1(i));
+    CNodeMat(i, 2) = find(Node_Map == CN2(i));    %相当于已经考虑零节点，不再加1
+end
+for i = 1 : LNum
+    LNodeMat(i, 1) = find(Node_Map == LN1(i));
+    LNodeMat(i, 2) = find(Node_Map == LN2(i));    %相当于已经考虑零节点，不再加1
+end
+
+CINFO('NodeMap') = CNodeMat;
+
+LINFO('NodeMat') = LNodeMat;
+%%
+[Init,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, delta_t);
+LinerNet('Value') = DeviceValue;
 % 零时刻输出结果记为x0
-x0 = Init('x');
+x0 = Init;
 %% 首先获取电路的周期T
 % 这个周期通过遍历所有的瞬态源来确定
 SINFreq = SinINFO('Freq');
@@ -18,62 +49,34 @@ for i = 2:length(SINFreq)
 end
 % 找到频率的最大公约数，此为电路实际的周期
 T = 1/result;
+
+printTimePoint = 0:delta_t:T;
+
 % 定义初始解x0, xT = x0 时说明电路找到稳态解，返回稳态解;
 % 开始迭代过程
 % 从初始迭代结果生成一个xT
-[ResData,CData,LData] =...
+[ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
-    CINFO,LINFO,SinINFO,Node_Map, Error,...
-    Init, CIp, LIp, stepTime, T);
-ResSolve = ResData('x');
-xT = ResSolve(:,end);
+    CINFO,LINFO,SinINFO, Error,...
+    Init, stepTime, T);
 
-
-%% 沿用CalcTrans的计算传值方式
-[~, x_0, ~] = Gen_Matrix(LinerNet('Name'), LinerNet('N1'), LinerNet('N2'), LinerNet('dependence'), LinerNet('Value')); 
-printTimePoint = 0 : stepTime : T;
-[mosIndexInValues, mosIndexInmosCurrents, ...
-    dioIndexInValues, dioIndexIndiodeCurrents, ...
-    VIndexInValues, VIndexInDCres, ...
-    IIndexInValues, IIndexInValue, ...
-    RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-    CIndexInValues, CIndexInCIp,...
-    LIndexInValues, LIndexInLIp,...
-    Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, size(printTimePoint,2), LinerNet, MOSINFO('Name'), DIODEINFO('Name'),CINFO('Name') ,LINFO('Name'));
-nvNum = size(plotnv, 1);
+xT = ResData(:,end);
 
 %% 牛顿迭代法开始迭代
 while(var(xT - x0)>Error)
+    %% 利用DeviceValues的末尾值更新LinerNet
     x0 = xT;
+    LinerNet('Value') = DeviceValues(:,end);
     %% Trans函数，从x0出发，找到电路到xT的稳态解
-    [ResData,CData,LData] =...
+    [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
-    CINFO,LINFO,SinINFO,Node_Map, Error,...
-    Init, CIp, LIp, stepTime, T);
-    Init('x')= x0;
-    InitMOS = ResData('MOS');
-    Init('MOS') = InitMOS(:,1);
-    InitDiode = ResData('Diode');
-    Init('Diode') = InitDiode(:,1);
-    ResSolve = ResData('x');
-    if(~isempty(LData))
-        LIp = LData(end);
-    end
-    if(~isempty(CData))
-        CIp = CData(end);
-    end
-    xT = ResSolve(:,end);
+    CINFO,LINFO,SinINFO, Error,...
+    x0, delta_t, T);
+    xT = ResData(:,end);
 end
 
-Values = updateValues( ResData('x'), LinerNet('Value'), ResData('MOS'), ResData('Diode'), CData, LData,...
-    plotnv,...
-    mosIndexInValues, mosIndexInmosCurrents, ...
-    dioIndexInValues, dioIndexIndiodeCurrents, ...
-    VIndexInValues, VIndexInDCres, ...
-    IIndexInValues, IIndexInValue, ...
-    RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
-    CIndexInValues, CIndexInCIp,...
-    LIndexInValues, LIndexInLIp,...
-    Values, nvNum);
-
+[~,x_0,~] = Gen_Matrix(LinerNet('Name'),LinerNet('N1'),LinerNet('N2'),LinerNet('dependence'),LinerNet('Value'));
+[plotnv,plotnc] = portMapping(PLOT,Node_Map);
+LinerNet('Value') = DeviceValues;
+[Obj,PlotValues] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotnc);
 end
