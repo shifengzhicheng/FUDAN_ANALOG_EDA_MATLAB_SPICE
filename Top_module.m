@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='diftestTrans';
+file='diftestSweep';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -108,8 +108,9 @@ switch lower(SPICEOperation{1}{1})
             Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, x_0] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
+        [DCres, x_0, newValue] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
         DCres('x')=[0;DCres('x')];
+        LinerNet('Value') = newValue;
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到

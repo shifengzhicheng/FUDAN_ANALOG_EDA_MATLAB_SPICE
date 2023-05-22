@@ -83,7 +83,7 @@ for j = 1:nvNum
     Phase(j,:) = angle(Voltage);
 end
 for j = nvNum+1:nvNum + ncNum
-    Current=getCurrent(Device{j-nvNum},port{j-nvNum},LinerNet,x,Res,freq);
+    Current=getCurrentAC(Device{j-nvNum},port{j-nvNum},LinerNet,x,Res,freq);
     Gain(j,:) = abs(Current);
     Phase(j,:) = angle(Current);
 end
