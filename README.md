@@ -2248,7 +2248,7 @@ C4 4 0 8e-10
 
 ##### 电路图
 
-<img src="\picture\RC.png" alt="电路图" style="height:300px;" />
+<img src="\picture\RC.png" alt="电路图" style="height:200px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2297,7 +2297,7 @@ C3 5 0 5e-12
 
 ##### 电路图
 
-<img src="\picture\RCL.png" alt="电路图" style="height:300px;" />
+<img src="\picture\RCL.png" alt="电路图" style="height:200px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
