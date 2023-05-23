@@ -19,8 +19,6 @@ DeviceValue = LinerNet('Value');
 RC = CINFO('R');
 RL = LINFO('R');
 
-% CL节点 - 线性网表中节点
-
 %% 根据init的值以及DeviceValue生成电容与电感的伴随器件的值
 % 这世上一轮结束的时候产生的线性网表
 LVp=[];
@@ -55,7 +53,7 @@ while(t <= TotalSize)
     IL = LIp + LVp ./ RL;
     % 当前时刻可变SIN电源值
     SINV = Sin_Calculator(SINDcValues, SINAcValues, SINFreq, curTime, SINPhase); 
-    LinerValue = LinerNet('Value')';
+    LinerValue = LinerNet('Value');
     % LinerNet中C与L顺序不分类,要依据索引找对应伴随器件
     % LinerNet中C伴随器件按R, V的顺序
     LinerValue(CLine + 2 * (1 : CNum) - 2) = RC;

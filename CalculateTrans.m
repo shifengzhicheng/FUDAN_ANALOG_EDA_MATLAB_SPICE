@@ -396,13 +396,6 @@ while(plotCount < printTimeNum)
         curPlotTime = curPlotTime + stepTime;
     end
 end
-%     if(printTimeNum ~= plotCount)
-%         for i=1:size(Obj,1)
-%             figure('Name',Obj{i})
-%             plot(printTimePoint(1:plotCount), Values(i,(1:plotCount)));
-%             title(Obj{i});
-%         end
-%     end
 %% 尚未加入寄生电容的电流，时间瞬态三端电流要加上电容漏电 - HOW？
 % 在外面同一获取所有需要的电流
 Values = updateValues( ResData, Valuep, mosCurrents, diodeCurrents, CData, LData,...
