@@ -64,7 +64,7 @@ while ~feof(fid)
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
-    tokens_Operation = regexp(line, '^[(\.ac)(\.trans)(\.dc)(\.dcsweep)(.pz)]', 'tokens', 'ignorecase');
+    tokens_Operation = regexp(line, '^[(\.shoot)(\.ac)(\.trans)(\.dc)(\.dcsweep)(\.pz)]', 'tokens', 'ignorecase');
     if ~isempty(tokens_Device)
         % 提取关键字符
         keyword = tokens_Device{1}{1}(1);

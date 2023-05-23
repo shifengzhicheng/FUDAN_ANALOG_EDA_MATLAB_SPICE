@@ -1,4 +1,9 @@
 %% 根据device以及端点从解中得到电流或者电压
+% ResData包含0节点是在整个过程中产生的矩阵的解的结果
+% LinerNet中网表部分不变，但是Value变为整个过程中器件的所有Value值，
+% 这个矩阵的列数是绘图节点的数目，行数与器件数目一致
+% NodeMap和x0是节点电压以及索引表向量
+% plotnv与plotnc直接来自portMapping
 function [Obj, res] = ValueCalcDC(plotnv, plotCurrent, ...
             DCres,x_0, Node_Map, LinerNet)
 % 画图对象的总数量

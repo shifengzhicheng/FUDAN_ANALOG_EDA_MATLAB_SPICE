@@ -1,3 +1,9 @@
+%% 这个函数实现读取Trans的结果，提取产生所需信息并传出
+% ResData包含0节点是在整个过程中产生的矩阵的解的结果
+% LinerNet中网表部分不变，但是Value变为整个过程中器件的所有Value值，
+% 这个矩阵的列数是绘图节点的数目，行数与器件数目一致
+% NodeMap和x0是节点电压以及索引表向量
+% plotnv与plotnc直接来自portMapping
 function [Obj,res] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotnc)
 % 画图对象的总数量
 pointNum = size(LinerNet('Value'),2);
