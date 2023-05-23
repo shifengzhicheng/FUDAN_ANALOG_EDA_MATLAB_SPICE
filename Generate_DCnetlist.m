@@ -16,6 +16,10 @@ MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
 
 % 节点序号
+RN1 = str2double(RINFO('N1'));
+LN1 = str2double(LINFO('N1'));
+RN2 = str2double(RINFO('N2'));
+LN2 = str2double(LINFO('N2'));
 RLCN1 = str2double([RINFO('N1'),CINFO('N1'),LINFO('N1')]);
 RLCN2 = str2double([RINFO('N2'),CINFO('N2'),LINFO('N2')]);
 SourceN1 = str2double(SourceINFO('N1'));
@@ -60,6 +64,13 @@ for i=1:length(Node)
     Node_Map(i,1)=Node(i);
 end
 Node_Map = unique(Node_Map,"rows");
+
+%% DC 节点映射
+NodeDC = [RN1,RN2,LN1,LN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2];
+NodeDC = unique(NodeDC',"rows");
+NodeL = unique([LN1,LN2])';
+[Node_Map_DC]=Node_Mapping_DC(NodeDC,NodeL,LN1,LN2);
+
 %% 新建 NodeInfo 优化DeviceInfo的值
 [NodeInfo,DeviceInfo] = Gen_NodeInfo(Node_Map,DeviceInfo);
 
