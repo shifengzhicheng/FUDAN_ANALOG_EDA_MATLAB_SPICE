@@ -36,10 +36,9 @@ CINFO('NodeMap') = CNodeMat;
 
 LINFO('NodeMat') = LNodeMat;
 %%
-[Init,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, IteratorStep);
+[x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, IteratorStep);
 LinerNet('Value') = DeviceValue;
 % 零时刻输出结果记为x0
-x0 = Init;
 %% 首先获取电路的周期T
 % 这个周期通过遍历所有的瞬态源来确定
 SINFreq = SinINFO('Freq');
@@ -59,25 +58,24 @@ printTimePoint = 0:stepTime:TotalTime;
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
     CINFO,LINFO,SinINFO, Error,...
-    Init, stepTime, T);
+    x0, stepTime, T);
 
 xT = ResData(:,end);
-dx = x0 - xT;
-CurError = norm(dx);
+CurError = norm(x0 - xT);
+LinerNet('Value') = DeviceValues(:,end);
 %% 牛顿迭代法开始迭代
-while(CurError>Error)
-    %% 利用DeviceValues的末尾值更新LinerNet
-    LinerNet('Value') = DeviceValues(:,end);
-    %% Trans函数，从x0出发，找到电路到xT的稳态解
+while(CurError>1e-6)
+    %% 利用某个关系来对搜索的步长与搜索起点进行调整
+    [IteratorStep, x0] = DynamicStep(IteratorStep,CurError,xT,x0);
+     %% Trans函数，从x0出发，找到电路到xT的稳态解
     [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
     CINFO,LINFO,SinINFO, Error,...
     x0, IteratorStep, T);
-    % 更新x0 和 IteratorStep
-    dx = ResData(:,end) - x0;
-    x0 = x0 + dx;
-    CurError = norm(dx);
-    IteratorStep = 0.7 * IteratorStep + 0.3 * CurError;
+    %% 利用DeviceValues的末尾值更新LinerNet
+    LinerNet('Value') = DeviceValues(:,end);
+    xT = ResData(:,end);
+    CurError = norm(x0-xT);
 end
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
