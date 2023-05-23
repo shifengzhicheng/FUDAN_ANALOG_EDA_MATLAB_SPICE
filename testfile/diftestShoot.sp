@@ -35,4 +35,4 @@ RSS 121 0 1e5
 .plotnc D1(+)
 .plotnc M1(d)
 
-.shoot 2e-7 1e-9
+.shoot 2e-6 1e-9

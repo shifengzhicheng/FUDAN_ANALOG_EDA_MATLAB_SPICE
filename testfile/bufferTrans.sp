@@ -26,4 +26,4 @@ C3 118 0 1e-12
 .plotnc C1(+)
 .plotnc R2(+)
 
-.trans 2e-7 1e-9
+.trans 1e-6 1e-9
