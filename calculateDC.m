@@ -94,7 +94,7 @@ end
 % zrc：前面改过了，这里不用再转化了
 
 %% 开始迭代
-Nlimit = 100; %迭代上限，可能次数太多因为初始解不收敛
+Nlimit = 500; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
     [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...

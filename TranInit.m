@@ -7,8 +7,10 @@ LNum = size(LValue, 1);
 % 注意LinerNet与LinerNet_DC顺序不同 但原线性器件端点序号一样, 可以利用
 CLine = CINFO('CLine');
 LLine = LINFO('LLine');
-RC = CINFO('R');
-RL = LINFO('R');
+
+RC = CINFO('R').*delta_t;
+RL = LINFO('R')./delta_t;
+
 LIp = zeros(LNum,1);
 LVp = zeros(LNum,1);
 CIp = zeros(CNum,1);

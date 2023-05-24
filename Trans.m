@@ -16,8 +16,8 @@ SINFreq = SinINFO('Freq');
 SINNum = size(SINAcValues, 2);  %都为行向量
 %% 取出上次迭代时得到的所有器件的线性值
 DeviceValue = LinerNet('Value');
-RC = CINFO('R');
-RL = LINFO('R');
+RC = CINFO('R').*delta_t;
+RL = LINFO('R')./delta_t;
 
 %% 根据init的值以及DeviceValue生成电容与电感的伴随器件的值
 % 这世上一轮结束的时候产生的线性网表

@@ -17,8 +17,8 @@ CNum = size(CN1, 2);
 LNum = size(LN1, 2);
 CNodeMat = zeros(CNum, 2);
 LNodeMat = zeros(LNum, 2);
-CINFO('R') = 0.5 * delta_t ./ CValue;
-LINFO('R') = 2 .*  LValue ./ delta_t;
+CINFO('R') = 0.5 ./ CValue;
+LINFO('R') = 2 * LValue;
 
 % CL节点 - 线性网表中节点
 for i = 1 : CNum
@@ -49,30 +49,29 @@ for i = 2:length(SINFreq)
 end
 % 找到频率的最大公约数，此为电路实际的周期
 T = 1/result;
-IteratorStep = T/20;
 printTimePoint = 0:stepTime:TotalTime;
-
 % 定义初始解x0, xT = x0 时说明电路找到稳态解，返回稳态解;
 % 开始迭代过程
 % 从初始迭代结果生成一个xT
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
-    Error,x0, IteratorStep, T);
+    Error,x0, delta_t, T);
 
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
+delta_t = 5*stepTime;
 Error = 1e-3;
-IteratorStep = T/50;
 %% 牛顿迭代法开始迭代
 while(CurError>Error)
     %% 利用某个关系来对搜索的步长与搜索起点进行调整
     %% 利用DeviceValues的末尾值更新LinerNet
-    [IteratorStep, x0] = DynamicStep(IteratorStep,CurError,xT,x0,T,stepTime);
+    x0 = xT;
+%     [IteratorStep, x0] = DynamicStep(IteratorStep,CurError,xT,x0,T,stepTime);
     LinerNet('Value') = DeviceValues(:,end);
     %% Trans函数，从x0出发，找到电路到xT的稳态解
     [ResData,DeviceValues] =...
         Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
-        Error,x0, IteratorStep, T);
+        Error,x0, delta_t, T);
     xT = ResData(:,end);
     CurError = norm(x0-xT);
 end
