@@ -1,3 +1,4 @@
+%% 这个函数将线性网表中的参数输出到器件节点的电流上去，一次性输出全部的电流
 function Current = getCurrentTrans(Device,port,LinerNet,x,Res)
 Name = LinerNet('Name');
 N1 = LinerNet('N1');

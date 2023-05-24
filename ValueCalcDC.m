@@ -4,15 +4,14 @@
 % 这个矩阵的列数是绘图节点的数目，行数与器件数目一致
 % NodeMap和x0是节点电压以及索引表向量
 % plotnv与plotnc直接来自portMapping
-function [Obj, res] = ValueCalcDC(plotnv, plotCurrent, ...
-            DCres,x_0, Node_Map, LinerNet)
+function [Obj, res] = ValueCalcDC(plotnv, plotCurrent, DCres,x_0, Node_Map, LinerNet)
 % 画图对象的总数量
 pointNum = size(LinerNet('Value'),2);
 plotnv=plotnv';
 plotCurrent=plotCurrent';
 tsize = size(plotnv,1)+size(plotCurrent,1);
 % 初始化
-Obj = cell(tsize);
+Obj = cell(tsize,1);
 res = zeros(tsize,pointNum);
 if isempty(DCres)
     error('没有解，不能画出所需信息')

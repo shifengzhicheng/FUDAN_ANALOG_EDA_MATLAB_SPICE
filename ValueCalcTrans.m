@@ -11,7 +11,7 @@ plotnv=plotnv';
 plotCurrent=plotnc';
 tsize = size(plotnv,1)+size(plotCurrent,1);
 % 初始化
-Obj = cell(tsize);
+Obj = cell(tsize,1);
 res = zeros(tsize,pointNum);
 if isempty(ResData)
     error('没有解，不能画出所需信息')
