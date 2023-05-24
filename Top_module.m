@@ -89,17 +89,43 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
-        % 设置判断解收敛的标识
+         % 设置判断解收敛的标识
         Error = 1e-6;
-        % 到这里需要进行瞬态仿真
+        %Trans网表得到
+        [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
+            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 瞬态仿真需要时间步长和仿真的时间
         stopTime = str2double(SPICEOperation{1}{2});
         stepTime = str2double(SPICEOperation{1}{3});
-        [Obj, transRes, printTimePoint] =...
-            CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT);
+        %Δt初始值
+        delta_t0 = 0.5 * stepTime;
+        %瞬态仿真模式 - "BE" or "TR"
+        TransMethod = "BE";
+        %瞬态推进模式 - "Fix" or "Dynamic"
+        StepMethod = "Dynamic";
+
+        %生成初始解
+        [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, CINFO, LINFO, Error, delta_t0, TransMethod);
+        
+        %瞬态推进过程
+        if(StepMethod == "Fix")
+            [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
+                                                    LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
+                                                    Error, delta_t0, stopTime, stepTime);
+        elseif(StepMethod == "Dynamic")
+            [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
+                                                    LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
+                                                    Error, delta_t0, stopTime, stepTime);
+        end
+
+        %结果处理输出打印输出过程
+        [~, x_0, ~] = Gen_Matrix(LinerNet('Name'),LinerNet('N1'),LinerNet('N2'),LinerNet('dependence'),LinerNet('Value'));
+        [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
+        LinerNet('Value') = DeviceDatas;
+        [Obj,Res] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotCurrent);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
-            plot(printTimePoint,transRes(i,:));
+            plot((0 : stepTime : stopTime), Res(i,:));
             title(Obj{i});
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end

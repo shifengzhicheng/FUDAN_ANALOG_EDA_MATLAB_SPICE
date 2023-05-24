@@ -282,6 +282,21 @@ end
 
 SinINFO = containers.Map({'Name','DcValue','AcValue','Freq','Phase','SinLine'},{SinName, SinDcValue, SinAcValue, SinFreq, SinPhase,SinLine});
 
+%C\LNodeMat添加
+        %CL节点 - 线性网表中节点
+CNodeMat = zeros(size(CName, 2), 2);
+LNodeMat = zeros(size(LName, 2), 2);
+for i = 1 : size(CName, 2)
+    CNodeMat(i, 1) = find(Node_Map == CN1(i));
+    CNodeMat(i, 2) = find(Node_Map == CN2(i));    %相当于已经考虑零节点，不再加1
+end
+for i = 1 : size(LName, 2)
+    LNodeMat(i, 1) = find(Node_Map == LN1(i));
+    LNodeMat(i, 2) = find(Node_Map == LN2(i));    %相当于已经考虑零节点，不再加1
+end
+CINFO('NodeMat') = CNodeMat;
+LINFO('NodeMat') = LNodeMat;
+
 %% 打包输出
 LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});
 
