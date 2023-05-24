@@ -47,6 +47,9 @@ Rs2 113 111 25
 .plotnv  108
 .plotnv  109
 .plotnv  112
+.plotnc M1(d)
+.plotnc M1(g)
+.plotnc M1(s)
 *.plotnv  111
 *.plotnv  112 
 *.plotnv  113 

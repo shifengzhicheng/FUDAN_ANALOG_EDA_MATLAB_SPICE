@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferShoot';
+file='diftestTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -104,7 +104,7 @@ switch lower(SPICEOperation{1}{1})
         %瞬态仿真模式 - "BE" or "TR"
         TransMethod = "BE";
         %瞬态推进模式 - "Fix" or "Dynamic"
-        StepMethod = "Dynamic";
+        StepMethod = "Fix";
 
         %生成初始解
         [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, CINFO, LINFO, Error, delta_t0, TransMethod);

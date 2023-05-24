@@ -33,10 +33,12 @@ RSS 121 0 1e5
 .plotnv 102
 .plotnv 103 
 .plotnv 104
-.plotnv 105 
-.plotnv 112
+.plotnv 105
 .plotnv 121
 .plotnc D1(+)
-.plotnc M1(d)
+.plotnc D2(+)
+.plotnc Rload2(+)
+.plotnc RSS(+)
+.plotnc Iref(+)
 
 .trans 2e-6 1e-9
