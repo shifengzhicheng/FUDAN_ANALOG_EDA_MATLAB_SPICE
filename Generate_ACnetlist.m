@@ -49,7 +49,7 @@ SourceAcValue = str2double(SourceINFO('AcValue'));
 SourcePhase = str2double(SourceINFO('Phase'));
 
 %DC结果
-x = DCres('x');
+x = DCres;
 
 % 输出结果
 Length =  1;  % MOS的线性化模型有3个器件

@@ -69,7 +69,7 @@ while(t <= TotalSize)
     % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;
     % 当前结果作下一轮前值
-    curTimeResData = [0; curTimeRes('x')];
+    curTimeResData = [0; curTimeRes];
 
     % 记录当前响应
     ResData(:,t) = curTimeResData;

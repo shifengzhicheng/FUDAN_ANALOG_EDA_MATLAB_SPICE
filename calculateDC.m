@@ -115,5 +115,5 @@ end
 disp("Can not Converge!");
 %打包成hash结构DCres
 %DCres = containers.Map({'x', 'MOS', 'Diode'}, {[], [], []});
-DCres = [];
+DCres = zc;
 end

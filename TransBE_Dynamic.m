@@ -1,9 +1,9 @@
-%梯形法固定步长瞬态推进过程
+% 梯形法固定步长瞬态推进过程
 function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp, CIp, LVp, LIp,...
                                                 LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO, ...
                                                 Error, delta_t0, stopTime, stepTime)
 
-%CL信息
+% CL信息
 CValue = CINFO('Value');
 LValue = LINFO('Value');
 
@@ -16,21 +16,21 @@ LNum = size(LValue, 2);
 CLine = CINFO('CLine');
 LLine = LINFO('LLine');
 
-%Sin信息
-%建立对SourceINFO的索引
-SINLine = SinINFO('SinLine');  %LinerNet中的可变源开始行
+% Sin信息
+% 建立对SourceINFO的索引
+SINLine = SinINFO('SinLine');  % LinerNet中的可变源开始行
 SINAcValues = SinINFO('AcValue');
 SINDcValues = SinINFO('DcValue');
 SINPhase = SinINFO('Phase');
 SINFreq = SinINFO('Freq');
-SINNum = size(SINAcValues, 2);  %都为行向量
+SINNum = size(SINAcValues, 2);  % 都为行向量
 
-%总打印次数
+% 总打印次数
 plotTimeNum = size((0:stepTime:stopTime), 2);
 ResData = zeros(size(InitRes, 1), plotTimeNum);
 DeviceDatas = zeros(plotTimeNum, size(InitDeviceValue, 2));
 
-%t=0值
+% t=0值
 ResData(:, 1) = InitRes;
 DeviceDatas(1, :) = InitDeviceValue;
 

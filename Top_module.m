@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='dbmixerShoot';
+file='bufferTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -61,16 +61,18 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
-        DCres('x')=[0;DCres('x')];
+        DCres=[0;DCres];
         [LinerNet,CINFO,LINFO]=...
             Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
+        % 获取AC信息
         ACMode = SPICEOperation{1}{2};
         ACPoint = str2double(SPICEOperation{1}{3});
         fstart = tranNumber(SPICEOperation{1}{4});
         fstop = tranNumber(SPICEOperation{1}{5});
         ACinfo={ACMode,ACPoint,fstart,fstop};
+        % AC扫描获得结果
         [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,ACinfo,Node_Map,PLOT);
-        % 需要时间步长，AC频率
+        % 绘制AC响应图像
         switch lower(ACMode)
             case 'dec'
                 freq = log10(freq);
@@ -135,13 +137,13 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, x_0, newValue] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
-        DCres('x')=[0;DCres('x')];
+        DCres=[0;DCres];
         LinerNet('Value') = newValue';
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
         % plotcurrent需要一个device，还需要一个port
         % plotnv是序号，可以通过x(plotnv)得到
         [Obj, Values] = ValueCalcDC(plotnv, plotCurrent, ...
-            DCres('x'),x_0, Node_Map, LinerNet);
+            DCres,x_0, Node_Map, LinerNet);
         for i=1:size(Obj)
             display([Obj{i} ': ' num2str(Values(i))]);
         end

@@ -28,5 +28,5 @@ LinerValue(LLine + 2 * (1 : LNum) - 1) = RL;
 LinerNet('Value') = LinerValue;
 [curTimeRes, ~, DeviceValue] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
 % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
-ResInit = [0; curTimeRes('x')];
+ResInit = [0; curTimeRes];
 end

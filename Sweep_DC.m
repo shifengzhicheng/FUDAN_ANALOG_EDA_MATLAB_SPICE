@@ -48,7 +48,7 @@ for i = 1 : sweepTimes
     %把上次DC的Value结果当作下次DC计算的初始解加速收敛
     [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
     DeviceValue(:,i) = Value';
-    x_res(:,i) = [0; DCres('x')];
+    x_res(:,i) = [0; DCres];
 end
 LinerNet('Value') = DeviceValue;
 [Obj,ResPlotData] = ValueCalcDC(plotnv,plotCurrent,x_res,x_0,Node_Map,LinerNet);
