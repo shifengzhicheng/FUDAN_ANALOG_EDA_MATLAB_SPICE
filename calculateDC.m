@@ -37,11 +37,12 @@ diodeLine = DIODEINFO('DiodeLine');
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value); 
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A
-mosCurrents = [];
-diodeCurrents = [];
+%mosCurrents = [];
+%diodeCurrents = [];
 if isempty(MOSINFO) && isempty(DIODEINFO)
     z_res = A0 \ b0;
-    DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
+    %DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
+    DCres = z_res;
     return;
 end
 
@@ -102,45 +103,10 @@ for i = 1 : Nlimit
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
-        %disp("Convergence!"); %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %disp("Convergence!");
         %MNA方程解的结果
         z_res = zc;
-
-        %%  为打印MOS电流输出结果提供的输出
-        tempz = [0; zp];
-        %得到绝对原网表三端电压，再根据MOS一阶模型得原Ids，计算Ids函数内考虑ds交换
-        vg = zeros(mosNum, 1); vs = zeros(mosNum, 1); netlistVds = zeros(mosNum, 1);
-        for mosCount = 1 : mosNum   % 1个MOS衍生出的3个伴随器件1组
-            %考虑源漏交换后实际的S端从GM的控制端读到
-            vg(mosCount) = tempz(mosNodeMat(mosCount, 2) + 1);
-            vs(mosCount) = tempz(dependence{MOSLine + 3*mosCount - 2}(2) + 1);
-            %因为RM没有调换端口故原网表Ids仍由原网表Vds看
-            netlistVds(mosCount) = tempz(mosNodeMat(mosCount, 1) + 1) - tempz(mosNodeMat(mosCount, 3) + 1);
-        end
-        vgs = vg - vs;
-        finalRMs = Value(MOSLine : 3 : MOSLine + 3 * mosNum - 3).';
-        finalGMs = Value(MOSLine + 1 : 3 : MOSLine + 3 * mosNum - 2).';
-        finalIMs = Value(MOSLine + 2 : 3 : MOSLine + 3 * mosNum - 1).';
-        mosCurrents = finalIMs + finalGMs .* vgs + (1./finalRMs) .* netlistVds;
-
-        %%  打印Diode电流输出结果
-        vpn = zeros(diodeNum,1);
-        for dioCount = 1 : diodeNum
-            vpn(dioCount) = tempz(diodeNodeMat(dioCount, 1) + 1) - tempz(diodeNodeMat(dioCount, 2) + 1);
-        end
-        finalRDs = Value(diodeLine : 2 : diodeLine + 2 * diodeNum - 2).';
-        finalIDs = Value(diodeLine + 1 : 2 : diodeLine + 2 * diodeNum -1).';
-
-        diodeCurrents = finalIDs + vpn ./ finalRDs;
-        %或直接用双端Diode电流公式
-        %diodeCurrents = Is .* (exp(vpn / 0.026) - 1);
-        %打包成hash结构DCres
-        DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
-
-        %         %测试打印输出 - test
-        %         display(z_res);
-        %         display(mosCurrents);
-        %         display(diodeCurrents);
+          DCres = z_res;
         return;
     else
         zp = zc; %本轮结果成为'上轮'
@@ -148,5 +114,6 @@ for i = 1 : Nlimit
 end
 disp("Can not Converge!");
 %打包成hash结构DCres
-DCres = containers.Map({'x', 'MOS', 'Diode'}, {[], [], []});
+%DCres = containers.Map({'x', 'MOS', 'Diode'}, {[], [], []});
+DCres = [];
 end
