@@ -56,7 +56,6 @@ printTimePoint = 0:stepTime:TotalTime;
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
     Error,x0, delta_t, T);
-
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
 delta_t = 5*stepTime;
@@ -66,7 +65,7 @@ while(CurError>Error)
     %% 利用某个关系来对搜索的步长与搜索起点进行调整
     %% 利用DeviceValues的末尾值更新LinerNet
     x0 = xT;
-%     [IteratorStep, x0] = DynamicStep(IteratorStep,CurError,xT,x0,T,stepTime);
+    %     [IteratorStep, x0] = DynamicStep(IteratorStep,CurError,xT,x0,T,stepTime);
     LinerNet('Value') = DeviceValues(:,end);
     %% Trans函数，从x0出发，找到电路到xT的稳态解
     [ResData,DeviceValues] =...
@@ -75,6 +74,13 @@ while(CurError>Error)
     xT = ResData(:,end);
     CurError = norm(x0-xT);
 end
+[ResData,DeviceValues] =...
+    Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
+    Error,x0, stepTime, 2*T);
+l = size(ResData,2);
+ResData = ResData(:,ceil(l/2):end);
+x0 = ResData(:,1);
+LinerNet('Value') = DeviceValues(:,end);
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...
     CINFO,LINFO,SinINFO, Error,...
