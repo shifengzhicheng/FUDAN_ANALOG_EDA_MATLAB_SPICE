@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferAC';
+file='dbmixerShoot';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -147,11 +147,11 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         stepTime = tranNumber(SPICEOperation{1}{3});
         TotalTime = tranNumber(SPICEOperation{1}{2});
-        [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map,...
+        [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map,...
             Error,stepTime,TotalTime,PLOT);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
-            plot(printTimePoint,Values(i,:));
+            plot(printTimePoint,PlotValues(i,:));
             title(Obj{i});
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end

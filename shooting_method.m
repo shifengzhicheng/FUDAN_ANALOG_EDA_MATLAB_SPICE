@@ -5,8 +5,6 @@ function [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DI
 %初始化
 delta_t = stepTime * 0.5;
 
-IteratorStep = stepTime;
-
 LinerNet('Value') = LinerNet('Value')';
 %% 首先处理一下L，C器件的一些生成参数
 CValue = CINFO('Value')';
@@ -38,7 +36,7 @@ CINFO('NodeMap') = CNodeMat;
 LINFO('NodeMat') = LNodeMat;
 
 %% 生成一个简单的初始解
-[x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, IteratorStep);
+[x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, delta_t);
 LinerNet('Value') = DeviceValue;
 % 零时刻输出结果记为x0
 %% 首先获取电路的周期T
@@ -51,7 +49,7 @@ for i = 2:length(SINFreq)
 end
 % 找到频率的最大公约数，此为电路实际的周期
 T = 1/result;
-
+IteratorStep = T/20;
 printTimePoint = 0:stepTime:TotalTime;
 
 % 定义初始解x0, xT = x0 时说明电路找到稳态解，返回稳态解;
@@ -63,8 +61,8 @@ printTimePoint = 0:stepTime:TotalTime;
 
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
-Error = 0.01;
-IteratorStep = T/10;
+Error = 1e-3;
+IteratorStep = T/50;
 %% 牛顿迭代法开始迭代
 while(CurError>Error)
     %% 利用某个关系来对搜索的步长与搜索起点进行调整
