@@ -56,6 +56,10 @@ DIODEMODEL=cell(0);
 while ~feof(fid)
     % 读取一行
     line = fgets(fid);
+    tokens_end = regexp(line, '^(\.end)', 'tokens');
+    if ~isempty(tokens_end)
+        break;
+    end
     % 匹配开头的关键字母
     tokens_Device = regexp(line, '^(\w+)', 'tokens');
     % 匹配MODEL
