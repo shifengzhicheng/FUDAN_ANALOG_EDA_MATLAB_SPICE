@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferShoot';
+file='dbmixerShoot';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -71,7 +71,13 @@ switch lower(SPICEOperation{1}{1})
         fstop = tranNumber(SPICEOperation{1}{5});
         ACinfo={ACMode,ACPoint,fstart,fstop};
         % AC扫描获得结果
-        [Obj,freq,Gain,Phase]=Sweep_AC(LinerNet,CINFO,LINFO,ACinfo,Node_Map,PLOT);
+        [Res,freq,LinerNet,x_0]=Sweep_AC(LinerNet,CINFO,LINFO,ACinfo);
+        %要打印的序号值或者器件类型加端口名
+        [plotnv, plotnc] = portMapping(PLOT,Node_Map);
+        plotnv=plotnv';
+        plotnc=plotnc';
+        % 提取所需要的信息
+        [Obj,freq,Gain,Phase] = ValueCalcAC(plotnc,plotnv,Res,freq,LinerNet,Node_Map,x_0);
         % 绘制AC响应图像
         switch lower(ACMode)
             case 'dec'
@@ -91,7 +97,7 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
-         % 设置判断解收敛的标识
+        % 设置判断解收敛的标识
         Error = 1e-6;
         %Trans网表得到
         [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
@@ -99,25 +105,25 @@ switch lower(SPICEOperation{1}{1})
         % 瞬态仿真需要时间步长和仿真的时间
         stopTime = str2double(SPICEOperation{1}{2});
         stepTime = str2double(SPICEOperation{1}{3});
-        %Δt初始值
+        % Δt初始值
         delta_t0 = 0.5 * stepTime;
-        %瞬态仿真模式 - "BE" or "TR"
+        % 瞬态仿真模式 - "BE" or "TR"
         TransMethod = "BE";
         %瞬态推进模式 - "Fix" or "Dynamic"
         StepMethod = "Fix";
 
-        %生成初始解
+        % 生成初始解
         [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, CINFO, LINFO, Error, delta_t0, TransMethod);
-        
-        %瞬态推进过程
+
+        % 瞬态推进过程
         if(StepMethod == "Fix")
             [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
-                                                    Error, delta_t0, stopTime, stepTime);
+                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
+                Error, delta_t0, stopTime, stepTime);
         elseif(StepMethod == "Dynamic")
             [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
-                                                    Error, delta_t0, stopTime, stepTime);
+                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
+                Error, delta_t0, stopTime, stepTime);
         end
 
         %结果处理输出打印输出过程
@@ -155,7 +161,7 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         % 到这里需要DC电路网表
         [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
-        DCres('x')=[0;DCres('x')];
+        DCres=[0;DCres];
         [LinerNet,CINFO,LINFO]=...
             Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
         [result] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map);

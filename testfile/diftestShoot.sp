@@ -37,10 +37,6 @@ RSS 121 0 1e5
 .plotnv 121
 .plotnc D1(+)
 .plotnc D2(+)
-.plotnc M4(d)
-.plotnc M2(d)
-.plotnc M1(d)
-.plotnc M3(d)
 .plotnc Rload2(+)
 .plotnc RSS(+)
 .plotnc Iref(+)

@@ -59,9 +59,9 @@ printTimePoint = 0:stepTime:TotalTime;
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
 delta_t = 5*stepTime;
-Error = 1e-3;
+ErrorIt = 1e4*Error;
 %% 牛顿迭代法开始迭代
-while(CurError>Error)
+while(CurError>ErrorIt)
     %% 利用某个关系来对搜索的步长与搜索起点进行调整
     %% 利用DeviceValues的末尾值更新LinerNet
     x0 = xT;
