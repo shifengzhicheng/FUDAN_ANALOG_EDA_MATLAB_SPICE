@@ -2,8 +2,6 @@
 %% shooting method求解电路稳态响应
 function [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
 %% 获取数据
-%初始化
-delta_t = stepTime * 0.5;
 
 LinerNet('Value') = LinerNet('Value')';
 %% 首先处理一下L，C器件的一些生成参数
@@ -36,7 +34,7 @@ CINFO('NodeMap') = CNodeMat;
 LINFO('NodeMat') = LNodeMat;
 
 %% 生成一个简单的初始解
-[x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, delta_t);
+[x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, stepTime);
 LinerNet('Value') = DeviceValue;
 % 零时刻输出结果记为x0
 %% 首先获取电路的周期T
@@ -55,10 +53,10 @@ printTimePoint = 0:stepTime:TotalTime;
 % 从初始迭代结果生成一个xT
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
-    Error,x0, delta_t, T);
+    Error,x0, stepTime, T);
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
-delta_t = 5*stepTime;
+delta_t = 10*stepTime;
 ErrorIt = 1e4*Error;
 %% 牛顿迭代法开始迭代
 while(CurError>ErrorIt)
@@ -77,9 +75,9 @@ end
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,...
     Error,x0, stepTime, 2*T);
-l = size(ResData,2);
-ResData = ResData(:,ceil(l/2):end);
-x0 = ResData(:,1);
+% l = size(ResData,2);
+% ResData = ResData(:,ceil(l/2):end);
+x0 = ResData(:,end);
 LinerNet('Value') = DeviceValues(:,end);
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,...

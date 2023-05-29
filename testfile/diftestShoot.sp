@@ -40,5 +40,7 @@ RSS 121 0 1e5
 .plotnc Rload2(+)
 .plotnc RSS(+)
 .plotnc Iref(+)
-
+.plotnc M1(d)
+.plotnc M1(g)
+.plotnc M1(s)
 .shoot 2e-6 1e-9
