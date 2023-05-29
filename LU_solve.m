@@ -8,11 +8,15 @@ function [v] = LU_solve(Y, J)
     % Y = LU
     % 求出LU
     [m,n] = size(Y);
-%     if (m ~= n)
-%         disp("Dimension Error.");
-%         return
-%     end
+    if (m ~= n)
+        disp("<LU_solve> Dimension Error.");
+        return
+    end
     [L,U,P] = LU_decompose(Y);
+%     disp("L1U1P1:\n\n");
+%     disp(P1*Y);
+%     disp(L1*U1);
+%     [L,U,P] = lu(Y);
     J = P*J;  % 需要乘行交换矩阵，因为LU分解的结果其实是LU=PY
     
     %% 前向替换
