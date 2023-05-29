@@ -6,11 +6,11 @@ function [L,U,P] = LU_decompose(Y)
     %% 变量定义
     [m,n] = size(Y);
     if (m~=n)
-        disp("LU Input Dimension Error");
+        disp("<LU_decompose> Dimension Error");
         return
     end
     L = eye(m);  % 递推公式中i=j的情况后面不用再赋值
-    U = zeros(m,m);
+%     U = zeros(m,m);
     P = eye(m);  % P记录了选择主元时候所进行的行变换
 
     % 根据递推公式，i<=j时计算U的值，i>j时计算L的值
@@ -26,22 +26,17 @@ function [L,U,P] = LU_decompose(Y)
             end
         end
         if(maxRow~=i)
-            P([maxRow;i],:) = P([i;maxRow],:);
-            Y([maxRow;i],:) = Y([i;maxRow],:);
+            P(:, [maxRow;i]) = P(:, [i;maxRow]);  % 根据维基百科给的例子，行交换信息可以存储在1个方阵里
+            Y([maxRow;i], :) = Y([i;maxRow], :);
         end
-        %% LU分解
-        for j = 1:m
-            if i <= j
-                U(i,j) = Y(i,j) - sum(L(i,1:i-1) .* U(1:i-1,j)');
-            else
-                if U(j,j) == 0
-                    L(i,j) = 0;  % 根据递推公式，ujj=0时，lij可以取任意值。对lij赋值为0可以简化计算过程
-                else
-                    L(i,j) = (Y(i,j) - sum(L(i,1:j-1) .* U(1:j-1,j)')) / U(j,j);
-                end
-            end
+        %% 只需要求L。U是Y最后化简完得到的结果
+        L(i:m, i) = Y(i:m, i) / Y(i,i);
+        %% 更新Y矩阵
+        for j = i:m
+            Y(i+1:m, j) = Y(i+1:m, j) - L(i+1:m, j) * Y(i,j);
         end
     end
+    U = Y;
 
 end
 

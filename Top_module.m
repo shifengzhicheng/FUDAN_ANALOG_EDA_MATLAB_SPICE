@@ -97,40 +97,50 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
-        % 设置判断解收敛的标识
+         % 设置判断解收敛的标识
         Error = 1e-6;
         %Trans网表得到
-        [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
+        [LinerNet_Trans,MOSINFO_Trans,DIODEINFO_Trans,CINFO_Trans,LINFO_Trans,SinINFO_Trans,Node_Map_Trans]=...
             Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
         % 瞬态仿真需要时间步长和仿真的时间
         stopTime = str2double(SPICEOperation{1}{2});
         stepTime = str2double(SPICEOperation{1}{3});
-        % Δt初始值
+        %Δt初始值
         delta_t0 = 0.5 * stepTime;
-        % 瞬态仿真模式 - "BE" or "TR"
+        %初始解方法 - "DC" or "PowerOn"
+        InitMethod = "Poweron";
+        %瞬态仿真模式 - "BE" or "TR"
         TransMethod = "BE";
         %瞬态推进模式 - "Fix" or "Dynamic"
         StepMethod = "Fix";
+        
+        %生成初始解
+        if(InitMethod == "DC")
+        %生成初始解 - DC模型解
+            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
+                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, ...
+                                                                            CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
+        elseif(InitMethod == "Poweron")
+        %生成初始解 - 模拟电源打开
+            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet_Trans, SourceINFO, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
+        end
 
-        % 生成初始解
-        [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, CINFO, LINFO, Error, delta_t0, TransMethod);
-
-        % 瞬态推进过程
+        %瞬态推进过程
         if(StepMethod == "Fix")
             [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
-                Error, delta_t0, stopTime, stepTime);
+                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                                                    Error, delta_t0, stopTime, stepTime);
         elseif(StepMethod == "Dynamic")
             [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO,...
-                Error, delta_t0, stopTime, stepTime);
+                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                                                    Error, delta_t0, stopTime, stepTime);
         end
 
         %结果处理输出打印输出过程
-        [~, x_0, ~] = Gen_Matrix(LinerNet('Name'),LinerNet('N1'),LinerNet('N2'),LinerNet('dependence'),LinerNet('Value'));
-        [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
-        LinerNet('Value') = DeviceDatas;
-        [Obj,Res] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotCurrent);
+        [~, x_0, ~] = Gen_Matrix(LinerNet_Trans('Name'),LinerNet_Trans('N1'),LinerNet_Trans('N2'),LinerNet_Trans('dependence'),LinerNet_Trans('Value'));
+        [plotnv, plotCurrent] = portMapping(PLOT,Node_Map_Trans);
+        LinerNet_Trans('Value') = DeviceDatas;
+        [Obj,Res] = ValueCalcTrans(ResData,LinerNet_Trans,Node_Map_Trans,x_0,plotnv,plotCurrent);
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot((0 : stepTime : stopTime), Res(i,:));
