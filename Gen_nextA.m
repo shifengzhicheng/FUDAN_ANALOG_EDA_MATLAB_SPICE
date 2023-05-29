@@ -1,12 +1,10 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Gen_nextA%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% 文件作者：郑志宇
 %% Gen_nextA生成下一轮A和b
 function [A, b] = Gen_nextA(pureA, pureb, N1, N2, dependence, Value,MOSLine,MOSCount,DiodeLine,DiodeCount)
 % 初始化矩阵 因为建立MNA时先暂时引入0节点
 A = [zeros(size(pureA,1),1), pureA];
 A = [zeros(1,size(A, 2)); A];
 b = [0; pureb];
-%x=compose('v_%d',(0:nodeNums)'); %不必要了
 
 %% MOS
 for i=MOSLine:3:MOSLine+3*(MOSCount-1)

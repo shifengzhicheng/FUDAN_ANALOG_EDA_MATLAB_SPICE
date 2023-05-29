@@ -1,3 +1,4 @@
+%% 文件作者：郑志宇
 %% 这个函数将在AC中获取器件对应节点的电流
 function Current = getCurrentAC(Device,port,LinerNet,x,Res,freq)
 Name = LinerNet('Name');

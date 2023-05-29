@@ -1,4 +1,5 @@
-%% 这个函数为瞬态生成一个简单的初始值
+%% 文件作者：郑志宇
+%% 这个函数为Shooting_method的瞬态生成一个简单的初始值
 function [ResInit,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, delta_t)
 CValue = CINFO('Value');
 LValue = LINFO('Value');

@@ -1,3 +1,4 @@
+%% 文件作者：郑志宇
 %% 函数主体
 % 这个函数是程序于文件的接口，负责解析来自网表的数据
 function [RCLINFO,SourceINFO,MOSINFO,...

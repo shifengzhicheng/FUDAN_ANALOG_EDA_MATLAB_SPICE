@@ -1,3 +1,4 @@
+%% 文件作者：林与正
 %% 函数完成将MOS的信息提取出来并贴入寄生电容的功能
 function transRes =  compCINFO(CINFO, MOSINFO)
 %NO MOS DGS INFO

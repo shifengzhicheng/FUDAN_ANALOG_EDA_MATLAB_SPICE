@@ -1,5 +1,5 @@
+%% 文件作者：郑志宇
 %% shooting method求解电路稳态响应
-% 代码作者：郑志宇
 function [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
 %% 获取数据
 %初始化

@@ -1,3 +1,5 @@
+%% 文件作者：郑志宇
+%% 这个函数实现了任意情况下的线性矩阵的生成
 function [A,x,b]=Gen_Matrix(Name, N1, N2, dependence, Value)
 % Name是一个cell，里面的元素应该是'Name'
 % N1与N2为double数组

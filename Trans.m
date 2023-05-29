@@ -1,3 +1,5 @@
+%% 文件作者：郑志宇
+%% 函数实现了根据初始解和步长计算出一个周期的瞬态结果
 function [ResData,DeviceDatas] = ...
     Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO, Error, init, delta_t, T)
 %% 数据接口
@@ -20,20 +22,21 @@ RC = CINFO('R').*delta_t;
 RL = LINFO('R')./delta_t;
 
 %% 根据init的值以及DeviceValue生成电容与电感的伴随器件的值
-% 这世上一轮结束的时候产生的线性网表
-LVp=[];
-CVp=[];
-
+% 上一轮结束的时候产生的线性网表
 if(~isempty(LNodeMat))
     LVp = init(LNodeMat(:, 1)) - init(LNodeMat(:, 2));
 end
 if(~isempty(CNodeMat))
     CVp = init(CNodeMat(:, 1)) - init(CNodeMat(:, 2));
 end
+% 接着上一轮没有替换的给换完
 VC = DeviceValue(CLine + 2 * (1 : CNum) - 1);
 IL = DeviceValue(LLine + 2 * (1 : LNum) - 2);
 LIp = IL + LVp ./ RL;
 CIp = (CVp - VC) ./ RC;
+DeviceValue(CLine + 2 * (1 : CNum) - 2) = RC;
+DeviceValue(LLine + 2 * (1 : LNum) - 1) = RL;
+LinerNet('Value') = DeviceValue;
 
 %% 这次取出来的所有迭代结果中器件的值以及所需要的返回解的结果
 TotalSize = round(T/delta_t);
@@ -56,11 +59,9 @@ while(t <= TotalSize)
     LinerValue = LinerNet('Value');
     % LinerNet中C与L顺序不分类,要依据索引找对应伴随器件
     % LinerNet中C伴随器件按R, V的顺序
-    LinerValue(CLine + 2 * (1 : CNum) - 2) = RC;
     LinerValue(CLine + 2 * (1 : CNum) - 1) = VC;
     % LinerNet中L伴随器件按I, R的顺序
     LinerValue(LLine + 2 * (1 : LNum) - 2) = IL;
-    LinerValue(LLine + 2 * (1 : LNum) - 1) = RL;
     % LinerNet中SINLine之后是SIN电源
     LinerValue(SINLine + (1 : SINNum) - 1) = SINV;
     LinerNet('Value') = LinerValue;
