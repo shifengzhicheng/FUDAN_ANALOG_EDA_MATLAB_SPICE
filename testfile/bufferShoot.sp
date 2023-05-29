@@ -27,4 +27,4 @@ C3 118 0 1e-12
 .plotnc R2(+)
 .plotnc M1(d)
 
-.shoot 1e-6 5e-10
+.shoot 1e-6 1e-9
