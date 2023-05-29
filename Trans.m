@@ -7,7 +7,7 @@ CLine = CINFO('CLine');
 LLine = LINFO('LLine');
 CNum = size(CINFO('Name'), 2);
 LNum = size(LINFO('Name'), 2);
-CNodeMat = CINFO('NodeMap');
+CNodeMat = CINFO('NodeMat');
 LNodeMat = LINFO('NodeMat');
 % 建立对SourceINFO的索引
 SINLine = SinINFO('SinLine');
