@@ -747,40 +747,38 @@ function [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=Generate_tran
 这个函数的目的是生成瞬态分析所需网表，将所有器件按照瞬态分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的线性网表形式，从而可以贴入MNA方程中进行迭代求解。函数基本逻辑与Generate_DCnetlist相近，初始解共用相同的初始解生成模块和mos、diode计算模块，但增加了对LC元件和瞬态源处理的要求。
 
 ###### 接口说明
-函数输入：
+1. 函数输入：
+   - `RCLINFO`：parse_netlist后得到的以字符形式存储的R、L、C元件基本信息；
+   - `SourceINFO`：parse_netlist后得到的以字符形式存储的独立源基本信息；
+   - `MOSINFO`：parse_netlist后得到的以字符形式存储的mos基本信息；
+   - `DIODEINFO`：parse_netlist后得到的以字符形式存储的二极管基本信息；
 
-- `RCLINFO`：parse_netlist后得到的以字符形式存储的R、L、C元件基本信息；
-- `SourceINFO`：parse_netlist后得到的以字符形式存储的独立源基本信息；
-- `MOSINFO`：parse_netlist后得到的以字符形式存储的mos基本信息；
-- `DIODEINFO`：parse_netlist后得到的以字符形式存储的二极管基本信息；
-
-函数输出：
-
-`LinerNet`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
-
-`MOSINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
-
-`DIODEINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
-
-`Node_Map`：节点映射向量，同Generate_DCnetlist.m输出的格式
-
-`CINFO`：电容详细参数信息,其中CLine表示等效为电阻元件后，电容所在行数
-
-```matlab
-CINFO={Name,Value,CLine,N1,N2}
-```
-
-`LINFO`：电感详细参数信息,其中LLine表示等效为电阻元件后，电感所在行数
-
-```matlab
-LINFO={Name,Value,LLine,N1,N2}
-```
-
-`SININFO`：正弦源详细参数信息,其中SinLine表示等效为直流源后，正弦源所在行数
-
-```matlab
-SININFO={Name,DcValue,AcValue,Freq,Phase,SinLine}
-```
+2. 函数输出：
+   - `LinerNet`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+   
+   - `MOSINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+   
+   - `DIODEINFO`：完成替换后的线性元件信息，同Generate_DCnetlist.m输出的格式
+   
+   - `Node_Map`：节点映射向量，同Generate_DCnetlist.m输出的格式
+   
+   - `CINFO`：电容详细参数信息,其中CLine表示等效为电阻元件后，电容所在行
+   
+     ```matlab
+     CINFO={Name,Value,CLine,N1,N2}
+     ```
+   
+   - `LINFO`：电感详细参数信息,其中LLine表示等效为电阻元件后，电感所在行数
+   
+     ```matlab
+     LINFO={Name,Value,LLine,N1,N2}
+     ```
+   
+   - `SININFO`：正弦源详细参数信息,其中SinLine表示等效为直流源后，正弦源所在行数
+   
+     ```matlab
+     SININFO={Name,DcValue,AcValue,Freq,Phase,SinLine}
+     ```
 
 ##### 功能处理思路
 
@@ -788,52 +786,51 @@ SININFO={Name,DcValue,AcValue,Freq,Phase,SinLine}
 
 ###### R：
 
-保持不变。
+> 保持不变。
 
 ###### 直流源：
 
-保持不变。同时，为了区分瞬态源和dc源，这里记下直流源数目，方便后续生成存瞬态源参数的向量/矩阵。
+> 保持不变。同时，为了区分瞬态源和dc源，这里记下直流源数目，方便后续生成存瞬态源参数的向量/矩阵。
 
 ###### MOS器件：
 
-处理同DC分析方法，依据初始解生成。
+> 处理同DC分析方法，依据初始解生成。
 
 ###### 二极管器件：
 
-处理同DC分析方法，依据初始解生成。
+> 处理同DC分析方法，依据初始解生成。
 
 ###### C：
 
-根据梯形法，C在瞬态分析中根据时间步长被替换为一个阻值电阻和电压源的串联。为了提高代码框架的解耦度，在这部分并不带入具体的时间步长，而是仅仅相当于在生成的线性网表中保留一个替换C的位置，因此将Value均赋为0。
-
-另外，串联的RV会引入一个新的端点，其节点号即根据Node_Map维数自动延申所得。因为不需要考察这一点的电压，因此不用将其放入Node_Map中。
-
-将C的真实值和替换的位置CLine打包在CINFO中，便于后续循环替换处理。
+> 根据梯形法，C在瞬态分析中根据时间步长被替换为一个阻值电阻和电压源的串联。为了提高代码框架的解耦度，在这部分并不带入具体的时间步长，而是仅仅相当于在生成的线性网表中保留一个替换C的位置，因此将Value均赋为0。
+>
+> 另外，串联的RV会引入一个新的端点，其节点号即根据Node_Map维数自动延申所得。因为不需要考察这一点的电压，因此不用将其放入Node_Map中。
+>
+> 将C的真实值和替换的位置CLine打包在CINFO中，便于后续循环替换处理。
 
 ###### L：
 
-与C相同的处理思路，替换为一个电阻与电流源的并联，且值均赋为0。
+> 与C相同的处理思路，替换为一个电阻与电流源的并联，且值均赋为0。
 
 ###### 正弦源：
 
-替换为其当下值的直流源，根据时间以及其偏置、振幅、频率、初始相位的基本信息计算得到0时刻的电压值，作为直流源放入网表。
-
-其相关参数及替换位置SinLine打包在SININFO中，便于后续循环替换处理。
+> 替换为其当下值的直流源，根据时间以及其偏置、振幅、频率、初始相位的基本信息计算得到0时刻的电压值，作为直流源放入网表。
+>
+> 其相关参数及替换位置SinLine打包在SININFO中，便于后续循环替换处理。
 
 ##### 正弦源计算函数
 
-计算当前正弦源的值，在后续迭代过程中同样使用。
-
-```matlab
-function [Vt] = Sin_Calculator(Vdc, Vac, Freq, t, Phase)
-```
+> 计算当前正弦源的值，在后续迭代过程中同样使用。
+>
+> ```matlab
+> function [Vt] = Sin_Calculator(Vdc, Vac, Freq, t, Phase)
+> ```
 
 ###### 接口说明
-函数输入：
-- `Vdc, Vac, Freq, Phase`：正弦源属性；
-- `t`：当前时间；
-- 函数输入：
-- `Vt`：电压；
+1. 函数输入：
+   - `Vdc, Vac, Freq, Phase`：正弦源属性；
+   - `t`：当前时间；
+   - `Vt`：电压；
 
 
 #### 瞬态仿真
@@ -868,11 +865,11 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
 2. 函数输出 瞬态初值各信息
    - `InitRes`: 作为瞬态初值的电路矩阵解
    - `InitDeviceValue`:瞬态初值电路线性网表中器件值
-   - `CVi``CIi``LVi``LIi`:瞬态初值时各电容电感初值状态
+   - `CVi、CIi、LVi、LIi`:瞬态初值时各电容电感初值状态
 
 ##### 技术细节
 
-模拟电源打开过程，将所有电源改为斜坡源，做一个1000Δt的固定步长trans仿真，仿真终点各电源值是t=0的值，终止时各节点电源做瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
+模拟电源打开过程，将所有电源改为斜坡源，做一个`1000Δt`的固定步长`trans`仿真，仿真终点各电源值是`t=0`的值，终止时各节点电源做瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
 
 ###### 瞬态初值方法二
 
