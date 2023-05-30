@@ -1,8 +1,9 @@
 %梯形法固定步长瞬态推进过程
 function [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVp, CIp, LVp, LIp,...
-                                                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO, ...
+                                                LinerNet, MOSINFO, DIODEINFO,BJTINFO, CINFO, LINFO, SinINFO, ...
                                                 Error, delta_t, stopTime, stepTime)
-
+% *************** 已加BJT端口 ***************                                          
+                                            
 %CL信息
 CValue = CINFO('Value');
 LValue = LINFO('Value');
@@ -64,7 +65,7 @@ while(plotCount < plotTimeNum)
 
     LinerNet('Value') = LinerValue;
 
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
 
     %tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;

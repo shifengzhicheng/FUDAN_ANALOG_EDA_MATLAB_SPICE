@@ -17,8 +17,10 @@
         #矩阵大小size(Obj) * [(stop-start)/step]
         #Obj里一个对象在各扫描点结果对应Values的一行
 %}
-function [InData, Obj, ResPlotData] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, Error, SweepInfo, PLOT, Node_Map)
-[~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+function [InData, Obj, ResPlotData] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error, SweepInfo, PLOT, Node_Map)
+% *************** 已加BJT端口 ***************
+[~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+% *************** 已加BJT端口 ***************
 display(x_0);
 Name = LinerNet('Name');
 %% 读出线性网表信息
@@ -48,7 +50,8 @@ for i = 1 : sweepTimes
     tValue(SweepInIndex) = InData(i);
     LinerNet('Value') = tValue;
     %把上次DC的Value结果当作下次DC计算的初始解加速收敛
-    [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % *************** 已加BJT端口 ***************
     DeviceValue(:,i) = Value';
     x_res(:,i) = [0; DCres];
 end

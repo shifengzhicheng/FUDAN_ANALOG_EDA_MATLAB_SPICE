@@ -13,9 +13,11 @@ Test Pass: Y (no separate test file)
 function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
     SourceName,SourceN1,SourceN2,SourceDcValue,...
     MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
-    DiodeName,DiodeN1,DiodeN2)
+    DiodeName,DiodeN1,DiodeN2,...
+    BJTName,BJTN1,BJTN2,BJTN3,BJTtype)
+% *************** 已加BJT端口 ***************
 
-    DeviceInfo = cell(1, numel(RLCName) + numel(SourceName) + numel(MOSName) + numel(DiodeName));
+    DeviceInfo = cell(1, numel(RLCName) + numel(SourceName) + numel(MOSName) + numel(DiodeName) + numel(BJTName));
     count = 0;
     % 添加RLC器件信息
     for i = 1:numel(RLCName)
@@ -57,6 +59,16 @@ function [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
         Device.name = DiodeName{i};
         Device.type = 'diode';
         Device.nodes = {DiodeN1(i), DiodeN2(i)};
+        Device.init = 0;
+        Device.value = -1;  % 表示不需要存该器件的value
+        DeviceInfo{count} = Device;        
+    end
+    % 添加BJT信息
+    for i = 1:numel(BJTName)
+        count = count + 1;
+        Device.name = BJTName{i};
+        Device.type = BJTtype{i};  % 'npn','pnp'
+        Device.nodes = {BJTN1(i), BJTN2(i), BJTN3(i)};
         Device.init = 0;
         Device.value = -1;  % 表示不需要存该器件的value
         DeviceInfo{count} = Device;        

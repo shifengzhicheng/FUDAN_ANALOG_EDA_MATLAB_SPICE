@@ -1,6 +1,8 @@
 %% 文件作者：郑志宇
 %% 这个函数为Shooting_method的瞬态生成一个简单的初始值
-function [ResInit,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO, Error, delta_t)
+function [ResInit,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO, Error, delta_t)
+% *************** 已加BJT端口 ***************
+
 CValue = CINFO('Value');
 LValue = LINFO('Value');
 CNum = size(CValue, 1);
@@ -29,7 +31,8 @@ LinerValue(CLine + 2 * (1 : CNum) - 1) = VC;
 LinerValue(LLine + 2 * (1 : LNum) - 2) = IL;
 LinerValue(LLine + 2 * (1 : LNum) - 1) = RL;
 LinerNet('Value') = LinerValue;
-[curTimeRes, ~, DeviceValue] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+[curTimeRes, ~, DeviceValue] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+% *************** 已加BJT端口 ***************
 % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
 ResInit = [0; curTimeRes];
 end

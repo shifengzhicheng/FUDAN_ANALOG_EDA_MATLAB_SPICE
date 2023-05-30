@@ -1,8 +1,10 @@
 %% 初始值方法一 DC模型解
 function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
-                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, ...
+                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO ...
                                                                             CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod)
-
+% *************** 已加BJT端口 ***************
+                                                                        
+                                                                        
 %RCL 拆开
 CValue = CINFO_Trans('Value');
 LValue = LINFO_Trans('Value');
@@ -14,9 +16,10 @@ CLine = CINFO_Trans('CLine');
 LLine = LINFO_Trans('LLine');
 
 %以真正的DC模型解，目的是方便获取这种初始解法的CV、LI等
-[LinerNet_DC,MOSINFO_DC,DIODEINFO_DC,Node_Map_DC]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
-[DCres, ~, DCDeviceValue] = calculateDC(LinerNet_DC,MOSINFO_DC,DIODEINFO_DC, Error);
+[LinerNet_DC,MOSINFO_DC,DIODEINFO_DC,BJTINFO_DC,Node_Map_DC]=...
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+[DCres, ~, DCDeviceValue] = calculateDC(LinerNet_DC,MOSINFO_DC,DIODEINFO_DC,BJTINFO_DC, Error);
+% *************** 已加BJT端口 ***************
 DCres = [0; DCres];
 CINFO_DC = RCLINFO('CINFO');
 
@@ -71,8 +74,15 @@ MOSLine_DC = MOSINFO_DC('MOSLine');
 MOSLine_Trans = MOSINFO_Trans('MOSLine');
 MOSNum = size(MOSINFO_Trans('L'), 1);
 InitDeviceValue(MOSLine_Trans : MOSLine_Trans + MOSNum * 3 - 1) = DCDeviceValue(MOSLine_DC : MOSLine_DC + MOSNum * 3 - 1);
+% ################################ BJT start #####################################
+BJTLine_DC = BJTINFO_DC('BJTLine');
+BJTLine_Trans = BJTINFO_Trans('BJTLine');
+BJTNum = size(BJTINFO_Trans('L'), 1);
+InitDeviceValue(BJTLine_Trans : BJTLine_Trans + BJTNum * 6 - 1) = DCDeviceValue(BJTLine_DC : BJTLine_DC + BJTNum * 6 - 1);
+% ################################ BJT end #####################################
 LinerNet_Trans('Value') = InitDeviceValue;
-[InitRes, ~, ~] = calculateDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, Error);
+[InitRes, ~, ~] = calculateDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, Error);
+% *************** 已加BJT端口 ***************
 InitRes = [0;InitRes];
 end
 

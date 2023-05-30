@@ -14,7 +14,8 @@
 %}
 
 %function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
-function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
+function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error)
+% *************** 已加BJT端口 ***************
 
 %% 读取线性网表信息
 Name = LinerNet('Name');
@@ -32,6 +33,14 @@ MOSLine = MOSINFO('MOSLine');
 % 需要的DIODE相关信息
 Is = DIODEINFO('Is');
 diodeLine = DIODEINFO('DiodeLine');
+% ###################################### BJT start ###################################
+% 需要的BJT相关信息
+BJTMODEL = BJTINFO('MODEL');
+BJTtype = BJTINFO('type');
+BJTJunctionarea = BJTINFO('Junctionarea');
+BJTID = BJTINFO('ID');
+BJTLine = BJTINFO('BJTLine');
+% ###################################### BJT end ###################################
 
 %% 生成初始矩阵
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value); 
@@ -39,9 +48,10 @@ diodeLine = DIODEINFO('DiodeLine');
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A
 %mosCurrents = [];
 %diodeCurrents = [];
-if isempty(MOSINFO) && isempty(DIODEINFO)
+%bjtCurrents = [];
+if isempty(MOSINFO) && isempty(DIODEINFO) && isempty(BJTINFO)
     z_res = A0 \ b0;
-    %DCres = containers.Map({'x', 'MOS', 'Diode'}, {z_res, mosCurrents, diodeCurrents});
+    %DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
     DCres = z_res;
     return;
 end
@@ -51,11 +61,16 @@ end
 
 % MOS个数，也即需更新的3个一组的数据组数
 mosNum = size(MOStype,2);
-% Diode个数，也即需更新的3个一组的数据组数
+% Diode个数，也即需更新的2个一组的数据组数
 diodeNum = size(Is, 2);
+% ###################################### BJT start ###################################
+% BJT个数，也即需更新的3个一组的数据组数
+bjtNum = size(BJTtype,2);
+% ###################################### BJT end ###################################
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
 %默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
-[A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum); %用初始值得到的首轮A和b
+[A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum); %用初始值得到的首轮A和b
+% *************** 已加BJT端口 ***************
 
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
@@ -78,6 +93,18 @@ for diodeCount = 1 : diodeNum
     diodeNodeMat(diodeCount, 2) = N2(diodeLine + diodeCount * 2 - 2);
 end
 
+% ###################################### BJT start ###################################
+%% 用bjtNum*3的矩阵bjtNodeMat存储CBE三端节点序号 - GM的端点信息可以读到
+bjtNodeMat = zeros(bjtNum, 3);
+for bjtCount = 0 : bjtNum-1
+    %三列按C、B、E的顺序
+    %得到的CBE是忠实反映最初网表的CBE三端的未考虑任何源漏交换
+    bjtNodeMat(bjtCount+1, 1) = N1(BJTLine + 6*bjtCount + 3);   %C
+    bjtNodeMat(bjtCount+1, 2) = N2(BJTLine + 6*bjtCount);   %B
+    bjtNodeMat(bjtCount+1, 3) = N1(BJTLine + 6*bjtCount);   %E
+end
+% ###################################### BJT end ###################################
+
 %把字符表示的MOStype直接换1、2表示的Mostype方便直接选MOSMODEL
 Mostype = zeros(mosNum, 1);
 for i = 1 : mosNum
@@ -87,6 +114,18 @@ for i = 1 : mosNum
         Mostype(i) = 1;
     end
 end
+
+% ###################################### BJT start ###################################
+%把字符表示的BJTtype直接换1、2表示的Bjttype方便直接选BJTMODEL
+Bjttype = zeros(bjtNum, 1);
+for i = 1 : bjtNum
+    if isequal(BJTtype{i}, 'npn')
+        Bjttype(i) = 2;
+    else
+        Bjttype(i) = 1;
+    end
+end
+% ###################################### BJT end ###################################
 
 %MOSW MOSL作格式修改，由str - cell改成double - mat
 % MOSW = str2double(MOSW);
@@ -98,8 +137,10 @@ Nlimit = 500; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
     [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
-        diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                               diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                               BJTMODEL, Bjttype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
         A0, b0, N1, N2, dependence, Value, zp);
+    % *************** 已加BJT端口 ***************
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error

@@ -9,7 +9,9 @@
         打印时间点向量printTimePoint(横轴)
 %}
 
-function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, Error, stopTime, stepTime, PLOT)
+function [Obj, Values, printTimePoint] = CalculateTrans(RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, Error, stopTime, stepTime, PLOT)
+% *************** 已加BJT端口 ***************
+
 %display(stopTime);
 %display(stepTime);
 %最后要打印输出的时间点，打印步长不是瞬态仿真内部推进步长
@@ -39,8 +41,9 @@ LNodeMat = zeros(LNum, 2);
 
 
 %Node_Map 虽然同DC但是因为新增节点在最后，只在线性网表中处理，不需要与原网表节点对应
-[LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
-    Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+[LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map]=...
+    Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+% *************** 已加BJT端口 ***************
 % 注意LinerNet与LinerNet_DC顺序不同 但原线性器件端点序号一样, 可以利用
 LinerNetName = LinerNet('Name');
 CLine = CINFO('CLine');
@@ -71,12 +74,14 @@ end
 %因为伴随器件都放最后，不允许打印伴随器件值，故复用PLOTIndexInRes
 [mosIndexInValues, mosIndexInmosCurrents, ...
     dioIndexInValues, dioIndexIndiodeCurrents, ...
+    bjtIndexInValues, bjtIndexInbjtCurrents,...
     VIndexInValues, VIndexInDCres, ...
     IIndexInValues, IIndexInValue, ...
     RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
     CIndexInValues, CIndexInCIp,...
     LIndexInValues, LIndexInLIp,...
-    Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, printTimeNum, LinerNet, MOSINFO('Name'), DIODEINFO('Name'), CName ,LName);
+    Obj, Values, plotnv] = PLOTIndexInRes(x_0, PLOT, Node_Map, printTimeNum, LinerNet, MOSINFO('Name'), DIODEINFO('Name'), BJTINFO('Name'), CName ,LName);
+% *************** 已加BJT端口 ***************
 nvNum = size(plotnv, 1);
 
 % %% 零时刻值 - 可优化
@@ -182,7 +187,8 @@ for i = 1 : 100
     %改为模拟斜坡源的值
     LinerValue(SourceIndexInLinerNet) = SourceRampValues(:, i).';
     LinerNet('Value') = LinerValue;
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % ********************** 已加BJT端口 ***********************
     if(isempty(curTimeRes('x')))
         break;
     end
@@ -206,10 +212,14 @@ display(curTimeResData)
 %加入零时刻输出结果
 mosCurrents = curTimeRes('MOS');
 diodeCurrents = curTimeRes('Diode');
+bjtCurrents = curTimeRes('BJT');
 %% 初始化获取的电流值
 ResData = [curTimeResData,zeros(size(x_0,1)+1,round(stopTime/stepTime))];
 mosCurrents = [mosCurrents,zeros(size(mosCurrents,1),round(stopTime/stepTime))];
 diodeCurrents = [diodeCurrents,zeros(size(diodeCurrents,1),round(stopTime/stepTime))];
+% ################################# BJT start #################################
+bjtCurrents = [bjtCurrents,zeros(size(bjtCurrents,1),round(stopTime/stepTime))];
+% ################################# BJT end #################################
 LData=[LIp',zeros(size(LName,2),round(stopTime/stepTime))];
 CData=[CIp',zeros(size(CName,2),round(stopTime/stepTime))];
 % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -365,7 +375,8 @@ while(plotCount < printTimeNum)
     %     display(LinerNet('Value'))
     %     display(keys(LinerNet))
 
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % ********************* 已加BJT端口 ********************
 
     %tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;
@@ -389,6 +400,7 @@ while(plotCount < printTimeNum)
         plotCount = plotCount + 1;
         mosCurrents(:,plotCount) = curTimeRes('MOS');
         diodeCurrents(:,plotCount) = curTimeRes('Diode');
+        bjtCurrents(:,plotCount) = curTimeRes('BJT');
         ResData(:,plotCount) = curTimeResData;
         LData(:,plotCount) = LIp';
         CData(:,plotCount) = CIp';
@@ -402,10 +414,12 @@ Values = updateValues( ResData, Valuep, mosCurrents, diodeCurrents, CData, LData
     plotnv,...
     mosIndexInValues, mosIndexInmosCurrents, ...
     dioIndexInValues, dioIndexIndiodeCurrents, ...
+    bjtIndexInValues, bjtIndexInbjtCurrents, ...
     VIndexInValues, VIndexInDCres, ...
     IIndexInValues, IIndexInValue, ...
     RIndexInValues, RNodeIndexInDCresN1, RNodeIndexInDCresN2, ...
     CIndexInValues, CIndexInCIp,...
     LIndexInValues, LIndexInLIp,...
     Values, nvNum);
+% ********************* 已加BJT端口 ***********************
 end

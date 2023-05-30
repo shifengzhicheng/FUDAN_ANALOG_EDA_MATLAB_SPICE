@@ -1,7 +1,8 @@
 %% 文件作者：郑志宇
 %% 函数实现了根据初始解和步长计算出一个周期的瞬态结果
 function [ResData,DeviceDatas] = ...
-    Trans(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO, Error, curTimeResData, delta_t, T)
+    Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO, Error, curTimeResData, delta_t, T)
+% *************** 已加BJT端口 ***************
 %% 数据接口
 CLine = CINFO('CLine');
 LLine = LINFO('LLine');
@@ -67,7 +68,8 @@ while(t <= TotalSize)
     % LinerNet中SINLine之后是SIN电源
     LinerValue(SINLine + (1 : SINNum) - 1) = SINV;
     LinerNet('Value') = LinerValue;
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % *************** 已加BJT端口 ***************
 
     % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;

@@ -1,7 +1,8 @@
 % 梯形法固定步长瞬态推进过程
 function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp, CIp, LVp, LIp,...
-                                                LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO, ...
+                                                LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, ...
                                                 Error, delta_t0, stopTime, stepTime)
+% *************** 已加BJT端口 ***************
 
 % CL信息
 CValue = CINFO('Value');
@@ -70,7 +71,8 @@ while(plotCount < plotTimeNum)
     LinerValue(SINLine + (1 : SINNum) - 1) = SINV.';
 
     LinerNet('Value') = LinerValue;
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % *************** 已加BJT端口 ***************
     %动态步长调整过程
     if(isempty(curTimeRes) && delta_t ~= delta_t_min)    %DC不收敛 减小步长再来一次
         curTime = curTime - delta_t;

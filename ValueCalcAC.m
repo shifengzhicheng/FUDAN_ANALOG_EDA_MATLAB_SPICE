@@ -6,6 +6,7 @@
 % NodeMap和x0是节点电压以及索引表向量
 % plotnv与plotnc直接来自portMapping
 function [Obj,freq,Gain,Phase] = ValueCalcAC(plotnc,plotnv,Res,freq,LinerNet,Node_Map,x_0)
+% *************** 不用加BJT端口 ***************
 %% 这一步完成生成作图名称
 nvNum = size(plotnv, 1);
 ncNum = size(plotnc, 1);

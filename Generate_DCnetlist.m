@@ -1,7 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
-function [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
+function [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
+    Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO)
+% *************** 已加BJT端口 ***************
 
 %% 初始化变量
 %RCL 拆开
@@ -14,6 +15,9 @@ RLCName = [RINFO('Name'),CINFO('Name'),LINFO('Name')];
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
+% ################################### BJT start ###################################
+BJTName = BJTINFO('Name');
+% ################################### BJT end ###################################
 
 % 节点序号
 RN1 = str2double(RINFO('N1'));
@@ -29,6 +33,11 @@ MOSN2 = str2double(MOSINFO('g'));
 MOSN3 = str2double(MOSINFO('s'));
 DiodeN1 = str2double(DIODEINFO('N1'));
 DiodeN2 = str2double(DIODEINFO('N2'));
+% ################################### BJT start ###################################
+BJTN1 = str2double(BJTINFO('c'));
+BJTN2 = str2double(BJTINFO('b'));
+BJTN3 = str2double(BJTINFO('e'));
+% ################################### BJT end ###################################
 
 %其他所需变量
 SourceDcValue = str2double(SourceINFO('DcValue'));
@@ -41,6 +50,12 @@ MOSMODEL = cell2mat(MOSINFO('MODEL'));
 DiodeID = str2double(DIODEINFO('ID'));
 %DiodeMODEL = str2double(DIODEINFO('MODEL'));
 DiodeMODEL = cell2mat(DIODEINFO('MODEL'));
+% ################################### BJT start ###################################
+BJTtype = BJTINFO('type');
+BJTJunctionarea = str2double(BJTINFO('Junctionarea'));
+BJTID = str2double(BJTINFO('ID'));
+BJTMODEL = BJTINFO('MODEL');
+% ################################### BJT end ###################################
 
 % 输出结果
 Length =  1;  % MOS的线性化模型有3个器件
@@ -55,10 +70,13 @@ kl = 0; %遍历变量
 [DeviceInfo] = Gen_DeviceInfo(RLCName,RLCN1,RLCN2,...
     SourceName,SourceN1,SourceN2,SourceDcValue,...
     MOSName,MOSN1,MOSN2,MOSN3,MOStype,...
-    DiodeName, DiodeN1, DiodeN2);
+    DiodeName, DiodeN1, DiodeN2,...
+    BJTName,BJTN1,BJTN2,BJTN3,BJTtype);
+% *************** 已加BJT端口 ***************
 
 %% 节点映射
-Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1, DiodeN2];
+Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3];
+% *************** 已加BJT端口 ***************
 Node_Map = zeros(length(Node),1);
 for i=1:length(Node)
     Node_Map(i,1)=Node(i);
@@ -66,7 +84,8 @@ end
 Node_Map = unique(Node_Map,"rows");
 
 %% DC 节点映射
-NodeDC = [RN1,RN2,LN1,LN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2];
+NodeDC = [RN1,RN2,LN1,LN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3];
+% *************** 已加BJT端口 ***************
 NodeDC = unique(NodeDC',"rows");
 NodeL = unique([LN1,LN2])';
 [Node_Map_DC]=Node_Mapping_DC(NodeDC,NodeL,LN1,LN2);
@@ -215,6 +234,77 @@ for i=1:length(DiodeName)
 end
 
 DIODEINFO = containers.Map({'Name','Is','DiodeLine'},{DiodeName, Is, DiodeLine});
+
+% ########################################### BJT start ###########################################
+
+%% 处理BJT 替换BJT器件
+% 记录BJT最后更改位置Is，BJTLine
+BJTLine = kl+1;
+
+for i = 1:length(BJTName)
+    Node1 = find(Node_Map==BJTN1(i))-1;  % C
+    Node2 = find(Node_Map==BJTN2(i))-1;  % B
+    Node3 = find(Node_Map==BJTN3(i))-1;  % E
+    VC = x_0(Node1 + 1);
+    VB = x_0(Node2 + 1);
+    VE = x_0(Node3 + 1);
+    BJTflag = 0;
+    if isequal(BJTtype{i}, 'npn')
+        BJTflag = 1;
+    elseif isequal(BJTtype{i}, 'pnp')
+        BJTflag = -1;
+    end
+    VBE = BJTflag * (VB - VE);
+    VBC = BJTflag * (VB - VC);
+    
+    T = 300;
+%     [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    % 在E-B节点间贴电阻Rbe
+    kl = kl+1;
+    Name{kl} = ['R',BJTName{i},'_E'];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    Value(kl) = Rbe_k;
+    % 在E-B节点间贴1个Vbc控制的VCCS
+    kl = kl+1;
+    Name{kl} = ['G',BJTName{i}, '_E'];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    dependence{kl} = [Node2,Node1];
+    Value(kl) = Gbc_e_k;    
+    % 在E-B节点间贴电流源Ieq
+    kl = kl+1;
+    Name{kl} = ['I', BJTName{i}, '_E'];
+    N1(kl) = Node3;
+    N2(kl) = Node2;
+    Value(kl) = Ieq_k;    
+    
+    % 在C-B节点间贴电阻Rbc
+    kl = kl+1;
+    Name{kl} = ['R',BJTName{i}, '_C'];
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = Rbc_k; 
+    % 在C-B节点间贴1个Vbe控制的VCCS
+    kl = kl+1;
+    Name{kl} = ['G',BJTName{i}, '_C'];
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    dependence{kl} = [Node2,Node3];
+    Value(kl) = Gbe_c_k;   
+    % 在C-B节点间贴电流源Icq
+    kl = kl+1;
+    Name{kl} = ['I', BJTName{i}, '_C'];
+    N1(kl) = Node1;
+    N2(kl) = Node2;
+    Value(kl) = Icq_k;    
+end
+
+BJTINFO = containers.Map({'Name','MODEL','type','Junctionarea','ID','BJTLine'},{BJTName,BJTMODEL,BJTtype,BJTJunctionarea,BJTID,BJTLine});
+
+% ########################################### BJT end ###########################################
+
 
 %% 打包输出
 LinerNet = containers.Map({'Name','N1','N2','dependence','Value'},{Name,N1,N2,dependence,Value});

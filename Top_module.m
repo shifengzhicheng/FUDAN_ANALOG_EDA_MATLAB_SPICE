@@ -3,12 +3,14 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bufferTrans';
+file='AmplifierDC';
+% file='bjtAmplifierTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
-    DIODEINFO,PLOT,SPICEOperation]...
+    DIODEINFO,BJTINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename);
+% *************** 已加BJT端口 ***************
 
 %% LinerNet
 % Name cell,'Name'
@@ -32,23 +34,32 @@ filename = ['testfile\' file '.sp'];
 % IS double
 % DiodeLine double*1
 
+%% BJTINFO
+% Name cell 'Name'
+% MODEL cell [Js,alpha_f,alpha_r]
+% type cell 'npn/pnp'
+% Js double
+% Junctionarea double
+% MOSLine double*1
+
 %% Node_Map
 % double
 
 %% 根据读到的操作选择执行任务的分支
 switch lower(SPICEOperation{1}{1})
     case '.dcsweep'
-        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         Error = 1e-6;
         DeviceName = SPICEOperation{1}{2};
         range = eval(SPICEOperation{1}{3});
         step = tranNumber(SPICEOperation{1}{4});
         OperationInfo = {DeviceName,range,step};
         [InData, Obj, Res] = Sweep_DC(LinerNet,...
-            MOSINFO,DIODEINFO,Error,OperationInfo,PLOT,Node_Map);
+            MOSINFO,DIODEINFO,BJTINFO,Error,OperationInfo,PLOT,Node_Map);
         for i=1:size(Obj,1)
-            figure('Name',Obj{i})
+            figure('Name',Obj{i});
             plot(InData,Res(i,:));
             title(Obj{i});
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
@@ -56,14 +67,17 @@ switch lower(SPICEOperation{1}{1})
     case '.ac'
         % 这里进入AC分析
         % 首先进行一次DC分析求出电路的解
-        [LinerNet,MOS,DIODE,Node_Map]=...
-            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOS,DIODE,BJT,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
+        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE,BJT, Error);
+        % *************** 已加BJT端口 ***************
         DCres=[0;DCres];
         [LinerNet,CINFO,LINFO]=...
-            Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
+            Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO,DCres,Node_Map);
+        % *************** 已加BJT端口 ***************
         % 获取AC信息
         ACMode = SPICEOperation{1}{2};
         ACPoint = str2double(SPICEOperation{1}{3});
@@ -100,8 +114,9 @@ switch lower(SPICEOperation{1}{1})
          % 设置判断解收敛的标识
         Error = 1e-6;
         %Trans网表得到
-        [LinerNet_Trans,MOSINFO_Trans,DIODEINFO_Trans,CINFO_Trans,LINFO_Trans,SinINFO_Trans,Node_Map_Trans]=...
-            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet_Trans,MOSINFO_Trans,DIODEINFO_Trans,BJTINFO_Trans,CINFO_Trans,LINFO_Trans,SinINFO_Trans,Node_Map_Trans]=...
+            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         % 瞬态仿真需要时间步长和仿真的时间
         stopTime = str2double(SPICEOperation{1}{2});
         stepTime = str2double(SPICEOperation{1}{3});
@@ -117,23 +132,26 @@ switch lower(SPICEOperation{1}{1})
         %生成初始解
         if(InitMethod == "DC")
         %生成初始解 - DC模型解
-            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
-                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, ...
+            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, ...
+                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
                                                                             CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
+        % *************** 已加BJT端口 ***************
         elseif(InitMethod == "Poweron")
         %生成初始解 - 模拟电源打开
-            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet_Trans, SourceINFO, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
+            [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet_Trans, SourceINFO, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
         end
 
         %瞬态推进过程
         if(StepMethod == "Fix")
             [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
                                                     Error, delta_t0, stopTime, stepTime);
+        % *************** 已加BJT端口 ***************
         elseif(StepMethod == "Dynamic")
             [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
                                                     Error, delta_t0, stopTime, stepTime);
+        % *************** 已加BJT端口 ***************
         end
 
         %结果处理输出打印输出过程
@@ -148,11 +166,13 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.dc'
-        [LinerNet,MOSINFO,DIODEINFO,Node_Map]=...
-            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, x_0, newValue] = calculateDC(LinerNet,MOSINFO,DIODEINFO, Error);
+        [DCres, x_0, newValue] = calculateDC(LinerNet,MOSINFO,DIODEINFO,BJTINFO, Error);
+        % *************** 已加BJT端口 ***************
         DCres=[0;DCres];
         LinerNet('Value') = newValue';
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
@@ -166,14 +186,17 @@ switch lower(SPICEOperation{1}{1})
     case '.pz'
         % 这里进入AC分析
         % 首先进行一次DC分析求出电路的解
-        [LinerNet,MOS,DIODE,Node_Map]=...
-            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOS,DIODE,BJT,Node_Map]=...
+            Generate_DCnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         Error = 1e-6;
         % 到这里需要DC电路网表
-        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE, Error);
+        [DCres, ~] = calculateDC(LinerNet,MOS,DIODE,BJT,Error);
+        % *************** 已加BJT端口 ***************
         DCres=[0;DCres];
         [LinerNet,CINFO,LINFO]=...
-            Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,DCres,Node_Map);
+            Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO,DCres,Node_Map);
+        % *************** 已加BJT端口 ***************
         [result] = Gen_PZ(LinerNet,CINFO,LINFO,PLOT,Node_Map);
         nodes = result('ID');
         zeros = result('zero');
@@ -186,13 +209,15 @@ switch lower(SPICEOperation{1}{1})
             display(poles{i});
         end
     case '.shoot'
-        [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=...
-            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO);
+        [LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map]=...
+            Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO);
+        % *************** 已加BJT端口 ***************
         Error = 1e-6;
         stepTime = tranNumber(SPICEOperation{1}{3});
         TotalTime = tranNumber(SPICEOperation{1}{2});
-        [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map,...
+        [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map,...
             Error,stepTime,TotalTime,PLOT);
+        % *************** 已加BJT端口 ***************
         for i=1:size(Obj,1)
             figure('Name',Obj{i})
             plot(printTimePoint,PlotValues(i,:));

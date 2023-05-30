@@ -1,5 +1,6 @@
 %% 初始值方法二 斜坡源模拟电源打开
-function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, CINFO, LINFO, Error, delta_t0, TransMethod)
+function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, Error, delta_t0, TransMethod)
+% *************** 已加BJT端口 ***************
 
 %RCL 拆开
 CValue = CINFO('Value');
@@ -80,7 +81,8 @@ for i = 1 : 300
     %改为模拟斜坡源的值
     LinerValue(SourceIndexInLinerNet) = SourceRampValues(:, i).';
     LinerNet('Value') = LinerValue;
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error);
+    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    % *************** 已加BJT端口 ***************
     if(isempty(curTimeRes))
         break;
     end

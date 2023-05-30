@@ -1,6 +1,8 @@
 %% 文件作者：郑志宇
 %% 这个函数实现了AC中矩阵的更新
 function Af=Gen_NextACmatrix(N1,N2,CValue,LValue,Cline,Cnum,Lline,Lnum,A,freq)
+% *************** 不需要加BJT端口 ***************
+
 Af=[zeros(size(A,1),1),A];
 Af=[zeros(1,size(A,1)+1);Af];
 for i=1:Cnum

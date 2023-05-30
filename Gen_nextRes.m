@@ -1,7 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Gen_nextRes%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
                                                diodeNum, diodeNodeMat, diodeLine, Is, ...
+                                               BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
                                                A0, b0, N1, N2, dependence, Value, zp)
+% *************** 已加BJT端口 ***************
     
 %% 处理MOS
     %已经得到了按顺序的每个MOS管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
@@ -12,7 +14,7 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
         vg = tempz(mosNodeMat(mosCount, 2) + 1);
         vs = tempz(mosNodeMat(mosCount, 3) + 1);
                         %NMOS源漏交换                  %PMOS源漏交换
-        if Mostype(mosCount) == 2 && vd < vs && vs ~= 0|| Mostype(mosCount) == 1 && vd > vs  
+        if Mostype(mosCount) == 2 && vd < vs && vs ~= 0 || Mostype(mosCount) == 1 && vd > vs  
             %源漏交换，此为实际交换后的vds\vgs
             vds = vs - vd;
             vgs = vg - vd;
@@ -46,8 +48,47 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
         Value(diodeLine + diodeCount * 2 - 1) = Ieqk;
     end
 
+% ################################### BJT start ###################################
+%% 处理BJT
+    %已经得到了按顺序的每个BJT管的三端的节点序号，带入x(z)p结果得到上轮具体三端电压
+    for bjtCount = 1 : bjtNum   % 1个BJT衍生出的6个伴随器件1组
+        tempz = [0; zp];
+        vc = tempz(bjtNodeMat(bjtCount, 1) + 1);
+        vb = tempz(bjtNodeMat(bjtCount, 2) + 1);
+        ve = tempz(bjtNodeMat(bjtCount, 3) + 1);
+        BJTflag = 0;
+        if isequal(BJTtype(bjtCount), 2)  % 在calculateDC等函数里做过转化. npn
+            BJTflag = 1;
+        elseif isequal(BJTtype(bjtCount), 1)  % 在calculateDC等函数里做过转化. pnp
+            BJTflag = -1;
+        end
+        vbe = BJTflag*(vb - ve);
+        vbc = BJTflag*(vb - vc);
+        
+        fprintf("<Gen_nextRes>vcvbvevbevbc debug:\n\n");
+        fprintf("bjtCount:\n\n");
+        disp(bjtCount);
+        disp(BJTflag);
+        disp(vc);
+        disp(vb);
+        disp(ve);
+        disp(vbe);
+        disp(vbc);
+        
+        T = 300;
+        [next_Rbe, next_Gbc_e, next_Ieq, next_Rbc, next_Gbe_c, next_Icq] = BJT_Calculator(vbe, vbc, BJTMODEL(:, BJTID(bjtCount)), BJTJunctionarea(bjtCount), BJTflag, T);
+        tempCount = BJTLine + 6 * (bjtCount - 1);
+        Value(tempCount) = next_Rbe; %更新Rbe
+        Value(tempCount+1) = next_Gbc_e; %更新Gbc_e
+        Value(tempCount+2) = next_Ieq; %更新Ieq
+        Value(tempCount+3) = next_Rbc; %更新Rbc
+        Value(tempCount+4) = next_Gbe_c; %更新Gbe_c
+        Value(tempCount+5) = next_Icq; %更新Icq
+    end    
+% ################################### BJT end ###################################
+    
 %% 将得到的新器件数据结合A0、b0得到新的矩阵
-    [Ac, bc] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosCount,diodeLine,diodeNum);
+    [Ac, bc] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum);
     %解得新一轮的x(z)cur
     zc = Ac \ bc;
 end
