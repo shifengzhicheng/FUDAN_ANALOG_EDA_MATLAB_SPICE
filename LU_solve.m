@@ -12,11 +12,13 @@ function [v] = LU_solve(Y, J)
         disp("<LU_solve> Dimension Error.");
         return
     end
+    disp("Y:\n\n");
+    disp(Y);
     [L,U,P] = LU_decompose(Y);
-%     disp("L1U1P1:\n\n");
-%     disp(P1*Y);
-%     disp(L1*U1);
-%     [L,U,P] = lu(Y);
+%     [L1,U1,P1] = lu(Y);
+%     disp("LUP:\n\n");
+%     disp(L);
+%     disp(L1);
     J = P*J;  % 需要乘行交换矩阵，因为LU分解的结果其实是LU=PY
     
     %% 前向替换
@@ -38,55 +40,3 @@ function [v] = LU_solve(Y, J)
     end    
 
 end
-
-
-% function x=LU_solve(A,b)
-% %定义列选主元LU分解
-% [n,n2]=size(A);
-% n3=length(b);
-% if n~=n2||n~=n3 %判断输入的合法性
-%     error('wrong input!');
-% end
-% x=ones(n,1);%初始化解向量
-% for k=1:n-1
-%     %选出列主元
-%     p=k;p_max=abs(A(k,k));
-%     for i=k+1:n
-%         if p_max<abs(A(i,k))
-%             p_max=abs(A(i,k));
-%             p=i;
-%         end
-%     end
-%     %据选出的列主元进行换行
-%     if p>k
-%         for i=k:n
-%            t=A(k,i);
-%             A(k,i)=A(p,i);
-%             A(p,i)=t;
-%         end
-%         t1=b(k);
-%         b(k)=b(p);
-%         b(p)=t1;
-%     end
-%     %对矩阵进行LU分解
-%     if A(k,k)==0
-%         break;
-%     end
-%     for j=k+1:n
-%         m=A(j,k)/A(k,k);
-%         for i=k+1:n
-%             A(j,i)=A(j,i)-m*A(k,i);
-%         end
-%         b(j)=b(j)-m*b(k);
-%     end
-% end
-% %回代法解方程组
-% x(n)=b(n)/A(n,n);
-% for k=n-1:-1:1
-%     z=0;
-%     for i=k+1:n
-%         z=z+x(i)*A(k,i);
-%     end
-%     x(k)=(b(k)-z)/A(k,k);
-% end
-% end

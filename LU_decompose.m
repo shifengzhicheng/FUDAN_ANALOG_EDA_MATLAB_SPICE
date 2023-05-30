@@ -25,15 +25,23 @@ function [L,U,P] = LU_decompose(Y)
                 maxRow = t;
             end
         end
+        if(maxValue == 0)
+            disp("value error");
+        end
         if(maxRow~=i)
-            P(:, [maxRow;i]) = P(:, [i;maxRow]);  % 根据维基百科给的例子，行交换信息可以存储在1个方阵里
+            P([maxRow;i], :) = P([i;maxRow], :);
             Y([maxRow;i], :) = Y([i;maxRow], :);
         end
         %% 只需要求L。U是Y最后化简完得到的结果
-        L(i:m, i) = Y(i:m, i) / Y(i,i);
+        if Y(i,i) ~= 0
+            L(i+1:m, i) = Y(i+1:m, i) / Y(i,i);
+        else
+            disp("zero error");
+            L(i+1:m, i) = 0;
+        end
         %% 更新Y矩阵
         for j = i:m
-            Y(i+1:m, j) = Y(i+1:m, j) - L(i+1:m, j) * Y(i,j);
+            Y(i+1:m, j) = Y(i+1:m, j) - L(i+1:m, i) * Y(i,j);
         end
     end
     U = Y;
