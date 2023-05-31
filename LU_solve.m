@@ -1,3 +1,4 @@
+%% 文件作者: 张润洲
 function [v] = LU_solve(Y, J)
     
     % MNA方程的变量矩阵一定是仿真
