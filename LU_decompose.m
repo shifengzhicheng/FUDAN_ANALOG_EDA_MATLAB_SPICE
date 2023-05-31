@@ -10,7 +10,6 @@ function [L,U,P] = LU_decompose(Y)
         return
     end
     L = eye(m);  % 递推公式中i=j的情况后面不用再赋值
-%     U = zeros(m,m);
     P = eye(m);  % P记录了选择主元时候所进行的行变换
 
     % 根据递推公式，i<=j时计算U的值，i>j时计算L的值
@@ -31,6 +30,7 @@ function [L,U,P] = LU_decompose(Y)
         if(maxRow~=i)
             P([maxRow;i], :) = P([i;maxRow], :);
             Y([maxRow;i], :) = Y([i;maxRow], :);
+            L([maxRow;i], 1:i-1) = L([i;maxRow], 1:i-1);
         end
         %% 只需要求L。U是Y最后化简完得到的结果
         if Y(i,i) ~= 0
