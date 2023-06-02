@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='AmplifierDC';
+file='bjtAmplifierAC';
 % file='bjtAmplifierTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
@@ -225,3 +225,4 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
 end
+uiwait;
