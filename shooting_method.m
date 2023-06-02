@@ -1,6 +1,6 @@
 %% 文件作者：郑志宇
 %% shooting method求解电路稳态响应
-function [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
+function [ResData,DeviceValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
 % *************** 已加BJT端口 ***************
 %% 获取数据
 LinerNet('Value') = LinerNet('Value')';
@@ -68,9 +68,4 @@ LinerNet('Value') = DeviceValues(:,end);
     CINFO,LINFO,SinINFO, Error,...
     x0, stepTime, TotalTime);
 % *************** 已加BJT端口 ***************
-%% 索引并产生电流
-[~,x_0,~] = Gen_Matrix(LinerNet('Name'),LinerNet('N1'),LinerNet('N2'),LinerNet('dependence'),LinerNet('Value'));
-[plotnv,plotnc] = portMapping(PLOT,Node_Map);
-LinerNet('Value') = DeviceValues;
-[Obj,PlotValues] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotnc);
 end

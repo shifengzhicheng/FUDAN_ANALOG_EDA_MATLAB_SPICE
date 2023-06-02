@@ -3,7 +3,7 @@
 clear;
 clc;
 %% 读取文件，预处理阶段
-file='bjtAmplifierAC';
+file='AmplifierShoot';
 % file='bjtAmplifierTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
@@ -111,7 +111,7 @@ switch lower(SPICEOperation{1}{1})
             %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
-         % 设置判断解收敛的标识
+        % 设置判断解收敛的标识
         Error = 1e-6;
         %Trans网表得到
         [LinerNet_Trans,MOSINFO_Trans,DIODEINFO_Trans,BJTINFO_Trans,CINFO_Trans,LINFO_Trans,SinINFO_Trans,Node_Map_Trans]=...
@@ -131,29 +131,29 @@ switch lower(SPICEOperation{1}{1})
         
         %生成初始解
         if(InitMethod == "DC")
-        %生成初始解 - DC模型解
+            %生成初始解 - DC模型解
             [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, ...
-                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
-                                                                            CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
-        % *************** 已加BJT端口 ***************
+                RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
+                CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
+            % *************** 已加BJT端口 ***************
         elseif(InitMethod == "Poweron")
-        %生成初始解 - 模拟电源打开
+            %生成初始解 - 模拟电源打开
             [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet_Trans, SourceINFO, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
         end
-
+        
         %瞬态推进过程
         if(StepMethod == "Fix")
             [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
-                                                    Error, delta_t0, stopTime, stepTime);
-        % *************** 已加BJT端口 ***************
+                LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                Error, delta_t0, stopTime, stepTime);
+            % *************** 已加BJT端口 ***************
         elseif(StepMethod == "Dynamic")
             [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
-                                                    LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
-                                                    Error, delta_t0, stopTime, stepTime);
-        % *************** 已加BJT端口 ***************
+                LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
+                Error, delta_t0, stopTime, stepTime);
+            % *************** 已加BJT端口 ***************
         end
-
+        
         %结果处理输出打印输出过程
         [~, x_0, ~] = Gen_Matrix(LinerNet_Trans('Name'),LinerNet_Trans('N1'),LinerNet_Trans('N2'),LinerNet_Trans('dependence'),LinerNet_Trans('Value'));
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map_Trans);
@@ -215,8 +215,13 @@ switch lower(SPICEOperation{1}{1})
         Error = 1e-6;
         stepTime = tranNumber(SPICEOperation{1}{3});
         TotalTime = tranNumber(SPICEOperation{1}{2});
-        [Obj, PlotValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map,...
+        [ResData, DeviceValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map,...
             Error,stepTime,TotalTime,PLOT);
+        %% 索引并产生所需要的结果的值
+        [~,x_0,~] = Gen_Matrix(LinerNet('Name'),LinerNet('N1'),LinerNet('N2'),LinerNet('dependence'),LinerNet('Value'));
+        LinerNet('Value') = DeviceValues;
+        [plotnv,plotnc] = portMapping(PLOT,Node_Map);
+        [Obj,PlotValues] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotnc);
         % *************** 已加BJT端口 ***************
         for i=1:size(Obj,1)
             figure('Name',Obj{i})

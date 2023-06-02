@@ -197,8 +197,7 @@ FUDAN_ANALOG_EDA_MATLAB_SPICE
 │   └── Diode_Calculator.m
 ├── Sweep_AC.m
 │   ├── Gen_ACmatrix.m
-│   ├── Gen_NextACmatrix.m
-│   └── getCurrent.m
+│   └── Gen_NextACmatrix.m
 ├── Generate_transnetlist.m
 │   ├── Gen_NodeInfo.m
 │   ├── Gen_DeviceInfo.m
@@ -214,8 +213,13 @@ FUDAN_ANALOG_EDA_MATLAB_SPICE
 │   └── Trans.m
 ├── sparcity.m
 ├── Sweep_DC.m
-├── ValueCalc.m
 ├── portMapping.m
+├── ValueCalc.m
+├── getCurrent.m
+│   ├── getCurrentAC.m
+│   ├── getCurrentDC.m
+│   └── getCurrentTrans.m
+├── calcCurrent.m
 #### 项目文档
 ├── README.md 
 #### 展示PPT
@@ -673,7 +677,7 @@ function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, Error)
 ###### 函数定义 - Gen_nextRes
 
 ```matlab
-function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, ... mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, ... BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ... A0, b0, Name, N1, ... N2, dependence, Value, zp)
+function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, A0, b0, Name, N1, N2, dependence, Value, zp)
 ```
 
 ###### 接口说明 - Gen_nextRes
@@ -744,7 +748,7 @@ Values(mosIndexInValues, i) = Values(mosIndexInValues, i) .* mosCurrents(mosInde
 function [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=Generate_transnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO)
 ```
 
-这个函数的目的是生成瞬态分析所需网表，将所有器件按照瞬态分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的线性网表形式，从而可以贴入MNA方程中进行迭代求解。函数基本逻辑与Generate_DCnetlist相近，初始解共用相同的初始解生成模块和mos、diode计算模块，但增加了对LC元件和瞬态源处理的要求。
+这个函数的目的是生成瞬态分析所需网表，将所有器件按照瞬态分析的要求进行相应处理，将其全部替换为只含有电阻、独立源和受控源的线性网表形式，从而可以贴入MNA方程中进行迭代求解。函数基本逻辑与`Generate_DCnetlist`相近，初始解共用相同的初始解生成模块和mos、diode计算模块，但增加了对LC元件和瞬态源处理的要求。
 
 ###### 接口说明
 1. 函数输入：
@@ -835,8 +839,8 @@ function [LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map]=Generate_tran
 
 #### 瞬态仿真
 
-此部分由林与正同学完成。对上次提交版本CalculateTrans做了包装优化，将瞬态仿真分为初值得到与瞬态推进两个过程，完成了多种瞬态初值方法及瞬态推进过程方法，其选择可以通过修改Top_module中调用时的参数改变。
-此外不再使用之前编写的得到打印信息的PLOTIndexInRes与updateValues函数，逻辑改为最终由电流得到部分统一处理(见Part6)。
+此部分由林与正同学完成。对上次提交版本`CalculateTrans`做了包装优化，将瞬态仿真分为初值得到与瞬态推进两个过程，完成了多种瞬态初值方法及瞬态推进过程方法，其选择可以通过修改`Top_module`中调用时的参数改变。
+此外不再使用之前编写的得到打印信息的`PLOTIndexInRes`与`updateValues`函数，逻辑改为最终由电流得到部分统一处理(见Part6)。
 
 ├──TransInitial .m
 
@@ -853,7 +857,7 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
 ##### 接口说明
 
 1. 函数输入
-   - `LinerNet` : Generate_transnetlist处理得到的线性网表。
+   - `LinerNet` : `Generate_transnetlist`处理得到的线性网表。
    - `SourceINFO` : 预处理得到的电源相关信息，包括恒流源和可变源。
    - `MOSINFO`: MOS管的信息哈希表，需要索引。
    - `DIODEINFO`: 二极管的信息哈希表。
@@ -861,7 +865,7 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
    - `Error`: 收敛判断值，相邻两轮迭代解向量之差的范数小于Error视为收敛。
    - `delta_t0` : 默认瞬态推进步长时间
    - `TransMethod` : 瞬态模型，与推进过程对应，分TR(梯形法)，BE(后项欧拉)
-     以上信息是Generate_TransNetlist在Top_module函数内调用后输出。
+     以上信息是`Generate_TransNetlist`在`Top_module`函数内调用后输出。
 2. 函数输出 瞬态初值各信息
    - `InitRes`: 作为瞬态初值的电路矩阵解
    - `InitDeviceValue`:瞬态初值电路线性网表中器件值
@@ -873,7 +877,7 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
 
 ###### 瞬态初值方法二
 
-直接使用DC分析模型，替换CL为零电源后做一次DC得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要Generate_DCnetlist的结果导致CalculateTrans不得不将parse_netlist的结果经Generate_Transnetlist的过程放到CalculateTrans里执行，这会为后续稳态反复执行CalculateTrans带来不必要的重复开销。
+直接使用DC分析模型，替换CL为零电源后做一次DC得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
 
 ###### 瞬态推进过程方法一固定步长函数定义 - TransTR_fix
 
@@ -884,18 +888,18 @@ function [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVp, CIp
 ##### 接口说明
 
 1.函数输入
-   - 来自TransInitial的瞬态初值信息用于初始化瞬态初值，以及来自Generate_transnetlist的网表处理结果。
+   - 来自`TransInitial`的瞬态初值信息用于初始化瞬态初值，以及来自`Generate_transnetlist`的网表处理结果。
 2. 函数输出 瞬态初值各信息用于后续统一打印
    - `ResData`: 电路矩阵解结果，每列对应一个待打印时间点的电路方程解
    - `DeviceDatas`:器件信息结果矩阵，每列对应一个待打印时间点的线性网表器件值
 
 ##### 技术细节
 
-使用梯形法瞬态模型，固定步长为输入delta_t，在每个时间点利用瞬态模型求DC直流解，并以此更新下一时刻的瞬态模型值，上一轮DC的结果作为下一轮DC初值，加速收敛。
+使用梯形法瞬态模型，固定步长为输入`delta_t`，在每个时间点利用瞬态模型求DC直流解，并以此更新下一时刻的瞬态模型值，上一轮DC的结果作为下一轮DC初值，加速收敛。
 
 ###### 一些debug经历
 
-不过在编写过程中buffer出现推进到某一时间点无法收敛的情况，检测后发现此时buffer恰处于反省临界，观察CalculateDC发现其DCres反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取0.5倍推进步长，再小无法收敛，推测是buffer跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。
+不过在编写过程中`buffer`出现推进到某一时间点无法收敛的情况，检测后发现此时`buffer`恰处于反省临界，观察`CalculateDC`发现其`DCres`反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取0.5倍推进步长，再小无法收敛，推测是`buffer`跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。
 
 ###### 瞬态推进过程方法二动态步长函数定义 - TransBE_Dynamic
 
@@ -903,18 +907,18 @@ function [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVp, CIp
 function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp, CIp, LVp, LIp, LinerNet, MOSINFO, DIODEINFO, CINFO, LINFO, SinINFO, Error, delta_t0, stopTime, stepTime)
 ```
 ##### 接口说明
-与TransTR_fix.m一致
+与`TransTR_fix.m`一致
 
 ##### 技术细节
 
-改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算epsilon的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断CalculateDC是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
+改用后向欧拉，使用PPT中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于0.1认为误差较大，则将Δt减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小Δt，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来Δt放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为0.1倍打印步长及一倍打印步长。
 
 #### 打靶法 shooting method
 
 ##### 函数定义
 
 ```matlab
-function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
+function [Obj, Values, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,PLOT)
 ```
 
 `shooting_method`函数沿用了部分瞬态分析的逻辑，然后使用牛顿迭代法做稳态分析，能直接找到电路一个周期的稳态响应。
