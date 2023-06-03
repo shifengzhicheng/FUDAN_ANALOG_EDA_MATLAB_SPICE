@@ -1,4 +1,7 @@
 %% 文件作者: 张润洲
+%% LU_solve分为一般矩阵格式和稀疏矩阵格式。使用稀疏矩阵格式时将上半部分注释
+
+%% LU_solve(一般矩阵格式)
 function [v] = LU_solve(Y, J)
     
     % MNA方程的变量矩阵一定是仿真
@@ -8,18 +11,11 @@ function [v] = LU_solve(Y, J)
     %% 得到LU分解结果
     % Y = LU
     % 求出LU
-    [m,n] = size(Y);
-    if (m ~= n)
-        disp("<LU_solve> Dimension Error.");
-        return
-    end
-    disp("Y:\n\n");
-    disp(Y);
-    [L,U,P] = LU_decompose(Y);
-%     [L1,U1,P1] = lu(Y);
-%     disp("LUP:\n\n");
-%     disp(L);
-%     disp(L1);
+    m = Y.rows;
+    
+%     [L,U,P] = LU_decompose(Y);
+    [L,U,P] = sparse_LU_decompose(Y);
+%     [L,U,P] = lu(Y);
     J = P*J;  % 需要乘行交换矩阵，因为LU分解的结果其实是LU=PY
     
     %% 前向替换
@@ -41,3 +37,4 @@ function [v] = LU_solve(Y, J)
     end    
 
 end
+

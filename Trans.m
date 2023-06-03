@@ -2,7 +2,6 @@
 %% 函数实现了根据初始解和步长计算出一个周期的瞬态结果
 function [ResData,DeviceDatas] = ...
     Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO, Error, curTimeResData, delta_t, T)
-% *************** 已加BJT端口 ***************
 %% 数据接口
 CLine = CINFO('CLine');
 LLine = LINFO('LLine');
@@ -40,7 +39,7 @@ ResData = [curTimeResData,zeros(size(curTimeResData,1),TotalSize)];
 
 %% 开始推进 - 固定推进时间步长delta_t情况 - 迭代次数确定
 % 因为固定时间步长伴随电阻器件值固定
-curTime = 0;    %当前推进到的时间
+curTime = 0;    % 当前推进到的时间
 t = 1;
 while(t <= TotalSize)
     curTime = curTime + delta_t;
@@ -69,7 +68,6 @@ while(t <= TotalSize)
     LinerValue(SINLine + (1 : SINNum) - 1) = SINV;
     LinerNet('Value') = LinerValue;
     [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
-    % *************** 已加BJT端口 ***************
 
     % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
     LinerNet('Value') = Valuep;

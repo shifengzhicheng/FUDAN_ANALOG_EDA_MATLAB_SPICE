@@ -1,7 +1,6 @@
 %% 文件作者：郑志宇
 %% 端口映射函数主体，将PLOT代码部分解析并生成所需要的
 function [plotnv,plotCurrent] = portMapping(PLOT,Node_Map)
-% *************** 不需要加BJT端口 ***************
 plotnum=size(PLOT,2);
 plotnv = [];
 numnv = 0;

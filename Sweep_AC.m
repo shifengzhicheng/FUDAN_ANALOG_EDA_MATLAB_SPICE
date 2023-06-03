@@ -6,7 +6,6 @@
 绘图所需参数，包括绘制对象，频率坐标轴，增益以及相位
 %}
 function [Res,freq,LinerNet,x_0]=Sweep_AC(LinerNet,CINFO,LINFO,SweepInfo)
-% *************** 不需要加BJT端口 ***************
 %% AC分析的目的是得到节点的幅频响应和相频响应，需要AC源以及节点来实现这个绘制
 % 整个AC过程只需要去计算矩阵的结果然后替换L、C的值即可
 
@@ -38,10 +37,10 @@ end
 %% 这一步进行AC的扫描
 length = size(freq,2);
 Lline = LINFO('LLine');
-LValue=LINFO('Value');
+LValue = LINFO('Value');
 LName = LINFO('Name');
 Cline = CINFO('CLine');
-CValue=CINFO('Value');
+CValue = CINFO('Value');
 CName = CINFO('Name');
 LinerNet('Value')=[Value(1:size(Name,2)),CValue,LValue]';
 Name = [Name,CName,LName];

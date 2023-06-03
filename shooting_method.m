@@ -1,7 +1,6 @@
 %% 文件作者：郑志宇
 %% shooting method求解电路稳态响应
 function [ResData,DeviceValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
-% *************** 已加BJT端口 ***************
 %% 获取数据
 LinerNet('Value') = LinerNet('Value')';
 %% 首先处理一下L，C器件的一些生成参数
@@ -14,7 +13,6 @@ CINFO('Value') = CINFO('Value')';
 
 %% 生成一个简单的初始解
 [x0,DeviceValue] = TranInit(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO, Error, stepTime);
-% *************** 已加BJT端口 ***************
 LinerNet('Value') = DeviceValue;
 % 零时刻输出结果记为x0
 %% 首先获取电路的周期T
@@ -34,7 +32,6 @@ printTimePoint = 0:stepTime:TotalTime;
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,...
     Error,x0, stepTime, T);
-% *************** 已加BJT端口 ***************
 xT = ResData(:,end);
 CurError = norm(x0 - xT);
 delta_t = 5*stepTime;
@@ -50,7 +47,6 @@ while(CurError>ErrorIt)
     [ResData,DeviceValues] =...
         Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,...
         Error,x0, delta_t, T);
-    % *************** 已加BJT端口 ***************
     xT = ResData(:,end);
     CurError = norm(x0-xT);
 end
@@ -58,7 +54,6 @@ x0 = xT;
 [ResData,DeviceValues] =...
     Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,...
     Error,x0, stepTime, 2*T);
-% *************** 已加BJT端口 ***************
 % l = size(ResData,2);
 % ResData = ResData(:,ceil(l/2):end);
 x0 = ResData(:,end);
@@ -67,5 +62,4 @@ LinerNet('Value') = DeviceValues(:,end);
     Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,...
     CINFO,LINFO,SinINFO, Error,...
     x0, stepTime, TotalTime);
-% *************** 已加BJT端口 ***************
 end

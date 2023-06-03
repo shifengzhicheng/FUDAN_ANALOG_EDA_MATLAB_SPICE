@@ -18,9 +18,7 @@
         #Obj里一个对象在各扫描点结果对应Values的一行
 %}
 function [InData, Obj, ResPlotData] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error, SweepInfo, PLOT, Node_Map)
-% *************** 已加BJT端口 ***************
 [~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
-% *************** 已加BJT端口 ***************
 display(x_0);
 Name = LinerNet('Name');
 %% 读出线性网表信息
@@ -30,32 +28,31 @@ start = SweepInfo{2}(1);
 stop = SweepInfo{2}(2);
 step = SweepInfo{3};
 %% MOS 二极管名
-%要打印的序号值或者器件类型加端口名
+% 要打印的序号值或者器件类型加端口名
 [plotnv, plotCurrent] = portMapping(PLOT,Node_Map);
-%扫描的器件值
+% 扫描的器件值
 InData = (start : step : stop);
-%扫描次数
+% 扫描次数
 sweepTimes = size(InData, 2);
-%扫描器件的索引
+% 扫描器件的索引
 SweepInIndex = find(ismember(Name, SweepInName));
-%初始化
+% 初始化
 
 %% 开始遍历要求的扫描点 每轮循环是一次正常DC 在Values中是一列
 % 要被打印的与Obj顺序对应的是Values的行 Values哪几行要改索引向量由上得到 避免每轮都switch
 DeviceValue = zeros(size(Name,2),sweepTimes);
 x_res = zeros(size(x_0,1)+1,sweepTimes);
 for i = 1 : sweepTimes
-    %修改作扫描的值
+    % 修改作扫描的值
     tValue = LinerNet('Value');
     tValue(SweepInIndex) = InData(i);
     LinerNet('Value') = tValue;
-    %把上次DC的Value结果当作下次DC计算的初始解加速收敛
+    % 把上次DC的Value结果当作下次DC计算的初始解加速收敛
     [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
-    % *************** 已加BJT端口 ***************
     DeviceValue(:,i) = Value';
     x_res(:,i) = [0; DCres];
 end
 LinerNet('Value') = DeviceValue;
 [Obj,ResPlotData] = ValueCalcDC(plotnv,plotCurrent,x_res,x_0,Node_Map,LinerNet);
-%mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流
+% mosIndexInValues\mosIndexInmosCurrents都是列向量 - 更改Values结果里要的mos管电流
 end

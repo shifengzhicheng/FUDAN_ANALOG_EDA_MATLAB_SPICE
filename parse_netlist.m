@@ -4,7 +4,6 @@
 function [RCLINFO,SourceINFO,MOSINFO,...
     DIODEINFO,BJTINFO,PLOT,SPICEOperation]...
     =parse_netlist(filename)
-% *************** 已加BJT端口 ***************
 %% 读取网表文件
 fid = fopen(filename, 'r');
 CountR=0;
@@ -12,15 +11,11 @@ CountC=0;
 CountL=0;
 MCount=0;
 DCount=0;
-% ################################ BJT start ########################################
 QCount=0;
-% ################################## BJT end ######################################
 SourceCount=0;
 MOSMODELCount=0;
 DIODEMODELCount=0;
-% ################################ BJT start ########################################
 BJTMODELCount=0;
-% ################################## BJT end ######################################
 PlotCount=0;
 OperationCount=0;
 %% 数据初始化
@@ -60,7 +55,6 @@ DiodeN1=cell(0);
 DiodeN2=cell(0);
 DiodeID=cell(0);
 DIODEMODEL=cell(0);
-% ################################ BJT start ########################################
 BJTName=cell(0);
 BJTN1=cell(0);
 BJTN2=cell(0);
@@ -69,7 +63,6 @@ BJTtype=cell(0);
 BJTJunctionarea=cell(0);
 BJTID=cell(0);
 BJTMODEL=cell(0);
-% ################################## BJT end ######################################
 %% 解析每一行
 while ~feof(fid)
     % 读取一行
@@ -83,9 +76,7 @@ while ~feof(fid)
     % 匹配MODEL
     tokens_MODEL = regexp(line, '^(\.MODEL)', 'tokens');
     tokens_DiodeModel = regexp(line, '^(\.DIODE)', 'tokens');
-    % ################################ BJT start ########################################
     tokens_BJTModel = regexp(line, '^(\.BIPOLAR)', 'tokens');
-    % ################################## BJT end ######################################
     % 匹配作图节点数据
     tokens_Plot = regexp(line, '^(\.plot)', 'tokens', 'ignorecase');
     % 匹配操作
@@ -164,15 +155,17 @@ while ~feof(fid)
         tokens = regexp(line, expr, 'tokens');
         DIODEMODELCount = DIODEMODELCount + 1;
         DIODEMODEL{DIODEMODELCount} = [str2double(tokens{1}{1});str2double(tokens{1}{2})];
-    % ################################## BJT start #####################################
     elseif ~isempty(tokens_BJTModel)
         % 匹配的正则表达式
         % ########################## BJTModel的格式如下 ############################
-        % ########### .BIPOLAR 1 Js 1e-16 alpha_f 0.995 alpha_r 0.05 #############
-        % ####################### Js 1e-16 的单位是A/um^2 ########################
+        % ########### .BIPOLAR 1 Js 1e-16 alpha_f 0.995 alpha_r 0.05 Cje 1e-11 Cjc 1e-12 #############
+        % ################ Js 1e-16 的单位是A/um^2, 而BJT定义中的Junctionarea单位是um^2 #################
         expr = ['\.BIPOLAR\s+(\d+)\s+Js\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)' ...
             '\s+alpha_f\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+' ...
-            'alpha_r\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'];
+            'alpha_r\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+'...
+            'Cje\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)\s+'...
+            'Cjc\s+([\+\-]?\d*\.?\d+(?:[eE][\+\-]?\d+)?)'
+            ];
         % 在这里已经匹配到了模型数据
         % 按照标准的格式进行模型的数据赋值
         tokens = regexp(line, expr, 'tokens');
@@ -180,8 +173,10 @@ while ~feof(fid)
         BJTMODEL{BJTMODELCount}=[str2double(tokens{1}{1}); ...
             str2double(tokens{1}{2}); ...
             str2double(tokens{1}{3}); ...
-            str2double(tokens{1}{4})];     
-    % ################################# BJT end #######################################
+            str2double(tokens{1}{4}); ...
+            str2double(tokens{1}{5}); ...
+            str2double(tokens{1}{6})
+            ];     
     elseif ~isempty(tokens_Plot)
         % 在这里已经匹配到了作图的节点
         PlotCount = PlotCount + 1;
@@ -213,10 +208,9 @@ MOSINFO=containers.Map({'Name','d','g','s',...
     MOStype,MOSW,MOSL,MOSID,MOSMODEL});
 DIODEINFO=containers.Map({'Name','N1','N2','ID','MODEL'},...
     {Diodes,DiodeN1,DiodeN2,DiodeID,DIODEMODEL});
-% ################################# BJT start ######################################
 BJTINFO=containers.Map({'Name','c','b','e','type','Junctionarea','ID','MODEL'},...
     {BJTName,BJTN1,BJTN2,BJTN3,BJTtype,BJTJunctionarea,BJTID,BJTMODEL});
-% ################################## BJT end ######################################
-RCLINFO('CINFO') = compCINFO(RCLINFO('CINFO'),MOSINFO);
+% 提取MOS、BJT的寄生电容，其中BJT的寄生电容值在Generate_ACnetlist.m中应该能根据Vbe、Vbc的值更新
+RCLINFO('CINFO') = compCINFO(RCLINFO('CINFO'),MOSINFO,BJTINFO);
 % 关闭文件
 fclose(fid);

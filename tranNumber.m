@@ -1,7 +1,6 @@
 %% 文件作者：郑志宇
 %% 函数实现了将字符串转化为对应数字的功能
 function num = tranNumber(str)
-% *************** 不用BJT端口 ***************
 
 % TRANNUMBER - Convert a string to a double value with unit recognition.
 % Usage:

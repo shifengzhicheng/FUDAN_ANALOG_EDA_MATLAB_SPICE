@@ -78,8 +78,8 @@ kl = 0; %遍历变量
 Node = [RLCN1,RLCN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJTN1,BJTN2,BJTN3];
 % *************** 已加BJT端口 ***************
 Node_Map = zeros(length(Node),1);
-for i=1:length(Node)
-    Node_Map(i,1)=Node(i);
+for i = 1:length(Node)
+    Node_Map(i,1) = Node(i);
 end
 Node_Map = unique(Node_Map,"rows");
 
@@ -88,7 +88,7 @@ NodeDC = [RN1,RN2,LN1,LN2,SourceN1,SourceN2,MOSN1,MOSN2,MOSN3,DiodeN1,DiodeN2,BJ
 % *************** 已加BJT端口 ***************
 NodeDC = unique(NodeDC',"rows");
 NodeL = unique([LN1,LN2])';
-[Node_Map_DC]=Node_Mapping_DC(NodeDC,NodeL,LN1,LN2);
+[Node_Map_DC] = Node_Mapping_DC(NodeDC,NodeL,LN1,LN2);
 
 %% 新建 NodeInfo 优化DeviceInfo的值
 [NodeInfo,DeviceInfo] = Gen_NodeInfo(Node_Map,DeviceInfo);
@@ -218,8 +218,8 @@ for i=1:length(DiodeName)
     V2 = x_0(Node2 + 1);
     VT = V1 - V2;
     Is(i) = DiodeMODEL(2,DiodeID(i));
-    [Gdk, Ieqk] = Diode_Calculator(VT, Is(i), 27);
-    % [Gdk, Ieqk] = Diode_Calculator(0.3, Is(i), 27);
+%     [Gdk, Ieqk] = Diode_Calculator(VT, Is(i), 27);
+    [Gdk, Ieqk] = Diode_Calculator(0.66, Is(i), 27);
     kl = kl+1;
     Name{kl} = ['R',DiodeName{i}];
     N1(kl) = Node1;
@@ -254,12 +254,16 @@ for i = 1:length(BJTName)
     elseif isequal(BJTtype{i}, 'pnp')
         BJTflag = -1;
     end
-    VBE = BJTflag * (VB - VE);
-    VBC = BJTflag * (VB - VC);
+    VBE = VB - VE;
+    VBC = VB - VC;
     
     T = 300;
 %     [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
-    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    if BJTflag == 1
+        [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    elseif BJTflag == -1
+        [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(-0.7,-0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    end
     % 在E-B节点间贴电阻Rbe
     kl = kl+1;
     Name{kl} = ['R',BJTName{i},'_E'];

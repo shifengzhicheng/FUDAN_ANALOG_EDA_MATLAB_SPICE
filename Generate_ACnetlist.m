@@ -161,10 +161,27 @@ for t=1:length(DiodeName)
 end
 
 % ########################################### BJT start ###########################################
+% 修改 BJT 电容值
+BJTNum = size(BJTID, 2);
+if(~isempty(BJTMODEL))
+    % add BJT - C
+    BJTMODEL1 = cell2mat(BJTMODEL);
+    BJTCje = BJTMODEL1(5, BJTID);
+    BJTCjc = BJTMODEL1(6, BJTID);
+    CbeSet = BJTCje .* BJTJunctionarea;
+    CbcSet = BJTCjc .* BJTJunctionarea;
+end
+
+
 
 %% 处理BJT 替换BJT器件
 % 记录BJT最后更改位置Is，BJTLine
-
+me = 0.41;
+mc = 0.41;
+fy_e = 0.76;
+fy_c = 0.70;
+Clength_all = length(CINFO('Name'));
+Clength_bjt = 2 * BJTNum;
 for i = 1:length(BJTName)
     Node1 = find(Node_Map==BJTN1(i))-1;  % C
     Node2 = find(Node_Map==BJTN2(i))-1;  % B
@@ -223,10 +240,18 @@ for i = 1:length(BJTName)
     N1(kl) = Node1;
     N2(kl) = Node2;
     Value(kl) = Icq_k;    
+    
+    % 修改BJT寄生电容大小
+    for j = Clength_all - Clength_bjt + 1 : 2 : Clength_all
+        order = fix((j+1-Clength_all+Clength_bjt) / 2);
+        Carg(j) = CbeSet(order) / ( (1 - (abs(VBE)/fy_e))^me );
+        Carg(j+1) = CbcSet(order) / ( (1 - (abs(VBC)/fy_c))^mc );
+    end
 end
 
-% ########################################### BJT end ###########################################
 
+
+% ########################################### BJT end ###########################################
 
 %% 处理C
 % 记录C最后更改位置CLine

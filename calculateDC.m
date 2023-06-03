@@ -13,9 +13,10 @@
     各mos管(按网表处理后的顺序)的Ids
 %}
 
-%function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
+%% calculateDC
+% 如果需要采用稀疏矩阵格式，将calculateDC中涉及矩阵求解的地方全部改成LU_solve实现
+% function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
 function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error)
-% *************** 已加BJT端口 ***************
 
 %% 读取线性网表信息
 Name = LinerNet('Name');
@@ -33,25 +34,24 @@ MOSLine = MOSINFO('MOSLine');
 % 需要的DIODE相关信息
 Is = DIODEINFO('Is');
 diodeLine = DIODEINFO('DiodeLine');
-% ###################################### BJT start ###################################
 % 需要的BJT相关信息
 BJTMODEL = BJTINFO('MODEL');
 BJTtype = BJTINFO('type');
 BJTJunctionarea = BJTINFO('Junctionarea');
 BJTID = BJTINFO('ID');
 BJTLine = BJTINFO('BJTLine');
-% ###################################### BJT end ###################################
 
 %% 生成初始矩阵
 [A0, x0, b0] = Gen_baseA(Name, N1, N2, dependence, Value); 
 
 %% 判断是否是纯线性网络，如果是，则baseA就是正确的A
-%mosCurrents = [];
-%diodeCurrents = [];
-%bjtCurrents = [];
+% mosCurrents = [];
+% diodeCurrents = [];
+% bjtCurrents = [];
 if isempty(MOSINFO) && isempty(DIODEINFO) && isempty(BJTINFO)
-    z_res = A0 \ b0;
-    %DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
+%     z_res = A0 \ b0;
+    z_res = LU_solve(A0,b0);
+    % DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
     DCres = z_res;
     return;
 end
@@ -63,49 +63,45 @@ end
 mosNum = size(MOStype,2);
 % Diode个数，也即需更新的2个一组的数据组数
 diodeNum = size(Is, 2);
-% ###################################### BJT start ###################################
 % BJT个数，也即需更新的3个一组的数据组数
 bjtNum = size(BJTtype,2);
-% ###################################### BJT end ###################################
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
-%默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
-[A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum); %用初始值得到的首轮A和b
-% *************** 已加BJT端口 ***************
+% 默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
+[A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum);  % 用初始值得到的首轮A和b
 
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
-zp = A1\b1;    %用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+% zp = A1\b1;  % 用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+zp = LU_solve(A1, b1);
 
 %% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号 - GM的端点信息可以读到
 mosNodeMat = zeros(mosNum, 3);
 for mosCount = 0 : mosNum-1
-    %三列按D、G、S的顺序
-    %得到的DGS是忠实反映最初网表的DGS三端的未考虑任何源漏交换
-    mosNodeMat(mosCount+1, 1) = N1(MOSLine + 3*mosCount);   %D - R第一个端口
-    mosNodeMat(mosCount+1, 2) = dependence{MOSLine + 3*mosCount + 1}(1);   %G - GM第一个控制端口绝对是G
-    mosNodeMat(mosCount+1, 3) = N2(MOSLine + 3*mosCount);    %S - R第二个端口
+    % 三列按D、G、S的顺序
+    % 得到的DGS是忠实反映最初网表的DGS三端的未考虑任何源漏交换
+    mosNodeMat(mosCount+1, 1) = N1(MOSLine + 3*mosCount);  % D - R第一个端口
+    mosNodeMat(mosCount+1, 2) = dependence{MOSLine + 3*mosCount + 1}(1);  % G - GM第一个控制端口绝对是G
+    mosNodeMat(mosCount+1, 3) = N2(MOSLine + 3*mosCount);   % S - R第二个端口
 end
 
 %% 用diodeNum*2的矩阵存储diode两端节点序号 - 从伴随器件读到
 diodeNodeMat = zeros(diodeNum, 2);
 for diodeCount = 1 : diodeNum
-    %从Gd的两端找到
+    % 从Gd的两端找到
     diodeNodeMat(diodeCount, 1) = N1(diodeLine + diodeCount * 2 - 2);
     diodeNodeMat(diodeCount, 2) = N2(diodeLine + diodeCount * 2 - 2);
 end
 
-% ###################################### BJT start ###################################
 %% 用bjtNum*3的矩阵bjtNodeMat存储CBE三端节点序号 - GM的端点信息可以读到
 bjtNodeMat = zeros(bjtNum, 3);
 for bjtCount = 0 : bjtNum-1
-    %三列按C、B、E的顺序
-    %得到的CBE是忠实反映最初网表的CBE三端的未考虑任何源漏交换
-    bjtNodeMat(bjtCount+1, 1) = N1(BJTLine + 6*bjtCount + 3);   %C
-    bjtNodeMat(bjtCount+1, 2) = N2(BJTLine + 6*bjtCount);   %B
-    bjtNodeMat(bjtCount+1, 3) = N1(BJTLine + 6*bjtCount);   %E
+    % 三列按C、B、E的顺序
+    % 得到的CBE是忠实反映最初网表的CBE三端的未考虑任何源漏交换
+    bjtNodeMat(bjtCount+1, 1) = N1(BJTLine + 6*bjtCount + 3);  % C
+    bjtNodeMat(bjtCount+1, 2) = N2(BJTLine + 6*bjtCount);  % B
+    bjtNodeMat(bjtCount+1, 3) = N1(BJTLine + 6*bjtCount);  % E
 end
-% ###################################### BJT end ###################################
 
-%把字符表示的MOStype直接换1、2表示的Mostype方便直接选MOSMODEL
+% 把字符表示的MOStype直接换1、2表示的Mostype方便直接选MOSMODEL
 Mostype = zeros(mosNum, 1);
 for i = 1 : mosNum
     if MOStype{i} == 'n'
@@ -115,8 +111,7 @@ for i = 1 : mosNum
     end
 end
 
-% ###################################### BJT start ###################################
-%把字符表示的BJTtype直接换1、2表示的Bjttype方便直接选BJTMODEL
+% 把字符表示的BJTtype直接换1、2表示的Bjttype方便直接选BJTMODEL
 Bjttype = zeros(bjtNum, 1);
 for i = 1 : bjtNum
     if isequal(BJTtype{i}, 'npn')
@@ -125,9 +120,8 @@ for i = 1 : bjtNum
         Bjttype(i) = 1;
     end
 end
-% ###################################### BJT end ###################################
 
-%MOSW MOSL作格式修改，由str - cell改成double - mat
+% MOSW MOSL作格式修改，由str - cell改成double - mat
 % MOSW = str2double(MOSW);
 % MOSL = str2double(MOSL);
 % zrc：前面改过了，这里不用再转化了
@@ -140,21 +134,22 @@ for i = 1 : Nlimit
                                                diodeNum, diodeNodeMat, diodeLine, Is, ...
                                                BJTMODEL, Bjttype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
         A0, b0, N1, N2, dependence, Value, zp);
-    % *************** 已加BJT端口 ***************
 
     %% 迭代收敛 - 要求相邻两轮间距(Euclid范数)够小
     if norm(zc-zp) <= Error
-        %disp("Convergence!");
-        %MNA方程解的结果
+        % MNA方程解的结果
         z_res = zc;
           DCres = z_res;
         return;
     else
-        zp = zc; %本轮结果成为'上轮'
+        zp = zc;  % 本轮结果成为'上轮'
     end
 end
 disp("Can not Converge!");
-%打包成hash结构DCres
-%DCres = containers.Map({'x', 'MOS', 'Diode'}, {[], [], []});
+% 打包成hash结构DCres
+% DCres = containers.Map({'x', 'MOS', 'Diode'}, {[], [], []});
 DCres = zc;
 end
+%% ################################### end ######################################
+
+

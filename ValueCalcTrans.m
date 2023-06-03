@@ -6,7 +6,6 @@
 % NodeMap和x0是节点电压以及索引表向量
 % plotnv与plotnc直接来自portMapping
 function [Obj,res] = ValueCalcTrans(ResData,LinerNet,Node_Map,x_0,plotnv,plotnc)
-% *************** 不用加BJT端口 ***************
 % 画图对象的总数量
 pointNum = size(LinerNet('Value'),2);
 plotnv=plotnv';

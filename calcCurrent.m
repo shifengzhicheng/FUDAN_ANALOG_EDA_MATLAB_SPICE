@@ -1,7 +1,6 @@
 %% 文件作者：郑志宇
 %% 这个函数接收器件、所在频率、线性网表的标准信息该器件所有的标准电流
 function StandardCurrent = calcCurrent(Mdevice,Res,x,Name,N1,N2,dependence,value,freq)
-% *************** 不需要加BJT端口 ***************
 dName = Name{Mdevice};
 switch dName(1)
     case 'V'
