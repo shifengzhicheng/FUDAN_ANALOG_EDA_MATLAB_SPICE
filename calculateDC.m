@@ -1,3 +1,4 @@
+%% 文件作者: 林与正
 %{
 顶层模块中调用: 
     x=calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
