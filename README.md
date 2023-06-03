@@ -939,6 +939,10 @@ function displayInfo(obj)
 7. `Gen_nextRes`中，需要将调用的其他求逆矩阵方法替换为`LU_solve`;
 8. `Sweep_AC`中，需要将调用的其他求逆矩阵方法替换为`LU_solve`;
 
+##### 稀疏矩阵格式的求解器存在的问题
+
+虽然采用稀疏矩阵格式的求解器可以在算法的空间复杂度上实现优化，但是算法的时间复杂度大幅增加，甚至有部分网表文件的仿真操作需要几十分钟才可以完成`(比如dbmixerTrans.sp)`。因此，稀疏矩阵格式求解器的算法逻辑需要进一步优化，同时如果能在`C++`实现的`SPICE`中应用稀疏矩阵求解器或许能实现更优的算法时间复杂度。
+
 
 
 
@@ -981,13 +985,13 @@ function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO,
 
 迭代过程中保存上一轮与本轮线性电路方程的解，每轮迭代结束计算两向量差的范数，若小于`Error`设定的值，则认为收敛得到结果，此时将结果同利用非线性器件使用的迭代公式得到的最终非线性器件电路一同封装为`DCres`的哈希表。
 
-###### 函数定义 - Gen_nextRes
+###### 函数定义 - `Gen_nextRes`
 
 ```matlab
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, diodeNum, diodeNodeMat, diodeLine, Is, BJTMODEL, BJTtype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, A0, b0, Name, N1, N2, dependence, Value, zp)
 ```
 
-###### 接口说明 - Gen_nextRes
+###### 接口说明 - `Gen_nextRes`
 
 `zc`: 本轮`A\b`的结果
 
@@ -1217,7 +1221,7 @@ function [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVp, CIp
 
 不过在编写过程中`buffer`出现推进到某一时间点无法收敛的情况，检测后发现此时`buffer`恰处于反省临界，观察`CalculateDC`发现其`DCres`反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取`0.5`倍推进步长，再小无法收敛，推测是`buffer`跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。
 
-###### 瞬态推进过程方法二动态步长函数定义 - TransBE_Dynamic
+###### 瞬态推进过程方法二动态步长函数定义 - `TransBE_Dynamic`
 
 ```matlab
 function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp, CIp, LVp, LIp, LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, delta_t0, stopTime, stepTime)
@@ -1229,7 +1233,7 @@ function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp,
 
 改用后向欧拉，使用`PPT`中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
 
-#### 打靶法 shooting method
+#### 打靶法 `shooting method`
 
 ##### 函数定义
 
@@ -1271,7 +1275,7 @@ $x_0=Trans(x_0)|_{pos=0}$
 
 ### Part 4 实现频率响应分析(`AC`分析)
 
-实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据。
+实现频率响应分析的基本过程是：首先进行一次`DC`分析得到电路的直流工作点，然后利用直流工作点的结果生成电路在特定直流工作点下的小信号模型。在小信号模型中根据网表文件中要求的频率点序列求出该频率下的电感电容阻抗值，并加入到`MNA`方程系数矩阵中。
 
 #### 生成`AC`分析网表
 这一部分由朱瑞宸同学完成。
@@ -1350,7 +1354,7 @@ LINFO={Name,Value,LLine}
 
 另外，将LC的真实值和替换的位置`LLine`、`CLine`打包在`LINFO`和`CINFO`中，便于后续扫描过程中将`LC`作为电阻的真实值替换到`MNA`方程中。
 
-#### AC扫描
+#### `AC`扫描
 这一部分由郑志宇同学完成。
 
 ```bash
@@ -2178,11 +2182,11 @@ Q3 106 111 107 npn 2.0 1
 | 103 节点电压  | 1.4678V      |1.4789   V     |
 | 104 节点电压  | 3.8072V      |3.6787V     |
 | 105 节点电压  | 0.38684V      |396.5005mV     |
-| 106 节点电压  | 8.167V      |8.2005  V     |
+| 106 节点电压  | 8.167V      |8.2005 V     |
 | 107 节点电压  | 0.84138V      |807.4981mV     |
 | 108 节点电压  | 7.5277V       |7.5164V     |
 | 110 节点电压  | 1.1003V       |1.1059V     |
-| 111 节点电压  | 1.5333V      |1.4938 V     |
+| 111 节点电压  | 1.5333V      |1.4938V     |
 | Q1 基极电流   | 1.4871e-06A  |1.4836uA     |
 | Q1 集电极电流 | 0.00014723A   |148.3649uA     |
 | Q2 基极电流   | 1.9342e-06A  |1.9629uA     |
@@ -2966,9 +2970,11 @@ C3 5 0 5e-12
 4. 一些逻辑的合并。
    - `Gen_baseA`、`Gen_nextA`和`Gen_Matrix`实际上都是来自同样的源代码，但是因为在项目使用中不同同学的思路不一样，所以实际上的原文件`Gen_Matrix`受到了修改。后续的改进可以尝试把`Gen_BaseA`与`Gen_Matrix`合并，改进`CalculateDC`替换器件的策略。
    - `ValueCalc`的函数如`ValueCalcDC`，`ValueCalcTrans`之间与`getCurrent`如`getCurrentAC`，`getCurrentDC`，`getCurrentTrans`的函数之间逻辑有非常多的共通之处，如果可以的话应该将他们分别合并成为一个完整的函数。
-5. 输入格式合法性的检查，检查浮空端口等等附属功能。
-6. 输出格式的自定义化，比如考虑能够计算某个电路中的表达式。
-7. 模型接口的大统一，目前每多加一个器件还需要在`parser_netlist`中解析，在生成网表的过程以及计算过程中具体特殊处理。考虑将特殊的情况通用化，可以使用函数句柄等技术实现这种大统一。
+5. 稀疏矩阵存储格式下的求解加速。
+6. 非线性器件的寄生电容模型与`hspice`提供的参考模型差距较大，其中`BJT`的寄生电容模型误差很大，导致`trans`和`AC`仿真结果与`hspice`的参考结果相差较大。可以考虑给定单独的寄生电容模型，与不带有寄生电容或只带有简单电容模型的非线性器件模型一起描述电路结构
+7. 输入格式合法性的检查，检查浮空端口等等附属功能。
+8. 输出格式的自定义化，比如考虑能够计算某个电路中的表达式。
+9. 模型接口的大统一，目前每多加一个器件还需要在`parser_netlist`中解析，在生成网表的过程以及计算过程中具体特殊处理。考虑将特殊的情况通用化，可以使用函数句柄等技术实现这种大统一。
 
 
 
