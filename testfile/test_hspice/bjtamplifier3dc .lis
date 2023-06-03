@@ -1,0 +1,389 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\bjtamplifier3dc .sp                     
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  diode model parameters tnom=  25.000 temp=  25.000 *****
+ ********************************************************
+ *** common model parameters model name:   0:diode   ****
+ ********************************************************
+
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** dc breakdown parameters ***
+       vb=   0.    volts        ibv=   1.00m amps   
+
+   2*** parasitic resistance parameters ***
+       rs=   0.    ohms   
+
+   3*** capacitance parameters ***
+       fc= 500.00m              fcs= 500.00m                m= 500.00m        
+     mjsw= 330.00m               pb= 800.00m volts        php= 800.00m volts  
+       tt=   0.    secs         cjo=   0.    f/area       cjp=   0.    f/pj   
+
+   4*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                 tcv=   0.    v/deg k
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+      xti=   3.00            xtitun=   3.00               keg=   1.00         
+       eg=   1.11  ev          gap1= 702.00u  ev/deg     gap2=   1.11k  deg   
+     ttt1=   0.    /deg        ttt2=   0.    /deg2        tm1=   0.    /deg   
+      tm2=   0.    /deg2        tpb=   0.    v/deg k     tphp=   0.    v/deg k
+     tref=  25.00   deg c 
+
+   5*** noise parameters ***
+       kf=   0.                  af=   1.00         
+
+   ***  level   1  model parameters  ***
+
+    level=   1.00                is= 1.0e-16 amps         jsw=   0.    amps   
+        n=   1.00               nbv=   1.00                ik=   0.    amp    
+     area=   1.00                pj=   0.                 ikr=   0.    amp    
+    expli=   0.    amps      explir=   0.    amps        jtun=   0.    amps   
+   jtunsw=   0.    amps        ntun=  30.00         
+  
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  bjt   model parameters tnom=  25.000 temp=  25.000 *****
+
+ ************************************************************************
+ *** bjt model parameters   model name:   0:mod1     model type:npn   ***
+ ************************************************************************
+
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** basic dc parameters ***
+    level=   1.00                bf= 100.00                br=   1.00         
+      brs=   0.                bulk=  gnd                  is= 2.0e-16 amps   
+      iss=   0.    amps          nf=   1.00                nr=   1.00         
+       ns=   1.00               ibe=   0.    amps         ibc=   0.    amps   
+     subs=   1.00             expli=   0.    amps   
+
+   2*** low current beta degradation effect parameters ***
+      isc=   0.    amps         ise=   0.    amps          nc=   2.00         
+       ne=   1.50         
+
+   3*** base width modulation parameters ***
+      vaf=   0.    volts        var=   0.    volts  
+
+   4*** high current beta degradation effect parameters ***
+      ikf=   0.    amps         nkf= 500.00m              ikr=   0.    amps   
+
+   5*** parasitic resistor parameters ***
+      irb=   0.    amps          rb=   0.    ohms         rbm=   0.    ohms   
+       re=   0.    ohms          rc=   0.    ohms         rcc=   0.    ohms   
+       vo=   0.    volts      gamma=   0.           
+
+   6*** junction capacitor parameters ***
+     cbcp=   0.    farad       cbep=   0.    farad       ccsp=   0.    farad  
+      cjc=   5.00p farad        cje=  10.00p farad        cjs=   0.    farad  
+       fc= 500.00m              mjc= 330.00m              mje= 330.00m        
+      mjs= 500.00m              vjc= 750.00m volts        vje= 750.00m volts  
+      vjs= 750.00m volts       xcjc=   1.00               qco=   0.    coul   
+
+   7*** transit time parameters ***
+      itf=   0.    amps         ptf=   0.    deg k         tf=   0.    secs   
+       tr=   0.    secs         vtf=   0.                 xtf=   0.           
+
+   8*** temperature compensation parameters ***
+     tlev=   0.               tlevc=   0.                tre1=   0.    /deg   
+     tre2=   0.    /deg2       trb1=   0.    /deg        trc1=   0.    /deg   
+     trb2=   0.    /deg2       trm1=   0.    /deg         xtb=   0.           
+     trm2=   0.    /deg2        xti=   3.00               cte=   0.    /deg   
+      ctc=   0.    /deg         cts=   0.    /deg        trc2=   0.    /deg2  
+     tref=  25.00   deg c       bex=   2.42              bexv=   1.90         
+
+   9*** noise parameters ***
+       kf=   0.                  af=   1.00         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                                              
+ element name        0:r1       0:r2       0:r3       0:r4    
+ node1               0:103      0:101      0:105      0:101   
+ node2               0:0        0:104      0:0        0:106   
+ model                                                        
+ res eff            10.0000k   27.0000k    2.0000k   10.0000k 
+ tc1                 0.         0.         0.         0.      
+ tc2                 0.         0.         0.         0.      
+ scale               1.0000     1.0000     1.0000     1.0000  
+ m                   1.0000     1.0000     1.0000     1.0000  
+ ac                 10.0000k   27.0000k    2.0000k   10.0000k 
+ temp               25.0000    25.0000    25.0000    25.0000  
+ l                   0.         0.         0.         0.      
+ w                   0.         0.         0.         0.      
+ cap                 0.         0.         0.         0.      
+ noise            1.000e+00  1.000e+00  1.000e+00  1.000e+00  
+  
+ 
+                                                              
+ element name        0:r5       0:r6       0:rb1      0:rb2   
+ node1               0:107      0:101      0:102      0:103   
+ node2               0:0        0:108      0:109      0:110   
+ model                                                        
+ res eff            10.0000k   10.0000k    1.9000x  190.0000k 
+ tc1                 0.         0.         0.         0.      
+ tc2                 0.         0.         0.         0.      
+ scale               1.0000     1.0000     1.0000     1.0000  
+ m                   1.0000     1.0000     1.0000     1.0000  
+ ac                 10.0000k   10.0000k    1.9000x  190.0000k 
+ temp               25.0000    25.0000    25.0000    25.0000  
+ l                   0.         0.         0.         0.      
+ w                   0.         0.         0.         0.      
+ cap                 0.         0.         0.         0.      
+ noise            1.000e+00  1.000e+00  1.000e+00  1.000e+00  
+  
+ 
+                             
+ element name        0:rb3   
+ node1               0:112   
+ node2               0:111   
+ model                       
+ res eff             2.0000x 
+ tc1                 0.      
+ tc2                 0.      
+ scale               1.0000  
+ m                   1.0000  
+ ac                  2.0000x 
+ temp               25.0000  
+ l                   0.      
+ w                   0.      
+ cap                 0.      
+ noise            1.000e+00  
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vcc  101               0                    9.0000     0.         0.      dc   
+  vbb  102               0                    5.0000     0.         0.      dc   
+
+
+ **** diodes
+
+  
+ 
+                             
+ name                0:d1    
+ node +              0:104   
+ node -              0:112   
+ model               0:diode 
+ res eff             0.      
+ cdsat eff         100.0000a 
+ capd eff            0.      
+ poly cap                    
+ metal cap                   
+ ic                          
+
+
+ **** bipolar junction transistors
+
+  
+ 
+                                                
+ element name        0:q1      0:q2      0:q3   
+ collector           0:108     0:104     0:106  
+ base                0:109     0:110     0:111  
+ emitter             0:103     0:105     0:107  
+ bulk                0:0       0:0       0:0    
+ model               0:mod1    0:mod1    0:mod1 
+ area                1.0000    1.0000    1.0000 
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  element node table
+                                                                                      
+ 0                r1               r3               r5               vcc              
+                  vbb              q1:s             q2:s             q3:s             
+ 101              r2               r4               r6               vcc              
+ 102              rb1              vbb                                                
+ 103              r1               rb2              q1:e                              
+ 104              r2               d1:+             q2:c                              
+ 105              r3               q2:e                                               
+ 106              r4               q3:c                                               
+ 107              r5               q3:e                                               
+ 108              r6               q1:c                                               
+ 109              rb1              q1:b                                               
+ 110              rb2              q2:b                                               
+ 111              rb3              q3:b                                               
+ 112              rb3              d1:-                                               
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  operating point information tnom=  25.000 temp=  25.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:101     =   9.0000  0:102     =   5.0000  0:103     =   1.4789 
+ +0:104     =   3.6787  0:105     = 396.5005m 0:106     =   8.2005 
+ +0:107     = 807.4981m 0:108     =   7.5164  0:109     =   2.1811 
+ +0:110     =   1.1059  0:111     =   1.4938  0:112     =   3.0928 
+
+
+ ****  voltage sources
+
+ subckt                        
+ element  0:vcc      0:vbb     
+  volts      9.0000     5.0000 
+  current -425.4021u   -1.4836u
+  power      3.8286m    7.4182u
+
+     total voltage source power dissipation=    3.8360m       watts
+
+
+
+ **** resistors
+
+ subckt                                                                    
+ element  0:r1       0:r2       0:r3       0:r4       0:r5       0:r6      
+  r value   10.0000k   27.0000k    2.0000k   10.0000k   10.0000k   10.0000k
+  v drop     1.4789     5.3213   396.5005m  799.5031m  807.4981m    1.4836 
+  current  147.8857u  197.0869u  198.2503u   79.9503u   80.7498u  148.3649u
+  power    218.7017u    1.0488m   78.6063u   63.9205u   65.2053u  220.1214u
+
+ subckt                                   
+ element  0:rb1      0:rb2      0:rb3     
+  r value    1.9000x  190.0000k    2.0000x
+  v drop     2.8189   372.9457m    1.5990 
+  current    1.4836u    1.9629u  799.4970n
+  power      4.1823u  732.0446n    1.2784u
+
+
+ **** diodes
+
+
+ subckt             
+ element  0:d1      
+ model    0:diode   
+  id       799.4964n
+  vd       585.8274m
+  req       32.1350k
+  cap        0.     
+
+
+
+
+ **** bipolar junction transistors
+
+
+ subckt                                   
+ element  0:q1       0:q2       0:q3      
+ model    0:mod1     0:mod1     0:mod1    
+  ib         1.4836u    1.9629u  799.5030n
+  ic       148.3649u  196.2874u   79.9503u
+  vbe      702.2192m  709.4105m  686.3347m
+  vce        6.0375     3.2822     7.3930 
+  vbc       -5.3353    -2.5727    -6.7067 
+  vs        -7.5164    -3.6787    -8.2005 
+  power    896.7940u  645.6378u  591.6212u
+  betad    100.0000   100.0000   100.0000 
+  gm         5.7748m    7.6401m    3.1119m
+  rpi       17.3167k   13.0889k   32.1348k
+  rx         0.         0.         0.     
+  ro       2.667e+16  1.286e+16  3.353e+16
+  cpi       13.0898p   13.1214p   13.0199p
+  cmu        2.5057p    3.0595p    2.3432p
+  cbx        0.         0.         0.     
+  ccs        0.         0.         0.     
+  betaac   100.0000   100.0000   100.0000 
+  ft        58.9329x   75.1476x   32.2380x
+
+
+
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * bjt amplifier circuit
+
+  ******  job statistics summary tnom=  25.000 temp=  25.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =      13 # elements   =      15
+  # resistors   =       9 # capacitors =       0 # inductors   =       0
+  # mutual_inds =       0 # vccs       =       0 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       2
+  # curr_srcs   =       0 # diodes     =       1 # bjts        =       3
+  # jfets       =       0 # mosfets    =       0 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.05           1          15
+  readin             0.24
+  errchk             0.04
+  setup              0.07
+  output             0.00
+
+
+           total memory used          167  kbytes
+           total cpu time            0.45 seconds
+           total elapsed time        0.79 seconds
+           job started at     20:48:53 06/03/2012
+           job ended   at     20:48:53 06/03/2012
+
+
+  lic: Release hspice token(s) 

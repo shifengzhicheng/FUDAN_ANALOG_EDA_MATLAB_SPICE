@@ -1,0 +1,24 @@
+* "simulator" "HSPICE" 
+* "version" "D-2010.03-SP1 32-BIT"
+* "format" "HSP"
+* "rundate" "20:33:42 06/03/2012 "
+* "netlist" "d:\synopsys\hspice\trytry\bjtamplifier2dc .sp "
+* "runtitle" "* bjt amplifier circuit"
+* time =    0.            
+* temperature =   25.0000        
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc=   1.0000p       
+.nodeset
++ 101 =   9.0000        
++ 102 =   4.0000        
++ 103 =   1.1328        
++ 104 =   8.7743        
++ 105 =   1.0159        
++ 106 =   7.8515        
++ 107 =   1.1371        
++ 108 =   7.8671        
++ 109 =   7.1718        
++ 110 =   8.0794        
++ 111 =   7.1561        
+***   END: Saved Operating Point ***                     
