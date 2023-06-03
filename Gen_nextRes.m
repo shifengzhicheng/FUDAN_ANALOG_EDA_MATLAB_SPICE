@@ -1,3 +1,4 @@
+%% 文件作者: 林与正
 %% Gen_nextRes
 % 如果需要采用稀疏矩阵格式，将Gen_nextRes中涉及矩阵求解的地方全部改成LU_solve实现
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
