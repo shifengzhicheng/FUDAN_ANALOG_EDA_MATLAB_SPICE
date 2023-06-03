@@ -1,4 +1,5 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_ACnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 文件作者：朱瑞宸
 %% 映射节点、生成初始解、替换mos器件
 function [LinerNet,CINFO,LINFO]=...
     Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO,DCres,Node_Map)
