@@ -1,4 +1,3 @@
-%% 文件作者: 林与正
 %{
 顶层模块中调用: 
     x=calculateDC(MOSMODEL, MOStype, MOSW, MOSL, ...
@@ -50,8 +49,8 @@ BJTLine = BJTINFO('BJTLine');
 % diodeCurrents = [];
 % bjtCurrents = [];
 if isempty(MOSINFO) && isempty(DIODEINFO) && isempty(BJTINFO)
-%     z_res = A0 \ b0;
-    z_res = LU_solve(A0,b0);
+    z_res = A0 \ b0;
+%     z_res = LU_solve(A0,b0);
     % DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
     DCres = z_res;
     return;
@@ -71,8 +70,8 @@ bjtNum = size(BJTtype,2);
 [A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum);  % 用初始值得到的首轮A和b
 
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
-% zp = A1\b1;  % 用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
-zp = LU_solve(A1, b1);
+zp = A1\b1;  % 用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
+% zp = LU_solve(A1, b1);
 
 %% 用mosNum*3的矩阵mosNodeMat存储DGS三端节点序号 - GM的端点信息可以读到
 mosNodeMat = zeros(mosNum, 3);

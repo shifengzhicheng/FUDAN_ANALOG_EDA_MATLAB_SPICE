@@ -1,4 +1,3 @@
-%% 文件作者: 林与正
 % 根据二极管反向饱和电流Is，本轮两端正向电压Vpn，温度(默认27℃=300K)
 % 得到伴随器件值Gdk = 1/Rk, Ieqk
 function [Gdk, Ieqk] = Diode_Calculator(Vpn, Is, T)

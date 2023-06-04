@@ -35,6 +35,8 @@
 % 目前还没有解决或可能存在的bug
 % 1. deleteElement用exist选择执行模式的时候有时无法生成1
 % 2. renewElement用mode选择执行模式的时候有时无法生成0
+% 3. 用稀疏矩阵格式的求解器跑AC分析网表时，结果应该是正确的，但是会在SpM类方法中报"SpM RowPos Error."
+% 4. 用稀疏矩阵格式的求解器跑瞬态分析网表时，速度太慢了
 
 classdef SpM
     properties

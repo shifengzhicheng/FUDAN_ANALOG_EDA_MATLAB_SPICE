@@ -41,6 +41,8 @@ switch Device(1)
     case 'Q'
         % 第一步找到含有Q命名的所有线性器件
         Qdevice = find(contains(Name,Device));
+        disp("Qdevice:\n\n");
+        disp(Qdevice);
         % 第二步计算这些器件的电流
         % 对BJT，Qdevice(1)和Qdevice(2)分别是两个寄生电容的电流，方向均从基极流向另两端
         switch port

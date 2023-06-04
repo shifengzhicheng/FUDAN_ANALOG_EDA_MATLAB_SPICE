@@ -1,4 +1,3 @@
-%% 文件作者: 林与正
 %% 初始值方法二 斜坡源模拟电源打开
 function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, Error, delta_t0, TransMethod)
 

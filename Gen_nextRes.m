@@ -1,4 +1,3 @@
-%% 文件作者: 林与正
 %% Gen_nextRes
 % 如果需要采用稀疏矩阵格式，将Gen_nextRes中涉及矩阵求解的地方全部改成LU_solve实现
 function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
@@ -80,8 +79,8 @@ function [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mo
 %% 将得到的新器件数据结合A0、b0得到新的矩阵
     [Ac, bc] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum);
     % 解得新一轮的x(z)cur
-%     zc = Ac \ bc;
-    zc = LU_solve(Ac, bc);
+    zc = Ac \ bc;
+%     zc = LU_solve(Ac, bc);
 end
 
 

@@ -1,4 +1,3 @@
-%% 文件作者：朱瑞宸
 %% Mos_Calculater
 %% 根据牛顿迭代公式得到MOS伴随器件信息
 function [Ikk,GMk,GDSk]=Mos_Calculator(VDSk,VGSk,Mosarg,W,L)

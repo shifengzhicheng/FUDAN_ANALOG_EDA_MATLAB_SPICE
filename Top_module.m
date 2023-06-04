@@ -3,7 +3,8 @@
 
 % 在存储MNA矩阵信息与求解逆矩阵时，可以选择一般矩阵与稀疏矩阵格式.
 % 采用稀疏矩阵格式时要修改的文件及内容如下:
-% 1. LU_solve中，需要将调用的其他LU分解方法替换为sparse_LU_decompose;
+% <DC>:
+% 1. LU_solve中，需要将文件前半部分定义的一般矩阵格式下的函数替换为后半部分的定义;
 % 2. Gen_baseA中，需要将文件前半部分定义的一般矩阵格式下的函数替换为后半部分的定义;
 % 3. Gen_nextA中，需要将文件前半部分定义的一般矩阵格式下的函数替换为后半部分的定义;
 % 4. calculateDC中，需要将调用的其他求逆矩阵方法替换为LU_solve;
@@ -11,11 +12,15 @@
 % 6. Gen_NextACmatrix中，需要将调需要将文件前半部分定义的一般矩阵格式下的函数替换为后半部分的定义;
 % 7. Gen_Matrix中，需要将调需要将文件前半部分定义的一般矩阵格式下的函数替换为后半部分的定义;
 
+% <AC>还要改的文件:
+% 1. Sweep_AC中，需要将调用的其他求逆矩阵方法替换为LU_solve;
+
 clear;
 clc;
 %% 读取文件，预处理阶段
 % file = 'AmplifierDC';
-file = 'dbmixerShoot';
+% file = 'bjtAmplifierDC';
+file = 'bjtAmplifierShoot';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...

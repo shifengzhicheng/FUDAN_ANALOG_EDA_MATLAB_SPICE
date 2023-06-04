@@ -1,9 +1,9 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_ACnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% 文件作者：朱瑞宸
+%% 文件作者: 朱瑞宸
+% BJT寄生电容值修改: 张润洲
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Generate_DCnetlist%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 映射节点、生成初始解、替换mos器件
 function [LinerNet,CINFO,LINFO]=...
     Generate_ACnetlist(RCLINFO,SourceINFO,MOSINFO,DIODEINFO,BJTINFO,DCres,Node_Map)
-% *************** 已加BJT端口 ***************
 
 %% 初始化变量
 %RCL 拆开
@@ -18,9 +18,7 @@ LName = LINFO('Name');
 SourceName = SourceINFO('Name');
 MOSName = MOSINFO('Name');
 DiodeName = DIODEINFO('Name');
-% ################################### BJT start ###################################
 BJTName = BJTINFO('Name');
-% ################################### BJT end ###################################
 
 % 节点序号
 RN1 = str2double(RINFO('N1'));
@@ -36,11 +34,9 @@ MOSN2 = str2double(MOSINFO('g'));
 MOSN3 = str2double(MOSINFO('s'));
 DiodeN1 = str2double(DIODEINFO('N1'));
 DiodeN2 = str2double(DIODEINFO('N2'));
-% ################################### BJT start ###################################
 BJTN1 = str2double(BJTINFO('c'));
 BJTN2 = str2double(BJTINFO('b'));
 BJTN3 = str2double(BJTINFO('e'));
-% ################################### BJT end ###################################
 
 %其他所需变量
 Rarg = str2double(RINFO('Value'));
@@ -52,19 +48,18 @@ MOSL = str2double(MOSINFO('L'));
 MOSID = str2double(MOSINFO('ID'));
 MOSMODEL = cell2mat(MOSINFO('MODEL'));
 DiodeID = str2double(DIODEINFO('ID'));
-%DiodeMODEL = str2double(DIODEINFO('MODEL'));
+% DiodeMODEL = str2double(DIODEINFO('MODEL'));
 DiodeMODEL = cell2mat(DIODEINFO('MODEL'));
-% ################################### BJT start ###################################
 BJTtype = BJTINFO('type');
 BJTJunctionarea = str2double(BJTINFO('Junctionarea'));
 BJTID = str2double(BJTINFO('ID'));
 BJTMODEL = BJTINFO('MODEL');
-% ################################### BJT end ###################################
+
 SourceType = SourceINFO('type');
 SourceAcValue = str2double(SourceINFO('AcValue'));
 SourcePhase = str2double(SourceINFO('Phase'));
 
-%DC结果
+% DC结果
 x = DCres;
 
 % 输出结果
@@ -74,7 +69,7 @@ N1 = zeros(1,Length);
 N2 = zeros(1,Length);
 dependence = cell(1,Length);
 Value = zeros(1,Length);
-kl = 0; %遍历变量
+kl = 0;  %遍历变量
 
 %% 处理R 不变
 for t=1:length(RName)
@@ -122,8 +117,8 @@ for t=1:length(MOSName)
     end
     %    VDS
     %    VGS
-    [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
-    %  [~,GMk,GDSk] = Mos_Calculator(4,2,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
+%     [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
+     [~,GMk,GDSk] = Mos_Calculator(3,1,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
     GMk =  GMk * flag;
     kl = kl+1;
     Name{kl} = ['R',MOSName{t}];
@@ -152,8 +147,8 @@ for t=1:length(DiodeName)
     V2 = x(Node2 + 1);
     VT = V1 - V2;
     Is(t) = DiodeMODEL(2,DiodeID(t));
-    [Gdk, ~] = Diode_Calculator(VT, Is(t), 27);
-    % [Gdk, Ieqk] = Diode_Calculator(0.3, Is(i), 27);
+%     [Gdk, ~] = Diode_Calculator(VT, Is(t), 27);
+    [Gdk, Ieqk] = Diode_Calculator(0.66, Is(i), 27);
     kl = kl+1;
     Name{kl} = ['R',DiodeName{t}];
     N1(kl) = Node1;
@@ -161,7 +156,6 @@ for t=1:length(DiodeName)
     Value(kl) = 1/Gdk;
 end
 
-% ########################################### BJT start ###########################################
 % 修改 BJT 电容值
 BJTNum = size(BJTID, 2);
 if(~isempty(BJTMODEL))
@@ -172,8 +166,6 @@ if(~isempty(BJTMODEL))
     CbeSet = BJTCje .* BJTJunctionarea;
     CbcSet = BJTCjc .* BJTJunctionarea;
 end
-
-
 
 %% 处理BJT 替换BJT器件
 % 记录BJT最后更改位置Is，BJTLine
@@ -196,12 +188,16 @@ for i = 1:length(BJTName)
     elseif isequal(BJTtype{i}, 'pnp')
         BJTflag = -1;
     end
-    VBE = BJTflag * (VB - VE);
-    VBC = BJTflag * (VB - VC);
+    VBE = VB - VE;
+    VBC = VB - VC;
     
     T = 300;
 %     [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(VBE,VBC,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
-    [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    if BJTflag == 1
+        [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(0.7,0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    elseif BJTflag == -1
+        [Rbe_k, Gbc_e_k, Ieq_k, Rbc_k, Gbe_c_k, Icq_k] = BJT_Calculator(-0.7,-0.1,BJTMODEL(:,BJTID(i)), BJTJunctionarea(i), BJTflag, T);
+    end
     % 在E-B节点间贴电阻Rbe
     kl = kl+1;
     Name{kl} = ['R',BJTName{i},'_E'];
