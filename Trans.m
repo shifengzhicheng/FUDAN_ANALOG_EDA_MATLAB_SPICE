@@ -1,4 +1,5 @@
 %% 文件作者：郑志宇
+% 文件重构自林与正同学的初版Trans，不考虑其他因素，直接进行瞬态仿真，主要是需要一个周期的图像
 %% 函数实现了根据初始解和步长计算出一个周期的瞬态结果
 function [ResData,DeviceDatas] = ...
     Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO, Error, curTimeResData, delta_t, T)

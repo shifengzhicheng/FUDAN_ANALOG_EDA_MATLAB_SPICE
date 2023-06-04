@@ -17,6 +17,11 @@
 
 郑志宇：
 
+- 正则表达式解析文件，搭建顶层模块的框架并定义接口形式
+- 生成MNA方程
+- shooting_method实现、AC分析实现
+- 实现输出节点电压、端口电流
+
 朱瑞宸：
 
 - 生成DC分析网表、生成AC分析网表、生成Trans网表
@@ -234,8 +239,7 @@ FUDAN_ANALOG_EDA_MATLAB_SPICE
 │   ├── TransInitial.m
 │   ├── TransInitial_byDC.m
 │   ├── TransTR_fix.m
-│   ├── TransBE_Dynamic.m
-│   └── TranInit.m
+│   └── TransBE_Dynamic.m
 ├── Gen_PZ.m
 ├── shooting_method.m
 │   ├── TranInit.m
