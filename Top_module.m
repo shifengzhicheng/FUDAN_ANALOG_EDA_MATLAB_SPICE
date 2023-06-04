@@ -20,7 +20,7 @@ clc;
 %% 读取文件，预处理阶段
 % file = 'AmplifierDC';
 % file = 'bjtAmplifierDC';
-file = 'bufferTrans';
+file = 'bufferSweep';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
