@@ -25,6 +25,10 @@
 
 林与正：
 
+- 电路DC解迭代求解功能、电路DC扫描功能
+- 瞬态仿真功能，瞬态初值与推进过程各两种实现
+- Matlab App Design整体打包
+
 张润洲：
 
 ## 功能说明
@@ -1167,7 +1171,7 @@ function [LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map]=Gener
 └──TransBE_Dynamic.m
 ```
 
-##### 瞬态初值方法一函数定义 - `TransInitial`
+##### 瞬态初值方法二函数定义 - `TransInitial`
 
 ```matlab
 function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, Error, delta_t0, TransMethod)
@@ -1195,7 +1199,18 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
 
 模拟电源打开过程，将所有电源改为斜坡源，做一个`1000Δt`的固定步长`trans`仿真，仿真终点各电源值是`t=0`的值，终止时各节点电源做瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
 
-###### 瞬态初值方法二
+##### 瞬态初值方法一函数定义 - `TransInitial_byDC`
+
+```matlab
+function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
+                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
+                                                                            CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod)
+```
+##### 接口说明
+
+1.函数输入
+
+##### 技术细节
 
 直接使用DC分析模型，替换CL为零电源后做一次`DC`得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
 
