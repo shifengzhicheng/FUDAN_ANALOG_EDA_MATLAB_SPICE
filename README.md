@@ -1167,9 +1167,29 @@ function [LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map]=Gener
 
 ```bash
 ├──TransInitial.m
+├──TransInitial_byDC.m
 ├──TransTR_fix.m
 └──TransBE_Dynamic.m
 ```
+
+##### 瞬态初值方法一函数定义 - `TransInitial_byDC`
+
+```matlab
+function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
+                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
+                                                                            CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod)
+```
+
+##### 接口说明
+
+1.函数输入
+以_Trans结尾的输入表示由Generate_transnetlist获得的线性网表信息与其他器件信息，不以_Trans结尾的表示parser_Netlist的直接结果，尚未解析为线性网表。这样作为了在TransInitial_byDC中调用Generate_DCnetlist以便进行DC求定一瞬态仿真初始值，并对Generate_transnetlist获得的结果对应修改。
+2.函数输出
+同TransInitial.m
+
+##### 技术细节
+
+直接使用DC分析模型，替换CL为零电源后做一次`DC`得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，对于本组实现，因为产生不同功能线性网表的函数对应关系各异，将DC结果与Trans网表对应过程较为困难，虽然速度上可以加快但代码并不简化。且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
 
 ##### 瞬态初值方法二函数定义 - `TransInitial`
 
@@ -1197,22 +1217,8 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet,
 
 ##### 技术细节
 
-模拟电源打开过程，将所有电源改为斜坡源，做一个`1000Δt`的固定步长`trans`仿真，仿真终点各电源值是`t=0`的值，终止时各节点电源做瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
+模拟电源打开过程，将所有独立电源改为斜坡源，做一个`1000Δt`的固定步长`trans`仿真，设定电源步长使仿真终点各独立电源值是`t=0`的值，将终止时电路状态作为瞬态初值。缺点是需要额外进行一次较缓慢的模拟斜坡源的瞬态过程，会有额外的时间开销。且使用瞬态模型应该与后续推进过程模型一致，不然初始值会有误。好处是方便函数功能拆分，便于后续稳态实现，且瞬态初值也较合理。
 
-##### 瞬态初值方法一函数定义 - `TransInitial_byDC`
-
-```matlab
-function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, ...
-                                                                            RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, ...
-                                                                            CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod)
-```
-##### 接口说明
-
-1.函数输入
-
-##### 技术细节
-
-直接使用DC分析模型，替换CL为零电源后做一次`DC`得到各节点电压作为瞬态推进过程的初始值。不过缺点是需要得到DC模型与瞬态模型节点的对应关系，且因为需要`Generate_DCnetlist`的结果导致`CalculateTrans`不得不将`parse_netlist`的结果经`Generate_Transnetlist`的过程放到`CalculateTrans`里执行，这会为后续稳态反复执行`CalculateTrans`带来不必要的重复开销。
 
 ###### 瞬态推进过程方法一固定步长函数定义 - `TransTR_fix`
 
@@ -1230,11 +1236,15 @@ function [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVp, CIp
 
 ##### 技术细节
 
-使用梯形法瞬态模型，固定步长为输入`delta_t`，在每个时间点利用瞬态模型求DC直流解，并以此更新下一时刻的瞬态模型值，上一轮`DC`的结果作为下一轮`DC`初值，加速收敛。
+使用梯形法瞬态模型，固定步长为输入`delta_t`，在每个时间点利用瞬态模型求DC直流解，并以此更新下一时刻的瞬态模型值，上一轮`DC`的结果作为下一轮`DC`初值，加速收敛。由于固定步长，选取梯形法电感电容的伴随电阻值仅关于电容电感值与推进步长，故可以提出迭代过程外。
 
 ###### 一些debug经历
 
-不过在编写过程中`buffer`出现推进到某一时间点无法收敛的情况，检测后发现此时`buffer`恰处于反省临界，观察`CalculateDC`发现其`DCres`反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取`0.5`倍推进步长，再小无法收敛，推测是`buffer`跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。
+不过在编写过程中`buffer`出现推进到某一时间点无法收敛的情况，检测后发现此时`buffer`恰处于反省临界，观察`CalculateDC`发现其`DCres`反复震荡导致不收敛，将时间步长放大后反而可以收敛，如此处取`0.5`倍推进步长，再小无法收敛，推测是`buffer`跳变临界晶体管工作区会反复变换，出现无法收敛的情况，故需要大一点的步长让跳变完成得彻底一点。此外尝试对MOS的模型做出修改使其突变更不突兀，对于突变电路的收敛性也能有改善。
+
+###### 可能的优化
+
+调用梯形法相关的误差分析方法，尝试以梯形法作为瞬态模型实现动态步长的调节。
 
 ###### 瞬态推进过程方法二动态步长函数定义 - `TransBE_Dynamic`
 
@@ -1246,7 +1256,7 @@ function [ResData, DeviceDatas] = TransBE_Dynamic(InitRes, InitDeviceValue, CVp,
 
 ##### 技术细节
 
-改用后向欧拉，使用`PPT`中后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`，减小到下限仍然不收敛则取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长，故规定Δt动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
+改用后向欧拉，使用后项欧拉电容电感误差公式，认为前一时间点为准确值，计算`epsilon`的范数与前一时刻通过各伴随电阻的值的范数做比，大于`0.1`认为误差较大，则将`Δt`减小一倍，反之增大一倍。且为了应对上述如buffer电路跳变区不收敛的问题，每轮会先判断`CalculateDC`是否收敛，不收敛首先减小`Δt`重新进行，减小到下限仍然不收敛则取直接取Δt上限作尝试。为了防止一些情况下出现误差始终很大带来`Δt`放得过小而运行过久，或误差始终较小而一直增大Δt超过打印步长使结果过于稀疏，故在动态调整过程中界定Δt动态调整的上下限为`0.1`倍打印步长及一倍打印步长。
 
 #### 打靶法 `shooting method`
 
@@ -1581,6 +1591,24 @@ function Current = getCurrentDC(Device,port,LinerNet,x,Res)
 
 函数定义与接口与`getCurrentDC`类似，不做重复介绍。
 
+### Part 7 Matlab App打包
+
+由林与正同学完成
+
+##### 注意事项
+
+Matlab打包的App使用时是调用本地计算机中已有的Matlab RunTime，是与Matlab版本绑定的，故附的FDU_SPICE.exe可执行文件只能在按照Matlab 2022b的电脑中直接运行，否则会报错RunTime版本错误。解决方法可以使用Matlab打包后为应对该问题给出的MyAppInstaller_web.exe进行相应版本的RunTime安装，安装完相应的运行环境就可以运行可执行文件，不过安装需要花费一定时间和空间。
+
+##### 功能界面说明
+
+<img src="picture\appUI.png" style="height:140px;" />
+将可执行文件与testfile文件夹放在同一路径下，运行后在fileName后文本框输入待测网表名称(不需含.sp)，在下拉框选择希望进行的仿真模式，在parameter后的文本框中逐个输入仿真操作的参数，点击RUN SIMULATION按键可以进行仿真。如fileName后输入bufferAC，simulation type选择ac，parameter分别输入DEC、10、1K、1e12MEG则可以进行相应的ac仿真。输入带有图像输出的仿真结果会在同路径下生成一个含待测结果图像的文件夹，文本数据输出的仿真如单点DC仿真结果输出一个txt文本在同路径下。
+
+因为将仿真操作的选择在UI界面中进行，故网表信息一致时，可以用同一网表直接在UI界面选择进行多种仿真，如可以用bufferDC选择进行DC、SweepDC、Trans的仿真，更接近仿真工具基于电路信息可进行多种仿真模式的功能。但注意有些网表文件中信息是仿真种类独有的，如ac网表只能进行ac仿真，则不可以选择其进行DC等仿真。
+
+##### 技术细节 
+
+调研发现Matlab支持通过Matlab App Designer作简单的UI界面设计与程序打包分享，故作此尝试。首先对顶层模块Top_module根据输入输出需要修改并重构为函数形式Top_module_forPackage，再在Matlab App Designer图形化设计界面中完成UI界面的设计，然后编写回调函数，有些类似于QT的槽函数。在键入仿真时获取各文本框与下拉栏信息，生成输入Top_module_forPackage的文件名与仿真操作信息，并调用Top_module_forPackage进行仿真，计时打印仿真时间。
 
 ## 项目功能测试分析
 
