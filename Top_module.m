@@ -20,7 +20,7 @@ clc;
 %% 读取文件，预处理阶段
 % file = 'AmplifierDC';
 % file = 'bjtAmplifierDC';
-file = 'bjtAmplifierShoot';
+file = 'bufferTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -76,7 +76,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i});
             plot(InData,Res(i,:));
             title(Obj{i});
-                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.ac'
         % 这里进入AC分析
@@ -114,12 +114,12 @@ switch lower(SPICEOperation{1}{1})
             plot(freq,Gain(i,:));
             xlabel('lg(freq)'),ylabel('|H(2\pif)|');
             title([Obj{i} 'Gain']);
-                        saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,rad2deg(Phase(i,:)));
             xlabel('lg(freq)'),ylabel('\phi(2\pif)');
             title([Obj{i} 'Phase']);
-                        saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识
@@ -138,7 +138,7 @@ switch lower(SPICEOperation{1}{1})
         TransMethod = "BE";
         % 瞬态推进模式 - "Fix" or "Dynamic"
         StepMethod = "Fix";
-        
+
         % 生成初始解
         if(InitMethod == "DC")
             % 生成初始解 - DC模型解
@@ -149,7 +149,7 @@ switch lower(SPICEOperation{1}{1})
             % 生成初始解 - 模拟电源打开
             [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial(LinerNet_Trans, SourceINFO, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, Error, delta_t0, TransMethod);
         end
-        
+
         % 瞬态推进过程
         if(StepMethod == "Fix")
             [ResData, DeviceDatas] = TransTR_fix(InitRes, InitDeviceValue, CVi, CIi, LVi, LIi, ...
@@ -160,7 +160,7 @@ switch lower(SPICEOperation{1}{1})
                 LinerNet_Trans, MOSINFO_Trans, DIODEINFO_Trans, BJTINFO_Trans, CINFO_Trans, LINFO_Trans, SinINFO_Trans,...
                 Error, delta_t0, stopTime, stepTime);
         end
-        
+
         % 结果处理输出打印输出过程
         [~, x_0, ~] = Gen_Matrix(LinerNet_Trans('Name'),LinerNet_Trans('N1'),LinerNet_Trans('N2'),LinerNet_Trans('dependence'),LinerNet_Trans('Value'));
         [plotnv, plotCurrent] = portMapping(PLOT,Node_Map_Trans);
@@ -170,7 +170,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot((0 : stepTime : stopTime), Res(i,:));
             title(Obj{i});
-                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.dc'
         [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
@@ -227,7 +227,6 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(printTimePoint,PlotValues(i,:));
             title(Obj{i});
-                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+%             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
 end
-uiwait;

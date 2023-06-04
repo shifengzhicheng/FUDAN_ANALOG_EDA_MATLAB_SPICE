@@ -117,8 +117,8 @@ for t=1:length(MOSName)
     end
     %    VDS
     %    VGS
-%     [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
-     [~,GMk,GDSk] = Mos_Calculator(3,1,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
+    [~,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(t)),MOSW(t),MOSL(t)); %用不着的参数可以这么调用
+%      [~,GMk,GDSk] = Mos_Calculator(3,1,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i)); %用不着的参数可以这么调用
     GMk =  GMk * flag;
     kl = kl+1;
     Name{kl} = ['R',MOSName{t}];

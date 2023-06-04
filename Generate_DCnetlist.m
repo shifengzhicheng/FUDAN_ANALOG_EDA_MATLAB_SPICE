@@ -167,8 +167,8 @@ for i=1:length(MOSName)
    end
 %    VDS
 %    VGS
-%    [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i));
-   [Ikk,GMk,GDSk] = Mos_Calculator(3,1,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
+   [Ikk,GMk,GDSk] = Mos_Calculator(VDS,VGS,MOSMODEL(:,MOSID(i)),MOSW(i),MOSL(i));
+%    [Ikk,GMk,GDSk] = Mos_Calculator(3,1,MOSMODEL(:,MOSID_C(i)),str2double(MOSW(i)),str2double(MOSL(i)));
    Ikk = Ikk * flag;
    GMk =  GMk * flag;
     kl = kl+1;
