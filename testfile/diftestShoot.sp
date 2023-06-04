@@ -31,16 +31,7 @@ RSS 121 0 1e5
 .DIODE 1 Is 1e-5
 
 .plotnv 102
-.plotnv 103 
-.plotnv 104
 .plotnv 105
-.plotnv 121
+.plotnv 112
 .plotnc D1(+)
-.plotnc D2(+)
-.plotnc Rload2(+)
-.plotnc RSS(+)
-.plotnc Iref(+)
-.plotnc M1(d)
-.plotnc M1(g)
-.plotnc M1(s)
 .shoot 2e-6 1e-9

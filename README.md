@@ -1726,6 +1726,8 @@ C3 118 0 1e-12
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture/bufferDC_runtime.png" alt="电路图" style="height:300px;" />
+
 | 测试项目     | 项目测试结果       | hspice仿真结果 | 
 |----------|--------------|------------|
 | 101 节点电压 | 1.5V         | 1.5000V    |
@@ -1811,6 +1813,8 @@ Rs2 113 111 25
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture/dbmixerDC_runtime.png" alt="电路图" style="height:300px;" />
+
 | 测试项目     | 项目测试结果      | hspice仿真结果 | 
 |----------|-------------|------------|
 | 102 节点电压 | 2.8514V     | 2.8516V    |
@@ -1871,6 +1875,8 @@ C3 118 0 1e-12
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture/invertbufferDC_runtime.png" alt="火焰图" style="height:300px;" />
+
 | 测试项目     | 项目测试结果       | hspice仿真结果 | 
 |----------|--------------|------------|
 | 104 节点电压 | 2.4902V      | 2.5131V    |
@@ -1916,6 +1922,8 @@ M4   14 11 0  n 10e-6 0.35e-6 2
 <img src="picture/Amplifier.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
+
+<img src="picture/AmplifierDC_runtime.png" alt="火焰图" style="height:300px;" />
 
 | 测试项目         | 项目测试结果      | hspice仿真结果 | 
 |--------------|-------------|------------|
@@ -1992,6 +2000,8 @@ RSS 121 0 1e5
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture/diftestDC_runtime.png" alt="火焰图" style="height:300px;" />
+
 | 测试项目            | 项目测试结果 | hspice仿真结果 |
 | ------------------- | ------------ | -------------- |
 | 102 节点电压        | 0.18108V     | 180.1583mV     |
@@ -2064,6 +2074,8 @@ Q3 106 111 107 npn 2.0 1
 <img src="picture/bjtAmplifierDC.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
+
+<img src="picture/bjtAmplifierDC_runtime.png" alt="火焰图" style="height:300px;" />
 
 | 测试项目      | 项目测试结果 | hspice仿真结果 |
 | ------------- | ------------ | -------------- |
@@ -2144,6 +2156,8 @@ Q3 107 111 106 pnp 2.0 1
 <img src="picture/bjtAmplifier2DC.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
+
+<img src="picture/bjtAmplifier2DC_runtime.png" alt="电路图" style="height:300px;" />
 
 | 测试项目      | 项目测试结果 | hspice仿真结果 |
 | ------------- | ------------ | -------------- |
@@ -2231,6 +2245,8 @@ Q3 106 111 107 npn 2.0 1
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture/bjtAmplifier3DC_runtime.png" alt="电路图" style="height:300px;" />
+
 | 测试项目      | 项目测试结果 | hspice仿真结果 |
 | ------------- | ------------ | -------------- |
 | 102 节点电压  | 5V         | 5.0000V     |
@@ -2258,6 +2274,8 @@ Q3 106 111 107 npn 2.0 1
 本用例电路图同 “DC测试用例1” 扫描条件为：
 
 `.dcsweep Vin [0,3] 0.01`
+
+<img src="picture/bufferSweep_runtime.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2329,6 +2347,8 @@ Q3 106 111 107 npn 2.0 1
 
 `.dcsweep Vin [0,3] 0.01`
 
+<img src="picture/invertbufferSweep_runtime.png" alt="电路图" style="height:300px;" />
+
 ##### 项目测试结果 & hspice仿真结果
 
 `118节点电压`：
@@ -2359,6 +2379,8 @@ Q3 106 111 107 npn 2.0 1
 本用例电路图同 “DC测试用例4” 扫描条件为：
 
 `.dcsweep Vin [0,3] 0.01`
+
+<img src="picture/AmplifierSweep_runtime.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2397,6 +2419,8 @@ Q3 106 111 107 npn 2.0 1
 本用例电路图同 “DC测试用例5” 扫描条件为：
 
 `.dcsweep VIN [1,2] 0.01`
+
+<img src="picture/diftestSweep_runtime.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2457,6 +2481,8 @@ Q3 106 111 107 npn 2.0 1
 本用例电路图同 “DC测试用例6” 扫描条件为：
 
 `.dcsweep Vbb [2,4] 0.01`
+
+<img src="picture/bjtAmplifierSweep_runtime.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果
 
@@ -2520,6 +2546,12 @@ Q3 106 111 107 npn 2.0 1
 
 `.trans 2e-7 1e-9`
 
+<img src="picture/bufferTrans_runtime.png" alt="电路图" style="height:300px;" />
+
+`.shoot 1e-6 1e-9`
+
+<img src="picture/bufferShoot_runtime.png" alt="电路图" style="height:300px;" />
+
 ##### 项目测试结果 & hspice仿真结果
 
 `102节点电压`：
@@ -2527,6 +2559,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\bufferTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\bufferShoot_Node_{102}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2538,6 +2574,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\bufferTrans_104.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\bufferShoot_Node_{104}.png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\bufferTrans_104_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2547,6 +2587,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\bufferTrans_116.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\bufferShoot_Node_{116}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2558,17 +2602,27 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\bufferTrans_R2.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\bufferShoot_R2(+).png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\bufferTrans_R2_hspice.jpg" alt="转移特性" style="height:210px;" />
 
-结果基本符合预期，由于mos管寄生电容不一样，第一个峰值有所差异
+结果基本符合预期，使用模拟电源打开时并不能准确找到周期，所以第一个峰值有所差异，但`Shoot`解决了这个问题。
 
 #### Trans测试用例2 `dbmixerTrans.sp`
 
 本用例电路图同 “DC测试用例2” 扫描条件为：
 
 `.trans 1e-9 1e-11`
+
+<img src="picture\dbmixerTrans_runtime.png" alt="转移特性" style="height:300px;" />
+
+`.shoot 1e-7 1e-11`
+
+<img src="picture\dbmixerShoot_runtime.png" alt="转移特性" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2577,6 +2631,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\dbmixerTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\dbmixerShoot_Node_{102}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2588,6 +2646,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\dbmixerTrans_104.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\dbmixerShoot_Node_{104}.png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\dbmixerTrans_104_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2597,6 +2659,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\dbmixerTrans_108.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\dbmixerShoot_Node_{108}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2608,6 +2674,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\dbmixerTrans_109.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\dbmixerShoot_Node_{109}.png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\dbmixerTrans_109_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2618,6 +2688,12 @@ Q3 106 111 107 npn 2.0 1
 
 `.trans 2e-7 1e-9`
 
+<img src="picture\diftestTrans_runtime.png" alt="转移特性" style="height:300px;" />
+
+`.shoot 2e-6 1e-9`
+
+<img src="picture\diftestShoot_runtime.png" alt="转移特性" style="height:300px;" />
+
 ##### 项目测试结果 & hspice仿真结果
 
 `102节点电压`：
@@ -2625,6 +2701,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\diftestTrans_102.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\diftestShoot_Node_{102}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2636,6 +2716,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\diftestTrans_105.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\diftestShoot_Node_{105}.png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\diftestTrans_105_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2645,6 +2729,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\diftestTrans_112.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\diftestShoot_Node_{112}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2656,6 +2744,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\diftestTrans_D1.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\diftestShoot_D1(+).png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\diftestTrans_D1_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2666,6 +2758,12 @@ Q3 106 111 107 npn 2.0 1
 
 `.trans 1e-6 1e-9`
 
+<img src="picture\bjtAmplifierTrans_runtime.png" alt="转移特性" style="height:300px;" />
+
+`.shoot 1e-6 1e-9`
+
+<img src="picture\bjtAmplifierShoot_runtime.png" alt="转移特性" style="height:300px;" />
+
 ##### 项目测试结果 & hspice仿真结果
 
 `104节点电压`：
@@ -2673,6 +2771,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\bjtAmplifierTrans_Node_{104}.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\bjtAmplifierShoot_Node_{104}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2684,6 +2786,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\bjtAmplifierTrans_Node_{106}.png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\bjtAmplifierShoot_Node_{106}.png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\bjtAmplifierTrans_106_hspice.jpg" alt="转移特性" style="height:210px;" />
@@ -2693,6 +2799,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\bjtAmplifierTrans_Node_{108}.png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\bjtAmplifierShoot_Node_{108}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2704,6 +2814,10 @@ Q3 106 111 107 npn 2.0 1
 
 <img src="picture\bjtAmplifierTrans_Q2(e).png" alt="转移特性" style="height:250px;" />
 
+* `shoot`结果：
+
+  <img src="picture\bjtAmplifierShoot_Q2(e).png" alt="转移特性" style="height:250px;" />
+
 * hspice仿真结果：
 
 <img src="picture\bjtAmplifierTrans_Q2(e)_hspice.png" alt="转移特性" style="height:210px;" />
@@ -2713,6 +2827,10 @@ Q3 106 111 107 npn 2.0 1
 * 项目测试结果：
 
 <img src="picture\bjtAmplifierTrans_Q3(c).png" alt="转移特性" style="height:250px;" />
+
+* `shoot`结果：
+
+  <img src="picture\bjtAmplifierShoot_Q3(c).png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2725,6 +2843,8 @@ Q3 106 111 107 npn 2.0 1
 本用例电路图同 “DC测试用例1” 扫描条件为：
 
 `.ac DEC 10 1K 1e12MEG`
+
+<img src="picture\bufferAC_runtime.png" alt="火焰图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
 
@@ -2784,6 +2904,8 @@ Rs 33 0 10
 <img src="picture/Smos.png" alt="电路图" style="height:300px;" />
 
 ##### 项目测试结果 & hspice仿真结果
+
+<img src="picture\SmosAC_runtime.png" alt="火焰图" style="height:300px;" />
 
 `32节点电压`：
 
@@ -2893,6 +3015,8 @@ CsM1  33   0   4e-14
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture\SmosPZ_runtime.png" alt="火焰图" style="height:300px;" />
+
 `32节点`：
 
 | 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
@@ -2946,6 +3070,8 @@ C4 4 0 8e-10
 
 ##### 项目测试结果 & hspice仿真结果
 
+<img src="picture\RCPZ_runtime.png" alt="火焰图" style="height:300px;" />
+
 `3节点`：
 
 | 项目测试极点                 | hspice极点 | 项目测试零点    | hspice零点 | 
@@ -2994,6 +3120,8 @@ C3 5 0 5e-12
 <img src="picture\RCL.png" alt="电路图" style="height:200px;" />
 
 ##### 项目测试结果 & hspice仿真结果
+
+<img src="picture\RCLPZ_runtime.png" alt="火焰图" style="height:300px;" />
 
 `4节点`：
 

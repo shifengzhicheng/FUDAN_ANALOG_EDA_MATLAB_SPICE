@@ -21,21 +21,11 @@ Q3 106 111 107 npn 2.0 1
 .BIPOLAR 1 Js 1e-16 alpha_f 0.99 alpha_r 0.98 Cje 1e-11 Cjc 0.5e-11
 
 .plotnv  108
-.plotnv  107
 .plotnv  106
-.plotnv  105
 .plotnv  104
-.plotnv  103
 .plotnv  102
-.plotnc Q1(c)
-.plotnc Q1(b)
-.plotnc Q1(e)
-.plotnc Q2(c)
-.plotnc Q2(b)
 .plotnc Q2(e)
 .plotnc Q3(c)
-.plotnc Q3(b)
-.plotnc Q3(e)
 * .end
 
 .shoot 1e-6 1e-9
