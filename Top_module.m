@@ -15,7 +15,7 @@ clear;
 clc;
 %% 读取文件，预处理阶段
 % file = 'AmplifierDC';
-file = 'AmplifierShoot';
+file = 'bjtAmplifierTrans';
 filename = ['testfile\' file '.sp'];
 % filename = 'testfile\buffer.sp';
 [RCLINFO,SourceINFO,MOSINFO,...
@@ -71,7 +71,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i});
             plot(InData,Res(i,:));
             title(Obj{i});
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.ac'
         % 这里进入AC分析
@@ -109,12 +109,12 @@ switch lower(SPICEOperation{1}{1})
             plot(freq,Gain(i,:));
             xlabel('lg(freq)'),ylabel('|H(2\pif)|');
             title([Obj{i} 'Gain']);
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
+                        saveas(gcf, ['picture/' file '_' Obj{i} '_Gain.png']);
             figure('Name',Obj{i})
             plot(freq,rad2deg(Phase(i,:)));
             xlabel('lg(freq)'),ylabel('\phi(2\pif)');
             title([Obj{i} 'Phase']);
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
+                        saveas(gcf, ['picture/' file '_' Obj{i} '_Phase.png']);
         end
     case '.trans'
         % 设置判断解收敛的标识
@@ -165,7 +165,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot((0 : stepTime : stopTime), Res(i,:));
             title(Obj{i});
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
     case '.dc'
         [LinerNet,MOSINFO,DIODEINFO,BJTINFO,Node_Map]=...
@@ -222,7 +222,7 @@ switch lower(SPICEOperation{1}{1})
             figure('Name',Obj{i})
             plot(printTimePoint,PlotValues(i,:));
             title(Obj{i});
-            %             saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
+                        saveas(gcf, ['picture/' file '_' Obj{i} '.png']);
         end
 end
 uiwait;

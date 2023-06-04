@@ -2674,7 +2674,7 @@ Q3 106 111 107 npn 2.0 1
 
 * 项目测试结果：
 
-<img src="picture\bjtAmplifierTrans_104.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierTrans_Node_{104}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2684,7 +2684,7 @@ Q3 106 111 107 npn 2.0 1
 
 * 项目测试结果：
 
-<img src="picture\bjtAmplifierTrans_106.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierTrans_Node_{106}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2694,7 +2694,7 @@ Q3 106 111 107 npn 2.0 1
 
 * 项目测试结果：
 
-<img src="picture\bjtAmplifierTrans_108.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierTrans_Node_{108}.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
