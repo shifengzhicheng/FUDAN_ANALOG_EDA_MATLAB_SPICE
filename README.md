@@ -1603,7 +1603,8 @@ Matlab打包的App使用时是调用本地计算机中已有的Matlab RunTime，
 
 ##### 功能界面说明
 
-<img src="picture\appUI.png" style="height:140px;" />
+<img src="picture\appUI.png" style="height:240px;" />
+
 将可执行文件与testfile文件夹放在同一路径下，运行后在fileName后文本框输入待测网表名称(不需含.sp)，在下拉框选择希望进行的仿真模式，在parameter后的文本框中逐个输入仿真操作的参数，点击RUN SIMULATION按键可以进行仿真。如fileName后输入bufferAC，simulation type选择ac，parameter分别输入DEC、10、1K、1e12MEG则可以进行相应的ac仿真。输入带有图像输出的仿真结果会在同路径下生成一个含待测结果图像的文件夹，文本数据输出的仿真如单点DC仿真结果输出一个txt文本在同路径下。
 
 因为将仿真操作的选择在UI界面中进行，故网表信息一致时，可以用同一网表直接在UI界面选择进行多种仿真，如可以用bufferDC选择进行DC、SweepDC、Trans的仿真，更接近仿真工具基于电路信息可进行多种仿真模式的功能。但注意有些网表文件中信息是仿真种类独有的，如ac网表只能进行ac仿真，则不可以选择其进行DC等仿真。
