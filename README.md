@@ -2704,7 +2704,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\diftestShoot_Node_102.png" alt="转移特性" style="height:250px;" />
+<img src="picture\diftestShoot_Node_102.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2718,7 +2718,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\diftestShoot_Node_105.png" alt="转移特性" style="height:250px;" />
+<img src="picture\diftestShoot_Node_105.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2732,7 +2732,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\diftestShoot_Node_112.png" alt="转移特性" style="height:250px;" />
+<img src="picture\diftestShoot_Node_112.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2746,7 +2746,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\diftestShoot_D1(+).png" alt="转移特性" style="height:250px;" />
+<img src="picture\diftestShoot_D1(+).png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2774,7 +2774,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\bjtAmplifierShoot_Node_104.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierShoot_Node_104.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2788,7 +2788,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\bjtAmplifierShoot_Node_106.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierShoot_Node_106.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2802,7 +2802,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\bjtAmplifierShoot_Node_108.png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierShoot_Node_108.png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2816,7 +2816,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\bjtAmplifierShoot_Q2(e).png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierShoot_Q2(e).png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
@@ -2830,7 +2830,7 @@ Q3 106 111 107 npn 2.0 1
 
 * `shoot`结果：
 
-  <img src="picture\bjtAmplifierShoot_Q3(c).png" alt="转移特性" style="height:250px;" />
+<img src="picture\bjtAmplifierShoot_Q3(c).png" alt="转移特性" style="height:250px;" />
 
 * hspice仿真结果：
 
