@@ -1607,10 +1607,10 @@ Matlab打包的App使用时是调用本地计算机中已有的Matlab RunTime，
 
 将可执行文件与testfile文件夹放在同一路径下，运行后在fileName后文本框输入待测网表名称(不需含.sp)，在下拉框选择希望进行的仿真模式，在parameter后的文本框中逐个输入仿真操作的参数，点击RUN SIMULATION按键可以进行仿真。
 
-如fileName后输入bufferAC，simulation type选择ac，parameter分别输入DEC、10、1K、1e12MEG则可以进行相应的ac仿真。
-对trans、shoot仿真则输入参数分别为停止时间与打印步长
-对sweepDC仿真则输入参数分别为扫描电源名称，扫描区间如[0,3]，扫描步长
-对pz、dc仿真则不需要输入参数。
+- 如fileName后输入bufferAC，simulation type选择ac，parameter分别输入DEC、10、1K、1e12MEG则可以进行相应的ac仿真。
+- 对trans、shoot仿真则输入参数分别为停止时间与打印步长
+- 对sweepDC仿真则输入参数分别为扫描电源名称，扫描区间如[0,3]，扫描步长
+- 对pz、dc仿真则不需要输入参数。
 
 输入带有图像输出的仿真结果会在同路径下生成一个含待测结果图像的文件夹，文本数据输出的仿真如单点DC仿真结果输出一个txt文本在同路径下。
 
