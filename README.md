@@ -259,6 +259,12 @@ FUDAN_ANALOG_EDA_MATLAB_SPICE
 │   ├── LU_decompose.m
 │   └── sparse_LU_decompose.m
 ├── SpM.m
+├── Top_module_forPackage.m
+├── app1.mlapp
+#### App文件
+├── FDU_SPICE.exe
+├── MyAppInstaller_web.exe
+├── readme.txt
 #### 项目文档
 ├── README.md 
 #### 展示PPT
