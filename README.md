@@ -1185,9 +1185,9 @@ function [InitRes, InitDeviceValue, CVi, CIi, LVi, LIi] = TransInitial_byDC(Line
 ###### 接口说明
 
 1.函数输入
-以_Trans结尾的输入表示由Generate_transnetlist获得的线性网表信息与其他器件信息，不以_Trans结尾的表示parser_Netlist的直接结果，尚未解析为线性网表。这样作为了在TransInitial_byDC中调用Generate_DCnetlist以便进行DC求定一瞬态仿真初始值，并对Generate_transnetlist获得的结果对应修改。
+以`_Trans`结尾的输入表示由`Generate_transnetlist`获得的线性网表信息与其他器件信息，不以`_Trans`结尾的表示`parser_Netlist`的直接结果，尚未解析为线性网表。这样作为了在`TransInitial_byDC`中调用`Generate_DCnetlist`以便进行DC求定一瞬态仿真初始值，并对`Generate_transnetlist`获得的结果对应修改。
 2.函数输出
-同TransInitial.m
+同`TransInitial.m`
 
 ###### 技术细节
 
