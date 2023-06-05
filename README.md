@@ -19,13 +19,13 @@
 
 - 正则表达式解析文件，搭建顶层模块的框架并定义接口形式
 - 生成MNA方程
-- shooting_method实现、AC分析实现
+- `shooting_method`实现、AC分析实现
 - 实现输出节点电压、端口电流
 
 朱瑞宸：
 
 - 生成DC分析网表、生成AC分析网表、生成Trans网表
-- 计算零极点功能Gen_PZ
+- 计算零极点功能`Gen_PZ`
 - Hspice器件建模调研，Hspice网表编写，Hspice软件测试、反馈优化和误差分析
 
 林与正：
