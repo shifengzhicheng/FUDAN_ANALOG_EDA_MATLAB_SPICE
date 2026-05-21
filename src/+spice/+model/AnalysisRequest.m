@@ -25,6 +25,8 @@ classdef AnalysisRequest
             rawTokens = tokens;
 
             switch kind
+                case ".op"
+                    obj = spice.model.AnalysisRequest("dc", struct(), rawTokens, lineNumber);
                 case ".dc"
                     obj = spice.model.AnalysisRequest("dc", struct(), rawTokens, lineNumber);
                 case ".dcsweep"
@@ -53,14 +55,19 @@ classdef AnalysisRequest
                         'startFreq', spice.util.parseNumericWithSuffix(tokens{4}), ...
                         'stopFreq', spice.util.parseNumericWithSuffix(tokens{5}));
                     obj = spice.model.AnalysisRequest("ac", params, rawTokens, lineNumber);
+                case ".tran"
+                    if numel(tokens) < 3
+                        error('spice:parseNetlist:TooFewTokens', ...
+                            'Expected at least 3 tokens at line %d but got %d.', lineNumber, numel(tokens));
+                    end
+                    params = spice.model.AnalysisRequest.transientParams(tokens{3}, tokens{2});
+                    obj = spice.model.AnalysisRequest("trans", params, rawTokens, lineNumber);
                 case ".trans"
                     if numel(tokens) < 3
                         error('spice:parseNetlist:TooFewTokens', ...
                             'Expected at least 3 tokens at line %d but got %d.', lineNumber, numel(tokens));
                     end
-                    params = struct( ...
-                        'totalTime', spice.util.parseNumericWithSuffix(tokens{2}), ...
-                        'stepTime', spice.util.parseNumericWithSuffix(tokens{3}));
+                    params = spice.model.AnalysisRequest.transientParams(tokens{2}, tokens{3});
                     obj = spice.model.AnalysisRequest("trans", params, rawTokens, lineNumber);
                 case ".shoot"
                     if numel(tokens) < 3
@@ -77,6 +84,14 @@ classdef AnalysisRequest
                 otherwise
                     error('spice:parseNetlist:UnsupportedAnalysis', 'Unsupported analysis at line %d.', lineNumber);
             end
+        end
+    end
+
+    methods (Static, Access = private)
+        function params = transientParams(totalTimeToken, stepTimeToken)
+            params = struct( ...
+                'totalTime', spice.util.parseNumericWithSuffix(totalTimeToken), ...
+                'stepTime', spice.util.parseNumericWithSuffix(stepTimeToken));
         end
     end
 end

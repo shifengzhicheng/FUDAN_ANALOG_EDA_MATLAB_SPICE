@@ -457,8 +457,8 @@ function writeOneDiffPlot(analysisType, candidateAxis, candidateSignal, baseline
 figureHandle = figure('Visible', 'off');
 cleanup = onCleanup(@() closeIfNeeded(figureHandle));
 if string(candidateSignal.domain) == "complex"
-    candidateValues = candidateSignal.magnitude;
-    baselineValues = interpolateForPlot(candidateAxis.values, baselineAxis.values, baselineSignal.magnitude);
+    candidateValues = magnitudeForPlot(candidateSignal);
+    baselineValues = interpolateForPlot(candidateAxis.values, baselineAxis.values, magnitudeForPlot(baselineSignal));
     if string(candidateAxis.scale) == "dec"
         semilogx(candidateAxis.values, candidateValues, 'LineWidth', 1.2);
         hold on;
@@ -486,11 +486,29 @@ clear cleanup
 end
 
 function values = interpolateForPlot(candidateAxis, baselineAxis, baselineValues)
+candidateAxis = candidateAxis(:).';
+baselineAxis = baselineAxis(:).';
+baselineValues = baselineValues(:).';
+sampleCount = min(numel(baselineAxis), numel(baselineValues));
+baselineAxis = baselineAxis(1:sampleCount);
+baselineValues = baselineValues(1:sampleCount);
+if isempty(candidateAxis) || isempty(baselineAxis) || isempty(baselineValues)
+    values = NaN(size(candidateAxis));
+    return;
+end
 if numel(candidateAxis) <= 1 || numel(baselineAxis) <= 1 || (numel(candidateAxis) == numel(baselineAxis) && all(abs(candidateAxis - baselineAxis) < 1e-15))
     values = baselineValues;
     return;
 end
 values = interp1(baselineAxis, baselineValues, candidateAxis, 'linear', 'extrap');
+end
+
+function values = magnitudeForPlot(signal)
+if ~isempty(signal.magnitude)
+    values = signal.magnitude;
+else
+    values = abs(signal.values);
+end
 end
 
 function closeIfNeeded(figureHandle)

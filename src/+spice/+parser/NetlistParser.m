@@ -18,17 +18,16 @@ classdef NetlistParser < handle
         end
 
         function circuit = parse(obj, sourceText)
-            rawText = char(string(sourceText));
-            normalizedText = strrep(rawText, sprintf('\r\n'), sprintf('\n'));
-            lines = regexp(normalizedText, '\n', 'split');
+            [lines, physicalLineCount] = spice.parser.preprocessNetlistLines(sourceText);
 
             circuit = spice.model.Circuit( ...
                 'SourceName', obj.SourceName, ...
                 'RawText', string(sourceText), ...
-                'LineCount', numel(lines));
+                'LineCount', physicalLineCount);
 
-            for lineNumber = 1:numel(lines)
-                line = strtrim(lines{lineNumber});
+            for idx = 1:numel(lines)
+                line = strtrim(char(lines(idx).Text));
+                lineNumber = lines(idx).LineNumber;
                 if isempty(line) || startsWith(line, '*')
                     continue;
                 end
@@ -60,6 +59,9 @@ classdef NetlistParser < handle
             switch directive
                 case ".end"
                     shouldStop = true;
+                case {".options", ".option", ".print", ".probe", ".title"}
+                    % Reporting and simulator-control cards are accepted so
+                    % HSPICE-style fixtures can still feed the object model.
                 case ".model"
                     circuit.addModel(spice.model.MosModel.fromTokens(tokens, lineNumber));
                 case ".diode"
@@ -70,7 +72,7 @@ classdef NetlistParser < handle
                     circuit.addProbe(spice.model.Probe.fromNodeDirective(tokens, lineNumber));
                 case ".plotnc"
                     circuit.addProbe(spice.model.Probe.fromCurrentDirective(tokens, lineNumber));
-                case {".dc", ".dcsweep", ".ac", ".trans", ".shoot", ".pz"}
+                case {".op", ".dc", ".dcsweep", ".ac", ".tran", ".trans", ".shoot", ".pz"}
                     if ~isempty(circuit.Analysis)
                         error('spice:parseNetlist:MultipleAnalyses', ...
                             'Only one primary analysis directive is supported. Found another at line %d.', lineNumber);

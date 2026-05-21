@@ -3,6 +3,12 @@ function test_native_linear_analyses()
 rootDir = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 addpath(genpath(fullfile(rootDir, 'src')));
 
+%% Solver backend selection is shared by set/get and simulate()
+spice.solver.setBackend("dense");
+assert(spice.solver.getBackend() == "dense");
+spice.solver.setBackend("sparse");
+assert(spice.solver.getBackend() == "sparse");
+
 %% Native assembler grows without changing sparse matrix semantics
 assembler = spice.analysis.native.Assembler(3, 1);
 assembler.addConductance(1, 2, 2);

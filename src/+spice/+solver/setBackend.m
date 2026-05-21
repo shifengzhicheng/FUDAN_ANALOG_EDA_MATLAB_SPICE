@@ -1,4 +1,3 @@
 function setBackend(backend)
-persistent configuredBackend
-configuredBackend = string(backend);
+spice.solver.getBackend("set", string(backend));
 end

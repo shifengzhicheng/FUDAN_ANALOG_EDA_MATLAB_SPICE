@@ -26,6 +26,11 @@ The parser now builds a domain object model centered on:
 Built-in devices are created through `spice.model.DeviceFactory`, which keeps
 parser logic small and makes device extension explicit.
 
+The parser has a small preprocessing stage before object construction. It
+normalizes CRLF input, strips `$` inline comments, folds `+` continuation
+lines, accepts `.op` as an operating-point alias, and accepts standard
+`.tran <step> <stop>` alongside the course-compatible `.trans <stop> <step>`.
+
 ## Public API
 
 Simulate from a file:
@@ -57,6 +62,12 @@ Manifest-driven regression run:
 
 ```powershell
 matlab -batch "addpath(genpath('src')); summary = spice.regression.runManifest(); disp(summary.unexpectedFailureCount)"
+```
+
+Quick regression smoke run:
+
+```powershell
+matlab -batch "addpath(genpath('src')); summary = spice.regression.runManifest(IncludeCases=string({'bufferDC','bufferAC','diftestSweep','bufferTrans'}), EmitPlots=false, WriteCaseArtifacts=false, WriteReports=false); disp(summary.unexpectedFailureCount)"
 ```
 
 ## Simulation Result
@@ -133,3 +144,7 @@ Run all tests:
 ```powershell
 matlab -batch "addpath(genpath('src')); addpath(genpath('tests')); run_all"
 ```
+
+The full manifest intentionally includes expected-fail accuracy cases and
+large Dynamic/TR transient audits. Use the quick regression command above for
+normal edit/verify loops, and reserve the full manifest for longer audit runs.

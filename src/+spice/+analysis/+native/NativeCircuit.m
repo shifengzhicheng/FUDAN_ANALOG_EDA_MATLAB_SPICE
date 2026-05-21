@@ -16,7 +16,7 @@ classdef NativeCircuit < handle
 
     properties (Access = private)
         NodeLookup (:,1) double
-        BranchIndexByName = containers.Map('KeyType', 'char', 'ValueType', 'double')
+        BranchIndexByName
         ConfiguredAnalysisType (1,1) string = ""
         ConfiguredTransientMethod (1,1) string = ""
         MosModelById cell = {}
@@ -38,6 +38,7 @@ classdef NativeCircuit < handle
                     obj.NodeLookup(obj.NodeIds(idx) + 1) = idx;
                 end
             end
+            obj.BranchIndexByName = containers.Map('KeyType', 'char', 'ValueType', 'double');
             obj.buildModelCaches();
         end
 
