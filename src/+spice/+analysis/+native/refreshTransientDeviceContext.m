@@ -1,0 +1,13 @@
+function refreshedContext = refreshTransientDeviceContext(nativeCircuit, options, templateContext, solution)
+% REFRESHTRANSIENTDEVICECONTEXT Re-evaluate device states for an extrapolated solution.
+refreshedContext = spice.analysis.native.AnalysisContext("trans", nativeCircuit, options, ...
+    'Time', templateContext.Time, ...
+    'TimeStep', templateContext.TimeStep, ...
+    'OperatingPointSolution', solution, ...
+    'TransientHistory', templateContext.TransientHistory);
+
+for idx = 1:numel(nativeCircuit.Circuit.Elements)
+    device = nativeCircuit.Circuit.Elements{idx};
+    refreshedContext.setDeviceState(device.Name, device.evaluateOperatingPoint(nativeCircuit, solution, refreshedContext));
+end
+end

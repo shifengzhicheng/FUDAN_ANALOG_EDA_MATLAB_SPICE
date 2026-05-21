@@ -1,0 +1,9 @@
+function [solution, nextContext, stats] = solveTransientOneStep( ...
+        circuit, nativeCircuit, solver, options, previousContext, targetTime, stepTime, initialGuess)
+% SOLVETRANSIENTONESTEP Assemble, solve, and commit one transient step.
+stepContext = spice.analysis.native.AnalysisContext("trans", nativeCircuit, options, ...
+    'Time', targetTime, 'TimeStep', stepTime, 'TransientHistory', previousContext.TransientHistory);
+[solution, convergedContext, stats] = spice.analysis.native.solveTransientStep(solver, stepContext, initialGuess);
+nextContext = spice.analysis.native.advanceTransientState( ...
+    circuit, nativeCircuit, options, previousContext, convergedContext, solution, targetTime, stepTime);
+end

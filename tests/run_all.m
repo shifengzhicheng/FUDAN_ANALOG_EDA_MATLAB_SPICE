@@ -7,6 +7,7 @@ test_parser_smoke();
 test_object_model();
 test_simulate_file_and_text();
 test_native_linear_analyses();
+test_native_helper_functions();
 test_hspice_lis_parser();
 test_hspice_tr0_parser();
 test_regression_smoke();

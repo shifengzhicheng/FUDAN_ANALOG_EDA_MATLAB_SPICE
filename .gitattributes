@@ -1,0 +1,16 @@
+* text=auto eol=lf
+
+*.m text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.cir text eol=lf
+*.sp text eol=lf
+*.lis text eol=lf
+*.tr0 binary
+*.mat binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
