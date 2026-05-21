@@ -28,7 +28,7 @@ end
 function result = runDcNative(circuit, ir, nativeCircuit, solver, options)
 [solution, opContext, stats] = solveOperatingPoint(nativeCircuit, solver, options, "dc", []);
 axis = struct('name', "operating_point", 'values', 0, 'unit', "", 'scale', "scalar");
-signals = buildSignals(circuit, "dc", axis, nativeCircuit, solution);
+signals = spice.analysis.native.buildSignals(circuit, "dc", axis, nativeCircuit, solution);
 result = baseResult("dc", axis, signals, ir, nativeCircuit, circuit, options);
 result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', solution);
 result.deviceState = struct('names', nativeCircuit.solutionLabels(), 'values', solution, 'nodeMap', nativeCircuit.NodeIds);
@@ -64,7 +64,7 @@ end
 nativeCircuit.OperatingPointSolution = lastSolution;
 nativeCircuit.OperatingPointContext = lastContext;
 axis = struct('name', "sweep", 'values', sweepValues, 'unit', "", 'scale', "linear");
-signals = buildSignals(circuit, "dcsweep", axis, nativeCircuit, solutionMatrix);
+signals = spice.analysis.native.buildSignals(circuit, "dcsweep", axis, nativeCircuit, solutionMatrix);
 result = baseResult("dcsweep", axis, signals, ir, nativeCircuit, circuit, options);
 result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', lastSolution);
 result.deviceState = struct('names', nativeCircuit.solutionLabels(), 'values', solutionMatrix, 'nodeMap', nativeCircuit.NodeIds);
@@ -98,7 +98,7 @@ for idx = 1:numel(freq)
 end
 
 axis = struct('name', "frequency", 'values', freq, 'unit', "Hz", 'scale', lower(string(analysisParams.mode)));
-signals = buildSignals(circuit, "ac", axis, nativeCircuit, solutionMatrix);
+signals = spice.analysis.native.buildSignals(circuit, "ac", axis, nativeCircuit, solutionMatrix);
 result = baseResult("ac", axis, signals, ir, nativeCircuit, circuit, options);
 result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', dcSolution);
 result.deviceState = struct('names', nativeCircuit.solutionLabels(), 'values', solutionMatrix, 'nodeMap', nativeCircuit.NodeIds);
@@ -140,7 +140,7 @@ end
 nativeCircuit.OperatingPointSolution = previousSolution;
 nativeCircuit.OperatingPointContext = stateContext;
 axis = struct('name', "time", 'values', timeAxis, 'unit', "s", 'scale', "linear");
-signals = buildSignals(circuit, "trans", axis, nativeCircuit, solutionMatrix);
+signals = spice.analysis.native.buildSignals(circuit, "trans", axis, nativeCircuit, solutionMatrix);
 result = baseResult("trans", axis, signals, ir, nativeCircuit, circuit, options);
 if isempty(operatingPoint)
     result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', solutionMatrix(:, 1));
@@ -254,7 +254,7 @@ end
 nativeCircuit.OperatingPointSolution = currentSolution;
 nativeCircuit.OperatingPointContext = stateContext;
 axis = struct('name', "time", 'values', timeValues, 'unit', "s", 'scale', "linear");
-signals = buildSignals(circuit, "trans", axis, nativeCircuit, solutionMatrix);
+signals = spice.analysis.native.buildSignals(circuit, "trans", axis, nativeCircuit, solutionMatrix);
 result = baseResult("trans", axis, signals, ir, nativeCircuit, circuit, options);
 if isempty(operatingPoint)
     result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', solutionMatrix(:, 1));
@@ -348,7 +348,7 @@ end
 nativeCircuit.OperatingPointSolution = solutionMatrix(:, end);
 nativeCircuit.OperatingPointContext = finalContext;
 axis = struct('name', "time", 'values', timeAxis, 'unit', "s", 'scale', "linear");
-signals = buildSignals(circuit, "shoot", axis, nativeCircuit, solutionMatrix);
+signals = spice.analysis.native.buildSignals(circuit, "shoot", axis, nativeCircuit, solutionMatrix);
 result = baseResult("shoot", axis, signals, ir, nativeCircuit, circuit, options);
 if isempty(operatingPoint)
     result.operatingPoint = struct('nodeMap', nativeCircuit.NodeIds, 'solution', solutionMatrix(:, 1));
@@ -487,46 +487,6 @@ switch lower(string(params.mode))
         freq = logspace(startValue, stopValue, sampleCount);
     otherwise
         freq = linspace(params.startFreq, params.stopFreq, params.points);
-end
-end
-
-function signals = buildSignals(circuit, analysisType, axis, nativeCircuit, solutionMatrix)
-signalTemplate = struct( ...
-    'name', "", ...
-    'kind', "", ...
-    'axisName', string(axis.name), ...
-    'axisValues', axis.values, ...
-    'unit', "", ...
-    'domain', "real", ...
-    'values', [], ...
-    'magnitude', [], ...
-    'phaseDeg', []);
-
-signals = repmat(signalTemplate, 0, 1);
-for idx = 1:numel(circuit.Probes)
-    probe = circuit.Probes{idx};
-    signal = signalTemplate;
-    signal.name = probe.DisplayName;
-    switch probe.Kind
-        case "nodeVoltage"
-            signal.kind = "nodeVoltage";
-            signal.unit = "V";
-            values = nativeCircuit.nodeVoltage(solutionMatrix, nativeCircuit.nodeVarIndex(probe.Target));
-        case "deviceCurrent"
-            signal.kind = "deviceCurrent";
-            signal.unit = "A";
-            device = nativeCircuit.findDevice(probe.Target);
-            values = device.currentForProbe(analysisType, nativeCircuit, solutionMatrix, axis.values, probe.Port);
-        otherwise
-            error('spice:analysis:native:UnknownProbeKind', 'Unknown probe kind %s.', probe.Kind);
-    end
-    signal.values = values;
-    if ~isreal(values)
-        signal.domain = "complex";
-        signal.magnitude = abs(values);
-        signal.phaseDeg = rad2deg(angle(values));
-    end
-    signals(end + 1, 1) = signal; %#ok<AGROW>
 end
 end
 

@@ -148,3 +148,7 @@ matlab -batch "addpath(genpath('src')); addpath(genpath('tests')); run_all"
 The full manifest intentionally includes expected-fail accuracy cases and
 large Dynamic/TR transient audits. Use the quick regression command above for
 normal edit/verify loops, and reserve the full manifest for longer audit runs.
+
+The same test command runs in GitHub Actions on pushes and pull requests to
+`main`. Development workflow and architecture rules are documented in
+[CONTRIBUTING.md](CONTRIBUTING.md).
