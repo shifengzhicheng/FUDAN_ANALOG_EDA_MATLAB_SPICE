@@ -31,6 +31,8 @@ normalizes CRLF input, strips `$` inline comments, folds `+` continuation
 lines, accepts `.op` as an operating-point alias, and accepts standard
 `.tran <step> <stop>` alongside the course-compatible `.trans <stop> <step>`.
 
+Detailed architecture notes are in [docs/architecture.md](docs/architecture.md).
+
 ## Public API
 
 Simulate from a file:
@@ -151,4 +153,5 @@ normal edit/verify loops, and reserve the full manifest for longer audit runs.
 
 The same test command runs in GitHub Actions on pushes and pull requests to
 `main`. Development workflow and architecture rules are documented in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](CONTRIBUTING.md), and validation levels are documented in
+[docs/validation.md](docs/validation.md).

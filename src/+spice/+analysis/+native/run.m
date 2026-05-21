@@ -168,15 +168,8 @@ controller.errorNodeIndices = spice.analysis.native.dynamicTransientErrorNodeInd
 
 currentTime = 0;
 currentSolution = initialSolution;
-timeValues = 0;
-solutionMatrix = initialSolution;
-stepIterations = zeros(0, 1);
-stepConverged = true(0, 1);
-stepModes = strings(0, 1);
-stepSizes = zeros(0, 1);
-lteValues = zeros(0, 1);
-voltageErrorNorms = zeros(0, 1);
-currentErrorNorms = zeros(0, 1);
+trace = spice.analysis.native.DynamicTransientTrace( ...
+    initialSolution, estimateDynamicTraceCapacity(analysisParams.totalTime, controller.initialStep));
 acceptedSteps = 0;
 rejectedSteps = 0;
 breakpointHits = 0;
@@ -191,19 +184,12 @@ while currentTime < analysisParams.totalTime - max(eps(analysisParams.totalTime)
     if attempt.usedCachedFullStep
         cachedHalfStepReuses = cachedHalfStepReuses + 1;
     end
-    lteValues(end + 1, 1) = attempt.lteMetric; %#ok<AGROW>
-    voltageErrorNorms(end + 1, 1) = attempt.voltageErrorNorm; %#ok<AGROW>
-    currentErrorNorms(end + 1, 1) = attempt.currentErrorNorm; %#ok<AGROW>
+    trace.recordAttempt(attempt.lteMetric, attempt.voltageErrorNorm, attempt.currentErrorNorm);
     if attempt.accepted
         currentTime = currentTime + dt;
         currentSolution = attempt.solution;
         stateContext = attempt.nextContext;
-        timeValues(end + 1) = currentTime; %#ok<AGROW>
-        solutionMatrix(:, end + 1) = currentSolution; %#ok<AGROW>
-        stepIterations(end + 1, 1) = attempt.iterations; %#ok<AGROW>
-        stepConverged(end + 1, 1) = attempt.converged; %#ok<AGROW>
-        stepModes(end + 1, 1) = string(attempt.mode); %#ok<AGROW>
-        stepSizes(end + 1, 1) = dt; %#ok<AGROW>
+        trace.appendAcceptedStep(currentTime, currentSolution, attempt.iterations, attempt.converged, attempt.mode, dt);
         acceptedSteps = acceptedSteps + 1;
         if hitsBreakpoint
             breakpointHits = breakpointHits + 1;
@@ -232,12 +218,7 @@ while currentTime < analysisParams.totalTime - max(eps(analysisParams.totalTime)
             currentTime = currentTime + dt;
             currentSolution = attempt.solution;
             stateContext = attempt.nextContext;
-            timeValues(end + 1) = currentTime; %#ok<AGROW>
-            solutionMatrix(:, end + 1) = currentSolution; %#ok<AGROW>
-            stepIterations(end + 1, 1) = attempt.iterations; %#ok<AGROW>
-            stepConverged(end + 1, 1) = attempt.converged; %#ok<AGROW>
-            stepModes(end + 1, 1) = "relaxed"; %#ok<AGROW>
-            stepSizes(end + 1, 1) = dt; %#ok<AGROW>
+            trace.appendAcceptedStep(currentTime, currentSolution, attempt.iterations, attempt.converged, "relaxed", dt);
             acceptedSteps = acceptedSteps + 1;
             reuseCache = [];
             dt = controller.minStep;
@@ -250,6 +231,17 @@ while currentTime < analysisParams.totalTime - max(eps(analysisParams.totalTime)
         end
     end
 end
+
+traceValues = trace.snapshot();
+timeValues = traceValues.timeValues;
+solutionMatrix = traceValues.solutionMatrix;
+stepIterations = traceValues.stepIterations;
+stepConverged = traceValues.stepConverged;
+stepModes = traceValues.stepModes;
+stepSizes = traceValues.stepSizes;
+lteValues = traceValues.lteValues;
+voltageErrorNorms = traceValues.voltageErrorNorms;
+currentErrorNorms = traceValues.currentErrorNorms;
 
 nativeCircuit.OperatingPointSolution = currentSolution;
 nativeCircuit.OperatingPointContext = stateContext;
@@ -452,4 +444,14 @@ if isempty(values)
 else
     value = values(end);
 end
+end
+
+function capacity = estimateDynamicTraceCapacity(totalTime, initialStep)
+if totalTime <= 0 || initialStep <= 0
+    capacity = 16;
+    return;
+end
+
+estimatedSteps = ceil(totalTime / initialStep) + 2;
+capacity = min(max(estimatedSteps, 16), 8192);
 end

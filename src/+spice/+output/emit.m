@@ -42,7 +42,7 @@ if opts.WriteCSV
         signal = result.signals(idx);
         csvFile = fullfile(outputDir, [spice.output.sanitizeFileName(signal.name) '.csv']);
         writeSignalCsv(csvFile, result.analysisType, result.axis, signal);
-        artifacts.csvFiles{end + 1} = csvFile; %#ok<AGROW>
+        artifacts.csvFiles{end + 1} = csvFile;
         artifacts.files{end + 1} = csvFile;
     end
 end
@@ -77,7 +77,7 @@ switch result.analysisType
     case "pz"
         plotFile = fullfile(outputDir, 'pz_map.png');
         writePzPlot(result.signals, plotFile);
-        plotFiles{end + 1} = plotFile; %#ok<AGROW>
+        plotFiles{end + 1} = plotFile;
 end
 end
 
@@ -96,10 +96,11 @@ end
 function writeAcPlot(axis, signal, magnitudePath, phasePath)
 figureHandle = figure('Visible', 'off');
 cleanup = onCleanup(@() safeCloseFigure(figureHandle));
+signalMagnitude = magnitudeValues(signal);
 if string(axis.scale) == "dec"
-    semilogx(axis.values, signal.magnitude, 'LineWidth', 1.2);
+    semilogx(axis.values, signalMagnitude, 'LineWidth', 1.2);
 else
-    plot(axis.values, signal.magnitude, 'LineWidth', 1.2);
+    plot(axis.values, signalMagnitude, 'LineWidth', 1.2);
 end
 xlabel(axis.name);
 ylabel('|H|');
@@ -110,10 +111,11 @@ delete(cleanup);
 
 figureHandle = figure('Visible', 'off');
 cleanup = onCleanup(@() safeCloseFigure(figureHandle));
+signalPhaseDeg = phaseDegValues(signal);
 if string(axis.scale) == "dec"
-    semilogx(axis.values, signal.phaseDeg, 'LineWidth', 1.2);
+    semilogx(axis.values, signalPhaseDeg, 'LineWidth', 1.2);
 else
-    plot(axis.values, signal.phaseDeg, 'LineWidth', 1.2);
+    plot(axis.values, signalPhaseDeg, 'LineWidth', 1.2);
 end
 xlabel(axis.name);
 ylabel('Phase (deg)');
@@ -151,17 +153,21 @@ cleanup = onCleanup(@() fclose(fid));
 switch analysisType
     case "ac"
         fprintf(fid, '%s,real,imag,magnitude,phase_deg\n', axis.name);
+        signalMagnitude = magnitudeValues(signal);
+        signalPhaseDeg = phaseDegValues(signal);
         for idx = 1:numel(signal.values)
             fprintf(fid, '%.15g,%.15g,%.15g,%.15g,%.15g\n', ...
                 axis.values(idx), real(signal.values(idx)), imag(signal.values(idx)), ...
-                signal.magnitude(idx), signal.phaseDeg(idx));
+                signalMagnitude(idx), signalPhaseDeg(idx));
         end
     case "pz"
         fprintf(fid, 'root_index,real,imag,magnitude,phase_deg\n');
+        signalMagnitude = magnitudeValues(signal);
+        signalPhaseDeg = phaseDegValues(signal);
         for idx = 1:numel(signal.values)
             fprintf(fid, '%d,%.15g,%.15g,%.15g,%.15g\n', ...
                 idx, real(signal.values(idx)), imag(signal.values(idx)), ...
-                signal.magnitude(idx), signal.phaseDeg(idx));
+                signalMagnitude(idx), signalPhaseDeg(idx));
         end
     otherwise
         fprintf(fid, '%s,value\n', axis.name);
@@ -175,6 +181,22 @@ switch analysisType
 end
 
 clear cleanup
+end
+
+function values = magnitudeValues(signal)
+if isfield(signal, 'magnitude') && ~isempty(signal.magnitude)
+    values = signal.magnitude;
+else
+    values = abs(signal.values);
+end
+end
+
+function values = phaseDegValues(signal)
+if isfield(signal, 'phaseDeg') && ~isempty(signal.phaseDeg)
+    values = signal.phaseDeg;
+else
+    values = rad2deg(angle(signal.values));
+end
 end
 
 function safeCloseFigure(figureHandle)

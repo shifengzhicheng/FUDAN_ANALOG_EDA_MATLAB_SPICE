@@ -32,6 +32,20 @@ assert(~spice.analysis.native.canReuseDynamicHalfStep(cache, 0.25, 0.25, 0));
 assert(spice.analysis.native.dominantTransientMode(["strict", "relaxed"]) == "relaxed");
 assert(spice.analysis.native.dominantTransientMode(["strict", "failed"]) == "failed");
 
+trace = spice.analysis.native.DynamicTransientTrace([1; 2], 2);
+trace.recordAttempt(0.1, 0.2, 0.3);
+trace.recordAttempt(0.4, 0.5, 0.6);
+trace.recordAttempt(0.7, 0.8, 0.9);
+trace.appendAcceptedStep(1e-9, [3; 4], 2, true, "strict", 1e-9);
+trace.appendAcceptedStep(2e-9, [5; 6], 3, true, "relaxed", 1e-9);
+snapshot = trace.snapshot();
+assert(isequal(snapshot.timeValues, [0 1e-9 2e-9]));
+assert(isequal(snapshot.solutionMatrix, [1 3 5; 2 4 6]));
+assert(isequal(snapshot.stepIterations, [2; 3]));
+assert(isequal(snapshot.stepConverged, [true; true]));
+assert(isequal(snapshot.stepModes, ["strict"; "relaxed"]));
+assert(isequal(snapshot.lteValues, [0.1; 0.4; 0.7]));
+
 %% Circuit-derived helper selections
 netlist = sprintf([ ...
     'Vin in 0 AC 0 1 0\n' ...

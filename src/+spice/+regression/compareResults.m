@@ -33,10 +33,10 @@ end
 operatingPoint = compareOperatingPoint(candidate.operatingPoint, baseline.operatingPoint, entry.toleranceProfile);
 notes = strings(0, 1);
 if ~isempty(missingSignals)
-    notes(end + 1, 1) = "missing baseline signals in native result: " + strjoin(missingSignals, ", "); %#ok<AGROW>
+    notes(end + 1, 1) = "missing baseline signals in native result: " + strjoin(missingSignals, ", ");
 end
 if ~isempty(extraSignals)
-    notes(end + 1, 1) = "extra native-only signals: " + strjoin(extraSignals, ", "); %#ok<AGROW>
+    notes(end + 1, 1) = "extra native-only signals: " + strjoin(extraSignals, ", ");
 end
 
 maxAbsError = maxOrNaN([signalSummaries.maxAbsError, operatingPoint.maxAbsError]);
@@ -74,13 +74,16 @@ summary = struct( ...
 
 if string(candidateSignal.domain) == "complex"
     [baselineMagnitude, baselinePhaseDeg, phaseAlignMode] = alignComplexParts(candidateSignal.axisValues, baselineSignal.axisValues, baselineSignal);
-    candidateMagnitude = candidateSignal.magnitude;
-    if isempty(candidateMagnitude)
-        candidateMagnitude = abs(candidateSignal.values);
-    end
-    candidatePhaseDeg = candidateSignal.phaseDeg;
-    if isempty(candidatePhaseDeg)
-        candidatePhaseDeg = rad2deg(angle(candidateSignal.values));
+    candidateMagnitude = magnitudeValues(candidateSignal);
+    candidatePhaseDeg = phaseDegValues(candidateSignal);
+    [candidateAxis, candidateMagnitude, baselineMagnitude, candidatePhaseDeg, baselinePhaseDeg, lengthMismatch] = ...
+        alignComplexVectorLengths(candidateAxis, candidateMagnitude, baselineMagnitude, candidatePhaseDeg, baselinePhaseDeg);
+    if isempty(candidateMagnitude) || isempty(baselineMagnitude)
+        summary.maxAbsError = Inf;
+        summary.maxRelError = Inf;
+        summary.maxPhaseDegError = Inf;
+        summary.alignMode = string(phaseAlignMode) + "_empty";
+        return;
     end
     magnitudeAbsError = abs(candidateMagnitude - baselineMagnitude);
     magnitudeRelError = safeRelativeError(candidateMagnitude, baselineMagnitude);
@@ -90,7 +93,10 @@ if string(candidateSignal.domain) == "complex"
     summary.maxPhaseDegError = maxOrNaN(phaseDegError);
     summary.maxErrorAxisValue = axisValueAt(candidateAxis, maxIndex);
     summary.alignMode = string(phaseAlignMode);
-    summary.passed = summary.maxRelError <= tolerances.magnitudeRel && summary.maxPhaseDegError <= tolerances.phaseAbsDeg;
+    if lengthMismatch
+        summary.alignMode = summary.alignMode + "_length_mismatch";
+    end
+    summary.passed = ~lengthMismatch && summary.maxRelError <= tolerances.magnitudeRel && summary.maxPhaseDegError <= tolerances.phaseAbsDeg;
 else
     absError = abs(candidateSignal.values - baselineValues);
     relError = safeRelativeError(candidateSignal.values, baselineValues);
@@ -98,6 +104,50 @@ else
     summary.maxRelError = maxOrNaN(relError);
     summary.maxErrorAxisValue = axisValueAt(candidateAxis, maxIndex);
     summary.passed = summary.maxAbsError <= toleranceForRealSignal(string(analysisType), string(candidateSignal.kind), tolerances);
+end
+end
+
+function values = magnitudeValues(signal)
+if ~isempty(signal.magnitude)
+    values = signal.magnitude;
+else
+    values = abs(signal.values);
+end
+values = values(:).';
+end
+
+function values = phaseDegValues(signal)
+if ~isempty(signal.phaseDeg)
+    values = signal.phaseDeg;
+else
+    values = rad2deg(angle(signal.values));
+end
+values = values(:).';
+end
+
+function [candidateAxis, candidateMagnitude, baselineMagnitude, candidatePhaseDeg, baselinePhaseDeg, lengthMismatch] = ...
+        alignComplexVectorLengths(candidateAxis, candidateMagnitude, baselineMagnitude, candidatePhaseDeg, baselinePhaseDeg)
+candidateAxis = candidateAxis(:).';
+baselineMagnitude = baselineMagnitude(:).';
+baselinePhaseDeg = baselinePhaseDeg(:).';
+lengths = [numel(candidateMagnitude), numel(baselineMagnitude), numel(candidatePhaseDeg), numel(baselinePhaseDeg)];
+sampleCount = min(lengths);
+lengthMismatch = any(lengths ~= sampleCount);
+if sampleCount == 0
+    candidateMagnitude = [];
+    baselineMagnitude = [];
+    candidatePhaseDeg = [];
+    baselinePhaseDeg = [];
+    candidateAxis = [];
+    return;
+end
+
+candidateMagnitude = candidateMagnitude(1:sampleCount);
+baselineMagnitude = baselineMagnitude(1:sampleCount);
+candidatePhaseDeg = candidatePhaseDeg(1:sampleCount);
+baselinePhaseDeg = baselinePhaseDeg(1:sampleCount);
+if numel(candidateAxis) >= sampleCount
+    candidateAxis = candidateAxis(1:sampleCount);
 end
 end
 

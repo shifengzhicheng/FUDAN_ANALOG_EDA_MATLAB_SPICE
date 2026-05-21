@@ -28,6 +28,9 @@ matlab -batch "addpath(genpath('src')); summary = spice.regression.runManifest()
 The full manifest includes expected-fail accuracy cases and large Dynamic/TR
 transient audits, so it is not the default edit loop.
 
+The validation ladder and expected quick-regression summary are documented in
+[docs/validation.md](docs/validation.md).
+
 ## Architecture Rules
 
 - Public entry points live in `src/+spice` and `src/+spice/+cli`.
@@ -44,3 +47,4 @@ transient audits, so it is not the default edit loop.
 - Keep native and legacy behavior comparable through `spice.regression`.
 - When changing output schemas, update tests and README together.
 - Record known numerical accuracy debt in `docs/accuracy-tracker.md`.
+- Keep high-level design notes current in `docs/architecture.md`.
