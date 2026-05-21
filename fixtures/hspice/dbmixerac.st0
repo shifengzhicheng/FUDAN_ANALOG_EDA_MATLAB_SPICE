@@ -1,0 +1,58 @@
+***** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******
+ Input File: d:\synopsys\hspice\trytry\dbmixerac.sp
+ lic:
+ lic: FLEXlm: v8.5b
+ lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK
+ lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+ lic: Using FLEXlm license file:
+ lic: C:\flexlm\hspice.dat
+ lic: Checkout 1 hspice
+ lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9
+ lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 0050
+ lic:
+ init: begin read circuit files,  cpu clock=  4.72E-01
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\behave\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\AD\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\XILINX\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\TLINE\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\TI\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\SIGNET\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\PCI\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\LIN_TECH\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\FET\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\DIO\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\COMLINE\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\BURR_BRN\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\BJT\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\behave\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\AD\
+       option post     =     2.00
+       option runlvl
+       option list
+       option node
+       option post
+ init: end read circuit files,  cpu clock=  8.50E-01 memory=    149 kb
+ init: begin check errors,  cpu clock=  8.50E-01
+ init: end check errors,  cpu clock=  9.56E-01 memory=    150 kb
+ init: begin setup matrix, pivot=     0 cpu clock=  9.56E-01
+       establish matrix -- done,  cpu clock=  1.01E+00 memory=    156 kb
+       re-order matrix -- done,  cpu clock=  1.04E+00 memory=    159 kb
+ init: end setup matrix,  cpu clock=  1.07E+00 memory=    173 kb
+ dcop: begin dcop,  cpu clock=  1.10E+00
+ dcop: end dcop,  cpu clock=  1.14E+00 memory=    173 kb  tot_iter=       5
+ output: d:\synopsys\hspice\trytry\dbmixerac.ac0
+ sweep: ac ac0    begin, #sweeps=  61 cpu clock=  1.22E+00
+ ac: frequency=    1.26E+10
+ ac: frequency=    3.98E+10
+ ac: frequency=    1.58E+11
+ ac: frequency=    6.31E+11
+ ac: frequency=    2.51E+12
+ ac: frequency=    1.00E+13
+ ac: frequency=    3.98E+13
+ ac: frequency=    1.58E+14
+ ac: frequency=    6.31E+14
+ ac: frequency=    2.51E+15
+ ac: frequency=    1.00E+16
+ sweep: ac ac0    end,  cpu clock=  1.62E+00 memory=    173 kb
+>info:         ***** hspice job concluded
+ lic: Release hspice token(s)

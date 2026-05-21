@@ -1,0 +1,455 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\dbmixertrans.sp                         
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ *double balanced mixer
+
+  ******  mos   model parameters tnom=  25.000 temp=  25.000 *****
+ ***************************************************************************
+ *** common model parameters  model name:   0:modn     model type:nmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto= 386.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 579.84m volts      gamma=  30.08m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+15 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   0.                 cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   5.70n meters 
+      cox=   6.06m f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=  40.00f f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp= 183.18u a/v**2 
+  **info** (d:\synopsys\hspice\trytry\dbmixertrans.sp:36) DC voltage reset to initial transient source value              in source        0:vlo+                new dc=  0.1000D+01
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ *double balanced mixer
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                                                  
+ element name        0:rload1    0:rload2    0:rloss1    0:rloss2 
+ node1               0:101       0:101       0:129       0:139    
+ node2               0:102       0:103       0:109       0:109    
+ model                                                            
+ res eff           300.0000    300.0000      1.2000      1.2000   
+ tc1                 0.          0.          0.          0.       
+ tc2                 0.          0.          0.          0.       
+ scale               1.0000      1.0000      1.0000      1.0000   
+ m                   1.0000      1.0000      1.0000      1.0000   
+ ac                300.0000    300.0000      1.2000      1.2000   
+ temp               25.0000     25.0000     25.0000     25.0000   
+ l                   0.          0.          0.          0.       
+ w                   0.          0.          0.          0.       
+ cap                 0.          0.          0.          0.       
+ noise            1.000e+00   1.000e+00   1.000e+00   1.000e+00   
+  
+ 
+                                                            
+ element name        0:rloss3    0:rlo1    0:rlo2    0:rs1  
+ node1               0:149       0:154     0:164     0:112  
+ node2               0:0         0:104     0:106     0:110  
+ model                                                      
+ res eff             3.6000     50.0000   50.0000   25.0000 
+ tc1                 0.          0.        0.        0.     
+ tc2                 0.          0.        0.        0.     
+ scale               1.0000      1.0000    1.0000    1.0000 
+ m                   1.0000      1.0000    1.0000    1.0000 
+ ac                  3.6000     50.0000   50.0000   25.0000 
+ temp               25.0000     25.0000   25.0000   25.0000 
+ l                   0.          0.        0.        0.     
+ w                   0.          0.        0.        0.     
+ cap                 0.          0.        0.        0.     
+ noise            1.000e+00   1.000e+00 1.000e+00 1.000e+00 
+  
+ 
+                            
+ element name        0:rs2  
+ node1               0:113  
+ node2               0:111  
+ model                      
+ res eff            25.0000 
+ tc1                 0.     
+ tc2                 0.     
+ scale               1.0000 
+ m                   1.0000 
+ ac                 25.0000 
+ temp               25.0000 
+ l                   0.     
+ w                   0.     
+ cap                 0.     
+ noise            1.000e+00 
+
+
+ **** capacitors
+  
+ 
+                             
+ element name        0:cde   
+ node1               0:109   
+ node2               0:0     
+ model                       
+ cap eff             9.2000p 
+ tc1                 0.      
+ tc2                 0.      
+ scale               1.0000  
+ ic                  0.      
+ m                   1.0000  
+ w                   0.      
+ l                   0.      
+ temp               25.0000  
+
+
+ **** inductors
+  
+ 
+                                                   
+ element name        0:lde1     0:lde2     0:lde3  
+ node1               0:114      0:115      0:109   
+ node2               0:129      0:139      0:149   
+ model                                             
+ ind eff             1.0000n    1.0000n    3.0000n 
+ res eff             0.         0.         0.      
+ tc1                 0.         0.         0.      
+ tc2                 0.         0.         0.      
+ nt                  1.0000     1.0000     1.0000  
+ ic                  0.         0.         0.      
+ m                   1.0000     1.0000     1.0000  
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vdd  101               0                    3.0000     0.         0.      dc   
+  vlo+  154               0                    1.0000     0.         0.      sin  
+             offset.......     1.0000 
+             amplitude....   600.0000m
+             frequency....   900.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........     0.     
+
+  vlo-  164               0                    1.0000     0.         0.      sin  
+             offset.......     1.0000 
+             amplitude....   600.0000m
+             frequency....   900.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........   180.0000 
+
+  vrf1+  112               212                600.0000m    0.         0.      sin  
+             offset.......   600.0000m
+             amplitude....    10.0000m
+             frequency....   800.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........   180.0000 
+
+  vrf2+  212               0                    0.         0.         0.      sin  
+             offset.......     0.     
+             amplitude....    10.0000m
+             frequency....   600.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........   180.0000 
+
+  vrf1-  113               213                600.0000m    0.         0.      sin  
+             offset.......   600.0000m
+             amplitude....    10.0000m
+             frequency....   800.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........     0.     
+
+  vrf2-  213               0                    0.         0.         0.      sin  
+             offset.......     0.     
+             amplitude....    10.0000m
+             frequency....   600.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........     0.     
+
+
+
+ **** mosfets
+  
+ 
+                                                              
+ element name        0:m1       0:m2       0:m3       0:m4    
+ drain               0:102      0:103      0:102      0:103   
+ gate                0:104      0:106      0:106      0:104   
+ source              0:107      0:107      0:108      0:108   
+ bulk                0:0        0:0        0:0        0:0     
+ model               0:modn     0:modn     0:modn     0:modn  
+ w eff              30.0000u   30.0000u   30.0000u   30.0000u 
+ l eff             250.0000n  250.0000n  250.0000n  250.0000n 
+ rd eff              0.         0.         0.         0.      
+ rs eff              0.         0.         0.         0.      
+ cdsat              10.0000f   10.0000f   10.0000f   10.0000f 
+ cssat              10.0000f   10.0000f   10.0000f   10.0000f 
+ capbd               0.         0.         0.         0.      
+ capbs               0.         0.         0.         0.      
+ temp               25.0000    25.0000    25.0000    25.0000  
+ aic                                                          
+  
+ 
+                                        
+ element name        0:m5       0:m6    
+ drain               0:107      0:108   
+ gate                0:110      0:111   
+ source              0:114      0:115   
+ bulk                0:0        0:0     
+ model               0:modn     0:modn  
+ w eff              30.0000u   30.0000u 
+ l eff             250.0000n  250.0000n 
+ rd eff              0.         0.      
+ rs eff              0.         0.      
+ cdsat              10.0000f   10.0000f 
+ cssat              10.0000f   10.0000f 
+ capbd               0.         0.      
+ capbs               0.         0.      
+ temp               25.0000    25.0000  
+ aic                                    
+  
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ *double balanced mixer
+
+  ******  element node table
+                                                                                      
+ 0                rloss3           cde              vdd              vlo+             
+                  vlo-             vrf2+            vrf2-            m1:b             
+                  m2:b             m3:b             m4:b             m5:b             
+                  m6:b                                                                
+ 101              rload1           rload2           vdd                               
+ 102              rload1           m1:d             m3:d                              
+ 103              rload2           m2:d             m4:d                              
+ 104              rlo1             m1:g             m4:g                              
+ 106              rlo2             m2:g             m3:g                              
+ 107              m1:s             m2:s             m5:d                              
+ 108              m3:s             m4:s             m6:d                              
+ 109              rloss1           rloss2           cde              lde3             
+ 110              rs1              m5:g                                               
+ 111              rs2              m6:g                                               
+ 112              rs1              vrf1+                                              
+ 113              rs2              vrf1-                                              
+ 114              lde1             m5:s                                               
+ 115              lde2             m6:s                                               
+ 129              rloss1           lde1                                               
+ 139              rloss2           lde2                                               
+ 149              rloss3           lde3                                               
+ 154              rlo1             vlo+                                               
+ 164              rlo2             vlo-                                               
+ 212              vrf1+            vrf2+                                              
+ 213              vrf1-            vrf2-                                              
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ *double balanced mixer
+
+  ******  operating point information tnom=  25.000 temp=  25.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:101     =   3.0000  0:102     =   2.8516  0:103     =   2.8516 
+ +0:104     =   1.0000  0:106     =   1.0000  0:107     = 464.3714m
+ +0:108     = 464.3714m 0:109     =   3.5621m 0:110     = 600.0000m
+ +0:111     = 600.0000m 0:112     = 600.0000m 0:113     = 600.0000m
+ +0:114     =   4.1557m 0:115     =   4.1557m 0:129     =   4.1557m
+ +0:139     =   4.1557m 0:149     =   3.5621m 0:154     =   1.0000 
+ +0:164     =   1.0000  0:212     =   1.2246a 0:213     =   0.     
+
+
+ ****  voltage sources
+
+ subckt                                                                    
+ element  0:vdd      0:vlo+     0:vlo-     0:vrf2+    0:vrf2-    0:vrf1+   
+  volts      3.0000     1.0000     1.0000     1.2246a    0.       600.0000m
+  current -989.4614u    0.         0.         0.         0.         0.     
+  power      2.9684m    0.         0.         0.         0.         0.     
+
+ subckt             
+ element  0:vrf1-   
+  volts    600.0000m
+  current    0.     
+  power      0.     
+
+     total voltage source power dissipation=    2.9684m       watts
+
+
+
+ **** resistors
+
+ subckt                                                                    
+ element  0:rload1   0:rload2   0:rloss1   0:rloss2   0:rloss3   0:rlo1    
+  r value  300.0000   300.0000     1.2000     1.2000     3.6000    50.0000 
+  v drop   148.4192m  148.4192m  593.6768u  593.6768u    3.5621m    0.     
+  current  494.7307u  494.7307u  494.7307u  494.7307u  989.4613u    0.     
+  power     73.4275u   73.4275u  293.7101n  293.7101n    3.5245u    0.     
+
+ subckt                                   
+ element  0:rlo2     0:rs1      0:rs2     
+  r value   50.0000    25.0000    25.0000 
+  v drop     0.         0.         0.     
+  current    0.         0.         0.     
+  power      0.         0.         0.     
+
+
+
+ **** mosfets
+
+
+ subckt                                                                    
+ element  0:m1       0:m2       0:m3       0:m4       0:m5       0:m6      
+ model    0:modn     0:modn     0:modn     0:modn     0:modn     0:modn    
+ region     Saturati   Saturati   Saturati   Saturati   Saturati   Saturati
+  id       247.3653u  247.3653u  247.3653u  247.3653u  494.7307u  494.7307u
+  ibs       -4.6437f   -4.6437f   -4.6437f   -4.6437f  -41.5574a  -41.5574a
+  ibd      -28.5158f  -28.5158f  -28.5158f  -28.5158f   -4.6437f   -4.6437f
+  vgs      535.6286m  535.6286m  535.6286m  535.6286m  595.8443m  595.8443m
+  vds        2.3872     2.3872     2.3872     2.3872   460.2156m  460.2156m
+  vbs     -464.3714m -464.3714m -464.3714m -464.3714m   -4.1557m   -4.1557m
+  vth      393.8315m  393.8315m  393.8315m  393.8315m  386.0819m  386.0819m
+  vdsat    141.7972m  141.7972m  141.7972m  141.7972m  209.7623m  209.7623m
+  vod      141.7972m  141.7972m  141.7972m  141.7972m  209.7623m  209.7623m
+  beta      24.6056m   24.6056m   24.6056m   24.6056m   22.4876m   22.4876m
+  gam eff   30.0754m   30.0754m   30.0754m   30.0754m   30.0754m   30.0754m
+  gm         3.4890m    3.4890m    3.4890m    3.4890m    4.7171m    4.7171m
+  gds       11.0494u   11.0494u   11.0494u   11.0494u   24.1801u   24.1801u
+  gmb       51.3438u   51.3438u   51.3438u   51.3438u   92.8212u   92.8212u
+  cdtot      0.         0.         0.         0.         0.         0.     
+  cgtot     30.2902f   30.2902f   30.2902f   30.2902f   30.2902f   30.2902f
+  cstot     30.2902f   30.2902f   30.2902f   30.2902f   30.2902f   30.2902f
+  cbtot      0.         0.         0.         0.         0.         0.     
+  cgs       30.2902f   30.2902f   30.2902f   30.2902f   30.2902f   30.2902f
+  cgd        0.         0.         0.         0.         0.         0.     
+
+
+
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ *double balanced mixer
+
+  ******  job statistics summary tnom=  25.000 temp=  25.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =      22 # elements   =      26
+  # resistors   =       9 # capacitors =       1 # inductors   =       3
+  # mutual_inds =       0 # vccs       =       0 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       7
+  # curr_srcs   =       0 # diodes     =       0 # bjts        =       0
+  # jfets       =       0 # mosfets    =       6 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.03           1           5
+  transient          0.21         101         115          51 rev=         0
+  readin             0.32
+  errchk             0.04
+  setup              0.09
+  output             0.00
+
+
+           total memory used          172  kbytes
+           total cpu time            0.82 seconds
+           total elapsed time        1.27 seconds
+           job started at     00:03:50 05/22/2012
+           job ended   at     00:03:51 05/22/2012
+
+
+  lic: Release hspice token(s) 

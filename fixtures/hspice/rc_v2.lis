@@ -1,0 +1,288 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\rc_v2.sp                                
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  mos   model parameters tnom=  25.000 temp=  25.000 *****
+ ***************************************************************************
+ *** common model parameters  model name:   0:modn     model type:nmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto= 830.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 579.84m volts      gamma=   6.07  v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+15 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   2.00               cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   1.15u meters 
+      cox=  30.00u f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj= 101.85u f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp=   4.50u a/v**2 
+  **warning** (d:\synopsys\hspice\trytry\rc_v2.sp:4) Could not find branch element m2 ;branch output ignored
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                                 
+ element name        0:rin     0:rout     0:rs   
+ node1               0:11      0:31       0:33   
+ node2               0:21      0:32       0:0    
+ model                                           
+ res eff            10.0000    1.0000k   10.0000 
+ tc1                 0.        0.         0.     
+ tc2                 0.        0.         0.     
+ scale               1.0000    1.0000     1.0000 
+ m                   1.0000    1.0000     1.0000 
+ ac                 10.0000    1.0000k   10.0000 
+ temp               25.0000   25.0000    25.0000 
+ l                   0.        0.         0.     
+ w                   0.        0.         0.     
+ cap                 0.        0.         0.     
+ noise            1.000e+00 1.000e+00  1.000e+00 
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vin  11                0                    1.0000     0.         0.      dc   
+  vdd  31                0                    3.0000     0.         0.      dc   
+
+
+ **** mosfets
+  
+ 
+                             
+ element name        0:m1    
+ drain               0:32    
+ gate                0:21    
+ source              0:33    
+ bulk                0:0     
+ model               0:modn  
+ w eff              20.0000u 
+ l eff             350.0000n 
+ rd eff              0.      
+ rs eff              0.      
+ cdsat              10.0000f 
+ cssat              10.0000f 
+ capbd               0.      
+ capbs               0.      
+ temp               25.0000  
+ aic                         
+  
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  element node table
+                                                                                      
+ 0                rs               vin              vdd              m1:b             
+ 11               rin              vin                                                
+ 21               rin              m1:g                                               
+ 31               rout             vdd                                                
+ 32               rout             m1:d                                               
+ 33               rs               m1:s                                               
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  operating point information tnom=  25.000 temp=  25.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:11      =   1.0000  0:21      =   1.0000  0:31      =   3.0000 
+ +0:32      =   2.9957  0:33      =  42.6160u
+
+
+ ****  voltage sources
+
+ subckt                        
+ element  0:vin      0:vdd     
+  volts      1.0000     3.0000 
+  current    0.        -4.2616u
+  power      0.        12.7848u
+
+     total voltage source power dissipation=   12.7848u       watts
+
+
+
+ **** resistors
+
+ subckt                                   
+ element  0:rin      0:rout     0:rs      
+  r value   10.0000     1.0000k   10.0000 
+  v drop     0.         4.2616m   42.6160u
+  current    0.         4.2616u    4.2616u
+  power      0.        18.1612n  181.6122p
+
+
+
+ **** mosfets
+
+
+ subckt             
+ element  0:m1      
+ model    0:modn    
+ region     Saturati
+  id         4.2616u
+  ibs     -4.262e-19
+  ibd      -29.9574f
+  vgs      999.9574m
+  vds        2.9957 
+  vbs      -42.6160u
+  vth      830.1699m
+  vdsat    169.7874m
+  vod      169.7874m
+  beta     295.6589u
+  gam eff    6.0732 
+  gm        50.1992u
+  gds      185.3214n
+  gmb      200.1775u
+  cdtot    8.388e-19
+  cgtot    158.5326a
+  cstot    140.0007a
+  cbtot     17.6931a
+  cgs      140.0007a
+  cgd      8.388e-19
+
+
+
+ ***************************************************
+   ******   pole/zero analysis  
+ 
+ 
+    input =  0:vin          output = v(21)
+ 
+ ***** no poles found *****     coeffd =160.431k
+ ***** no zeros found *****     coeffn =500.000m
+  ***** constant factor = 500.000m
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * rc
+
+  ******  job statistics summary tnom=  25.000 temp=  25.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =       6 # elements   =       6
+  # resistors   =       3 # capacitors =       0 # inductors   =       0
+  # mutual_inds =       0 # vccs       =       0 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       2
+  # curr_srcs   =       0 # diodes     =       0 # bjts        =       0
+  # jfets       =       0 # mosfets    =       1 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.02           1           5
+  readin             0.26
+  errchk             0.04
+  setup              0.09
+  output             0.00
+
+
+           total memory used          159  kbytes
+           total cpu time            0.48 seconds
+           total elapsed time        0.87 seconds
+           job started at     05:44:55 05/22/2012
+           job ended   at     05:44:56 05/22/2012
+
+
+  lic: Release hspice token(s) 

@@ -1,0 +1,20 @@
+* "simulator" "HSPICE" 
+* "version" "D-2010.03-SP1 32-BIT"
+* "format" "HSP"
+* "rundate" "16:53:10 05/07/2011 "
+* "netlist" "d:\synopsys\hspice\trytry\amplifier.sp "
+* "runtitle" "* amplifier"
+* time =    0.            
+* temperature =   25.0000        
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc=   1.0000p       
+.nodeset
++ 9 =   3.0000        
++ 10 =   1.0000        
++ 11 =   1.0000        
++ 12 =   1.0000        
++ 13 =   1.9097        
++ 14 =  14.9503m       
++ 16 =  22.6726m       
+***   END: Saved Operating Point ***                     

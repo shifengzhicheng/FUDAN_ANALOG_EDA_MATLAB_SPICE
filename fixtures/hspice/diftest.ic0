@@ -1,0 +1,21 @@
+* "simulator" "HSPICE" 
+* "version" "D-2010.03-SP1 32-BIT"
+* "format" "HSP"
+* "rundate" "17:04:51 05/07/2011 "
+* "netlist" "d:\synopsys\hspice\trytry\diftest.sp "
+* "runtitle" "* diftest"
+* time =    0.            
+* temperature =   27.0000        
+*** BEGIN: Saved Operating Point ***                     
+.option 
++ gmindc=   1.0000p       
+.nodeset
++ 101 =   2.0000        
++ 102 = 172.8732m       
++ 103 =  93.6621m       
++ 104 = 169.4335m       
++ 105 =   2.2624m       
++ 111 =   1.0000        
++ 112 =   1.5000        
++ 121 =  89.4099m       
+***   END: Saved Operating Point ***                     

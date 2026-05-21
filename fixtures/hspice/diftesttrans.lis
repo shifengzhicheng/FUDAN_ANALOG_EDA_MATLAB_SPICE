@@ -1,0 +1,992 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\diftesttrans.sp                         
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  diode model parameters tnom=  25.000 temp=  25.000 *****
+ ********************************************************
+ *** common model parameters model name:   0:diode   ****
+ ********************************************************
+
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** dc breakdown parameters ***
+       vb=   0.    volts        ibv=   1.00m amps   
+
+   2*** parasitic resistance parameters ***
+       rs=   0.    ohms   
+
+   3*** capacitance parameters ***
+       fc= 500.00m              fcs= 500.00m                m= 500.00m        
+     mjsw= 330.00m               pb= 800.00m volts        php= 800.00m volts  
+       tt=   0.    secs         cjo=   0.    f/area       cjp=   0.    f/pj   
+
+   4*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                 tcv=   0.    v/deg k
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+      xti=   3.00            xtitun=   3.00               keg=   1.00         
+       eg=   1.11  ev          gap1= 702.00u  ev/deg     gap2=   1.11k  deg   
+     ttt1=   0.    /deg        ttt2=   0.    /deg2        tm1=   0.    /deg   
+      tm2=   0.    /deg2        tpb=   0.    v/deg k     tphp=   0.    v/deg k
+     tref=  25.00   deg c 
+
+   5*** noise parameters ***
+       kf=   0.                  af=   1.00         
+
+   ***  level   1  model parameters  ***
+
+    level=   1.00                is=  10.00u amps         jsw=   0.    amps   
+        n=   1.00               nbv=   1.00                ik=   0.    amp    
+     area=   1.00                pj=   0.                 ikr=   0.    amp    
+    expli=   0.    amps      explir=   0.    amps        jtun=   0.    amps   
+   jtunsw=   0.    amps        ntun=  30.00         
+  
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  mos   model parameters tnom=  25.000 temp=  25.000 *****
+ ***************************************************************************
+ *** common model parameters  model name:   0:modn1    model type:nmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto= 500.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 465.69m volts      gamma=  10.00m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+14 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   0.                 cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   5.76n meters 
+      cox=   6.00m f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=  40.00f f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp= 180.00u a/v**2 
+ ***************************************************************************
+ *** common model parameters  model name:   0:modn2    model type:nmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto= 300.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 465.69m volts      gamma=  10.00m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+14 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   0.                 cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   5.76n meters 
+      cox=   6.00m f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=  40.00f f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp= 180.00u a/v**2 
+ ***************************************************************************
+ *** common model parameters  model name:   0:modp1    model type:pmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto=-500.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 465.69m volts      gamma=  10.00m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+14 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   0.                 cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   5.76n meters 
+      cox=   6.00m f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=  40.00f f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp=  60.00u a/v**2 
+ ***************************************************************************
+ *** common model parameters  model name:   0:modp2    model type:pmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto=-300.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 465.69m volts      gamma=  10.00m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+14 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   0.                 cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   5.76n meters 
+      cox=   6.00m f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=  40.00f f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp=  60.00u a/v**2 
+  **info** (d:\synopsys\hspice\trytry\diftesttrans.sp:34) DC voltage reset to initial transient source value              in source        0:vin                 new dc=  0.1500D+01
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                                     
+ element name        0:rload1    0:rload2    0:rss   
+ node1               0:104       0:105       0:121   
+ node2               0:0         0:0         0:0     
+ model                                               
+ res eff           100.0000k     5.0000    100.0000k 
+ tc1                 0.          0.          0.      
+ tc2                 0.          0.          0.      
+ scale               1.0000      1.0000      1.0000  
+ m                   1.0000      1.0000      1.0000  
+ ac                100.0000k     5.0000    100.0000k 
+ temp               25.0000     25.0000     25.0000  
+ l                   0.          0.          0.      
+ w                   0.          0.          0.      
+ cap                 0.          0.          0.      
+ noise            1.000e+00   1.000e+00   1.000e+00  
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vdd  101               0                    2.0000     0.         0.      dc   
+  vb  111               0                    1.0000     0.         0.      dc   
+  vin  112               0                    1.5000     0.         0.      sin  
+             offset.......     1.5000 
+             amplitude....   500.0000m
+             frequency....    10.0000x
+             delay........     0.     
+             theta........     0.     
+             phase........     0.     
+
+  iref  121               0                    1.0000m    0.         0.      dc   
+
+
+ **** diodes
+
+  
+ 
+                                        
+ name                0:d1       0:d2    
+ node +              0:104      0:103   
+ node -              0:102      0:105   
+ model               0:diode    0:diode 
+ res eff             0.         0.      
+ cdsat eff          10.0000u   10.0000u 
+ capd eff            0.         0.      
+ poly cap                               
+ metal cap                              
+ ic                                     
+
+
+ **** mosfets
+  
+ 
+                                                              
+ element name        0:m1       0:m2       0:m3       0:m4    
+ drain               0:102      0:103      0:102      0:103   
+ gate                0:112      0:112      0:111      0:111   
+ source              0:121      0:121      0:101      0:101   
+ bulk                0:0        0:0        0:101      0:101   
+ model               0:modn2    0:modn1    0:modp2    0:modp1 
+ w eff              30.0000u   30.0000u   30.0000u   30.0000u 
+ l eff             500.0000n  500.0000n  500.0000n  500.0000n 
+ rd eff              0.         0.         0.         0.      
+ rs eff              0.         0.         0.         0.      
+ cdsat              10.0000f   10.0000f   10.0000f   10.0000f 
+ cssat              10.0000f   10.0000f   10.0000f   10.0000f 
+ capbd               0.         0.         0.         0.      
+ capbs               0.         0.         0.         0.      
+ temp               25.0000    25.0000    25.0000    25.0000  
+ aic                                                          
+  
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  element node table
+                                                                                      
+ 0                rload1           rload2           rss              vdd              
+                  vb               vin              iref             m1:b             
+                  m2:b                                                                
+ 101              vdd              m3:s             m3:b             m4:s             
+                  m4:b                                                                
+ 102              d1:-             m1:d             m3:d                              
+ 103              d2:+             m2:d             m4:d                              
+ 104              rload1           d1:+                                               
+ 105              rload2           d2:-                                               
+ 111              vb               m3:g             m4:g                              
+ 112              vin              m1:g             m2:g                              
+ 121              rss              iref             m1:s             m2:s             
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  temperature-adjusted values tnom=  25.000 temp=  27.000 *****
+
+ constants  - temp         kt           vt           gapsi        ni
+             300.1500     4.144e-21     25.8642m      1.1151     1.482e+16 
+
+ *** resistors
+    name        eff val        eff val(ac)
+
+
+
+ **** diode model parameters at ckt temperature
+
+
+   *** name:     0:diode             temp=   27.0000    
+
+       is=   13.61u amp         pb=  796.83m volt       cjo=    0.    farad  
+      jsw=    0.    amp        php=  796.83m volt       cjp=    0.    farad  
+       bv=    0.    volt        tt=    0.    secs         m=  500.00m
+       eg=    1.11  ev          rs=    0.    ohms  
+
+
+ *** mosfet element parameters
+ name           rd eff   rs eff   cdsat    cssat     vto      beta
+
+
+        0:m1          0.       0.      13.63f   13.63f  297.52m   10.69m
+        0:m2          0.       0.      13.63f   13.63f  497.52m   10.69m
+        0:m3          0.       0.      13.63f   13.63f  296.99m    3.56m
+        0:m4          0.       0.      13.63f   13.63f  496.99m    3.56m
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  operating point information tnom=  25.000 temp=  27.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:101     =   2.0000  0:102     = 172.8732m 0:103     =  93.6621m
+ +0:104     = 169.4335m 0:105     =   2.2624m 0:111     =   1.0000 
+ +0:112     =   1.5000  0:121     =  89.4099m
+
+
+ ****  voltage sources
+
+ subckt                                   
+ element  0:vdd      0:vb       0:vin     
+  volts      2.0000     1.0000     1.5000 
+  current   -1.4551m    0.         0.     
+  power      2.9101m    0.         0.     
+
+     total voltage source power dissipation=    2.9101m       watts
+
+
+
+ ***** current sources
+
+ subckt             
+ element  0:iref    
+  volts     89.4099m
+  current    1.0000m
+  power    -89.4099u
+
+
+     total current source power dissipation= -89.4099u       watts
+
+ **** resistors
+
+ subckt                                   
+ element  0:rload1   0:rload2   0:rss     
+  r value  100.0000k    5.0000   100.0000k
+  v drop   169.4335m    2.2624m   89.4099m
+  current    1.6943u  452.4752u  894.0987n
+  power    287.0771n    1.0237u   79.9412n
+
+
+ **** diodes
+
+
+ subckt                        
+ element  0:d1       0:d2      
+ model    0:diode    0:diode   
+  id        -1.6943u  452.4752u
+  vd        -3.4397m   91.3997m
+  req        2.1713k   55.4928 
+  cap        0.         0.     
+
+
+
+
+
+ **** mosfets
+
+
+ subckt                                              
+ element  0:m1       0:m2       0:m3       0:m4      
+ model    0:modn2    0:modn1    0:modp2    0:modp1   
+ region       Linear     Linear   Saturati   Saturati
+  id       959.4971u   41.3970u -961.1915u -493.8722u
+  ibs       -1.2190f   -1.2190f    0.         0.     
+  ibd       -2.3569f   -1.2770f   24.9108f   25.9907f
+  vgs        1.4106     1.4106    -1.0000    -1.0000 
+  vds       83.4633m    4.2522m   -1.8271    -1.9063 
+  vbs      -89.4099m  -89.4099m    0.         0.     
+  vth      298.1507m  498.1507m -296.9875m -496.9875m
+  vdsat     83.4633m    4.2522m -703.0125m -503.0125m
+  vod        1.1124   912.4394m -703.0125m -503.0125m
+  beta      10.7369m   10.6945m    3.8897m    3.9038m
+  gam eff   10.0000m   10.0000m   10.0000m   10.0000m
+  gm       896.1335u   45.4755u    2.7345m    1.9637m
+  gds       11.0957m    9.7147m   44.0366u   22.5447u
+  gmb        6.0434u  306.6822n   20.1528u   14.4719u
+  cdtot      0.         0.         0.         0.     
+  cgtot     60.0003f   60.0003f   60.0003f   60.0003f
+  cstot     60.0003f   60.0003f   60.0003f   60.0003f
+  cbtot      0.         0.         0.         0.     
+  cgs       60.0003f   60.0003f   60.0003f   60.0003f
+  cgd        0.         0.         0.         0.     
+
+
+
+ ******  
+ * diftest
+
+  ******  transient analysis tnom=  25.000 temp=  27.000 *****
+x
+
+        time    current 1    current 2    current 3    current    
+                    m1           m1           m1           m2     
+    0.          959.4971u      0.         959.4971u     41.3970u  
+    1.00000n    959.5849u      1.8744u    961.4593u     37.5683u  
+    2.00000n    959.6951u      1.8637u    961.5588u     37.4783u  
+    3.00000n    959.8009u      1.8418u    961.6426u     37.4145u  
+    4.00000n    959.8516u      1.8142u    961.6658u     37.3669u  
+    5.00000n    959.7323u      1.7691u    961.5014u     37.3688u  
+    6.00000n    959.6129u      1.7240u    961.3369u     37.3708u  
+    7.00000n    959.4935u      1.6790u    961.1725u     37.3728u  
+    8.00000n    959.3741u      1.6339u    961.0080u     37.3748u  
+    9.00000n    959.2548u      1.5888u    960.8436u     37.3768u  
+   10.00000n    959.1354u      1.5438u    960.6792u     37.3788u  
+   11.00000n    959.0160u      1.4987u    960.5147u     37.3808u  
+   12.00000n    959.0837u      1.4229u    960.5067u     37.4671u  
+   13.00000n    959.4485u      1.2984u    960.7469u     37.6872u  
+   14.00000n    959.8133u      1.1739u    960.9872u     37.9073u  
+   15.00000n    960.1781u      1.0494u    961.2275u     38.1274u  
+   16.00000n    960.1722u      1.0097u    961.1819u     38.1826u  
+   17.00000n    960.1663u    970.0206n    961.1364u     38.2378u  
+   18.00000n    960.1604u    930.3387n    961.0908u     38.2929u  
+   19.00000n    960.1546u    890.6569n    961.0452u     38.3481u  
+   20.00000n    960.1487u    850.9751n    960.9996u     38.4033u  
+   21.00000n    960.3328u    547.7280n    960.8805u     38.9858u  
+   22.00000n    960.5168u    244.4810n    960.7613u     39.5682u  
+   23.00000n    960.6772u     22.6323n    960.6998u     39.9958u  
+   24.00000n    960.7387u    139.0547n    960.8778u     39.7799u  
+   25.00000n    960.8003u    255.4772n    961.0558u     39.5640u  
+   26.00000n    960.7671u    124.3949n    960.8915u     39.8180u  
+   27.00000n    960.7338u     -6.6874n    960.7271u     40.0719u  
+   28.00000n    960.7006u   -137.7697n    960.5628u     40.3259u  
+   29.00000n    960.6883u   -338.1357n    960.3501u     40.7323u  
+   30.00000n    960.6977u   -610.7094n    960.0870u     41.2977u  
+   31.00000n    960.7071u   -883.2831n    959.8238u     41.8631u  
+   32.00000n    960.6413u   -903.0799n    959.7382u     41.9395u  
+   33.00000n    960.5706u   -906.5223n    959.6641u     41.9843u  
+   34.00000n    960.5000u   -909.9647n    959.5900u     42.0291u  
+   35.00000n    960.4293u   -913.4071n    959.5159u     42.0738u  
+   36.00000n    960.2878u   -995.2119n    959.2926u     42.2678u  
+   37.00000n    960.1463u     -1.0770u    959.0693u     42.4618u  
+   38.00000n    960.0048u     -1.1588u    958.8460u     42.6558u  
+   39.00000n    959.8633u     -1.2406u    958.6227u     42.8497u  
+   40.00000n    959.7218u     -1.3224u    958.3994u     43.0437u  
+   41.00000n    959.8466u     -1.5214u    958.3252u     43.5227u  
+   42.00000n    959.9713u     -1.7203u    958.2510u     44.0016u  
+   43.00000n    960.0450u     -1.8893u    958.1558u     44.4229u  
+   44.00000n    959.7944u     -1.8675u    957.9269u     44.4780u  
+   45.00000n    959.5437u     -1.8457u    957.6980u     44.5331u  
+   46.00000n    959.2931u     -1.8240u    957.4691u     44.5881u  
+   47.00000n    959.0425u     -1.8022u    957.2403u     44.6432u  
+   48.00000n    958.7918u     -1.7804u    957.0114u     44.6982u  
+   49.00000n    958.5412u     -1.7586u    956.7825u     44.7533u  
+   50.00000n    958.2905u     -1.7369u    956.5537u     44.8083u  
+   51.00000n    958.3517u     -1.7577u    956.5940u     44.9953u  
+   52.00000n    958.4128u     -1.7785u    956.6343u     45.1822u  
+   53.00000n    958.4739u     -1.7992u    956.6747u     45.3692u  
+   54.00000n    958.5350u     -1.8200u    956.7150u     45.5561u  
+   55.00000n    958.5962u     -1.8408u    956.7553u     45.7431u  
+   56.00000n    958.4162u     -1.7692u    956.6470u     45.7984u  
+   57.00000n    958.2362u     -1.6975u    956.5387u     45.8537u  
+   58.00000n    958.0563u     -1.6259u    956.4304u     45.9090u  
+   59.00000n    957.8763u     -1.5543u    956.3220u     45.9643u  
+   60.00000n    957.6963u     -1.4826u    956.2137u     46.0196u  
+   61.00000n    957.5164u     -1.4110u    956.1054u     46.0749u  
+   62.00000n    957.3364u     -1.3393u    955.9970u     46.1302u  
+   63.00000n    957.1564u     -1.2677u    955.8887u     46.1855u  
+   64.00000n    956.9765u     -1.1961u    955.7804u     46.2408u  
+   65.00000n    956.7965u     -1.1244u    955.6721u     46.2961u  
+   66.00000n    956.4898u     -1.0664u    955.4234u     46.3679u  
+   67.00000n    956.1831u     -1.0083u    955.1748u     46.4397u  
+   68.00000n    955.8764u   -950.2562n    954.9262u     46.5114u  
+   69.00000n    955.5697u   -892.1970n    954.6775u     46.5832u  
+   70.00000n    955.2617u   -809.0708n    954.4526u     46.5911u  
+   71.00000n    954.9428u   -528.9482n    954.4139u     46.0971u  
+   72.00000n    954.6239u   -248.8257n    954.3751u     45.6031u  
+   73.00000n    954.3828u    -18.1962n    954.3646u     45.2136u  
+   74.00000n    954.6704u   -124.4228n    954.5460u     45.5356u  
+   75.00000n    954.9581u   -230.6494n    954.7274u     45.8575u  
+   76.00000n    954.7317u   -106.9961n    954.6247u     45.5064u  
+   77.00000n    954.5053u     16.6571n    954.5220u     45.1552u  
+   78.00000n    954.2789u    140.3104n    954.4193u     44.8041u  
+   79.00000n    954.5972u    346.2643n    954.9434u     44.3171u  
+   80.00000n    955.2861u    608.2304n    955.8943u     43.7377u  
+   81.00000n    955.9373u    859.0245n    956.7963u     43.1746u  
+   82.00000n    955.7854u    871.7955n    956.6572u     42.9603u  
+   83.00000n    955.6336u    884.5664n    956.5182u     42.7459u  
+   84.00000n    955.4817u    897.3374n    956.3791u     42.5315u  
+   85.00000n    955.3299u    910.1083n    956.2400u     42.3172u  
+   86.00000n    955.6892u    989.2869n    956.6784u     41.9354u  
+   87.00000n    956.0484u      1.0685u    957.1169u     41.5536u  
+   88.00000n    956.4077u      1.1476u    957.5553u     41.1719u  
+   89.00000n    956.7669u      1.2268u    957.9938u     40.7901u  
+   90.00000n    957.1262u      1.3060u    958.4322u     40.4083u  
+   91.00000n    957.6069u      1.5081u    959.1150u     39.8394u  
+   92.00000n    958.0876u      1.7103u    959.7978u     39.2705u  
+   93.00000n    958.5487u      1.8816u    960.4303u     38.7694u  
+   94.00000n    958.8875u      1.8611u    960.7485u     38.6914u  
+   95.00000n    959.2263u      1.8405u    961.0668u     38.6135u  
+   96.00000n    959.5652u      1.8199u    961.3851u     38.5356u  
+   97.00000n    959.9040u      1.7994u    961.7034u     38.4576u  
+   98.00000n    960.2428u      1.7788u    962.0217u     38.3797u  
+   99.00000n    960.5817u      1.7583u    962.3399u     38.3017u  
+  100.00000n    960.9205u      1.7377u    962.6582u     38.2238u  
+  101.00000n    960.7461u      1.7593u    962.5054u     38.0226u  
+  102.00000n    960.5717u      1.7809u    962.3526u     37.8214u  
+  103.00000n    960.3973u      1.8025u    962.1998u     37.6203u  
+  104.00000n    960.2229u      1.8241u    962.0470u     37.4191u  
+  105.00000n    960.0485u      1.8457u    961.8942u     37.2179u  
+  106.00000n    960.1084u      1.7759u    961.8843u     37.2929u  
+  107.00000n    960.1684u      1.7062u    961.8745u     37.3678u  
+  108.00000n    960.2283u      1.6364u    961.8647u     37.4427u  
+  109.00000n    960.2882u      1.5666u    961.8549u     37.5176u  
+  110.00000n    960.3482u      1.4969u    961.8450u     37.5926u  
+  111.00000n    960.4081u      1.4271u    961.8352u     37.6675u  
+  112.00000n    960.4680u      1.3573u    961.8254u     37.7424u  
+  113.00000n    960.5280u      1.2876u    961.8156u     37.8174u  
+  114.00000n    960.5879u      1.2178u    961.8057u     37.8923u  
+  115.00000n    960.6479u      1.1481u    961.7959u     37.9672u  
+  116.00000n    960.2986u      1.0885u    961.3871u     38.0371u  
+  117.00000n    959.9493u      1.0290u    960.9784u     38.1070u  
+  118.00000n    959.6001u    969.5421n    960.5696u     38.1769u  
+  119.00000n    959.2508u    910.0390n    960.1609u     38.2468u  
+  120.00000n    959.0052u    824.7857n    959.8300u     38.3742u  
+  121.00000n    959.5740u    537.1773n    960.1112u     38.9539u  
+  122.00000n    960.1428u    249.5688n    960.3924u     39.5335u  
+  123.00000n    960.6485u     13.8633n    960.6624u     40.0110u  
+  124.00000n    960.7249u    131.4032n    960.8563u     39.7933u  
+  125.00000n    960.8013u    248.9431n    961.0502u     39.5757u  
+  126.00000n    960.7721u    117.5330n    960.8896u     39.8309u  
+  127.00000n    960.7429u    -13.8770n    960.7290u     40.0862u  
+  128.00000n    960.7137u   -145.2871n    960.5684u     40.3414u  
+  129.00000n    960.7045u   -358.0629n    960.3464u     40.7753u  
+  130.00000n    960.7088u   -626.2160n    960.0825u     41.3306u  
+  131.00000n    960.7095u   -882.7614n    959.8267u     41.8635u  
+  132.00000n    960.6340u   -891.9666n    959.7421u     41.9191u  
+  133.00000n    960.5586u   -901.1718n    959.6574u     41.9746u  
+  134.00000n    960.4831u   -910.3769n    959.5728u     42.0302u  
+  135.00000n    960.4077u   -919.5821n    959.4881u     42.0858u  
+  136.00000n    960.2670u     -1.0002u    959.2669u     42.2774u  
+  137.00000n    960.1264u     -1.0807u    959.0457u     42.4691u  
+  138.00000n    959.9858u     -1.1613u    958.8244u     42.6608u  
+  139.00000n    959.8451u     -1.2419u    958.6032u     42.8524u  
+  140.00000n    959.7045u     -1.3225u    958.3820u     43.0441u  
+  141.00000n    959.8356u     -1.5215u    958.3141u     43.5231u  
+  142.00000n    959.9666u     -1.7205u    958.2461u     44.0021u  
+  143.00000n    960.0450u     -1.8891u    958.1559u     44.4226u  
+  144.00000n    959.7942u     -1.8673u    957.9269u     44.4777u  
+  145.00000n    959.5435u     -1.8456u    957.6979u     44.5328u  
+  146.00000n    959.2927u     -1.8239u    957.4688u     44.5880u  
+  147.00000n    959.0420u     -1.8021u    957.2398u     44.6431u  
+  148.00000n    958.7912u     -1.7804u    957.0108u     44.6982u  
+  149.00000n    958.5404u     -1.7587u    956.7818u     44.7534u  
+  150.00000n    958.2897u     -1.7370u    956.5527u     44.8085u  
+  151.00000n    958.3509u     -1.7577u    956.5932u     44.9954u  
+  152.00000n    958.4122u     -1.7785u    956.6337u     45.1823u  
+  153.00000n    958.4734u     -1.7993u    956.6742u     45.3692u  
+  154.00000n    958.5347u     -1.8200u    956.7147u     45.5561u  
+  155.00000n    958.5960u     -1.8408u    956.7551u     45.7431u  
+  156.00000n    958.4160u     -1.7692u    956.6468u     45.7984u  
+  157.00000n    958.2361u     -1.6975u    956.5385u     45.8537u  
+  158.00000n    958.0561u     -1.6259u    956.4302u     45.9090u  
+  159.00000n    957.8762u     -1.5543u    956.3219u     45.9643u  
+  160.00000n    957.6962u     -1.4826u    956.2136u     46.0196u  
+  161.00000n    957.5163u     -1.4110u    956.1053u     46.0749u  
+  162.00000n    957.3363u     -1.3393u    955.9970u     46.1302u  
+  163.00000n    957.1564u     -1.2677u    955.8887u     46.1855u  
+  164.00000n    956.9764u     -1.1961u    955.7804u     46.2408u  
+  165.00000n    956.7965u     -1.1244u    955.6721u     46.2961u  
+  166.00000n    956.4898u     -1.0664u    955.4234u     46.3679u  
+  167.00000n    956.1831u     -1.0083u    955.1748u     46.4397u  
+  168.00000n    955.8764u   -950.2561n    954.9262u     46.5114u  
+  169.00000n    955.5697u   -892.1970n    954.6775u     46.5832u  
+  170.00000n    955.2617u   -809.0698n    954.4526u     46.5911u  
+  171.00000n    954.9428u   -528.9475n    954.4139u     46.0971u  
+  172.00000n    954.6239u   -248.8251n    954.3751u     45.6031u  
+  173.00000n    954.3828u    -18.1972n    954.3646u     45.2136u  
+  174.00000n    954.6704u   -124.4232n    954.5460u     45.5356u  
+  175.00000n    954.9581u   -230.6492n    954.7274u     45.8575u  
+  176.00000n    954.7317u   -106.9961n    954.6247u     45.5064u  
+  177.00000n    954.5053u     16.6569n    954.5220u     45.1552u  
+  178.00000n    954.2789u    140.3100n    954.4192u     44.8041u  
+  179.00000n    954.5972u    346.2632n    954.9434u     44.3171u  
+  180.00000n    955.2861u    608.2296n    955.8943u     43.7377u  
+  181.00000n    955.9373u    859.0255n    956.7963u     43.1746u  
+  182.00000n    955.7854u    871.7961n    956.6572u     42.9603u  
+  183.00000n    955.6336u    884.5667n    956.5182u     42.7459u  
+  184.00000n    955.4818u    897.3373n    956.3791u     42.5315u  
+  185.00000n    955.3299u    910.1080n    956.2400u     42.3172u  
+  186.00000n    955.6892u    989.2866n    956.6785u     41.9354u  
+  187.00000n    956.0484u      1.0685u    957.1169u     41.5536u  
+  188.00000n    956.4077u      1.1476u    957.5553u     41.1719u  
+  189.00000n    956.7669u      1.2268u    957.9938u     40.7901u  
+  190.00000n    957.1262u      1.3060u    958.4322u     40.4083u  
+  191.00000n    957.6069u      1.5081u    959.1150u     39.8394u  
+  192.00000n    958.0876u      1.7103u    959.7978u     39.2705u  
+  193.00000n    958.5487u      1.8816u    960.4303u     38.7694u  
+  194.00000n    958.8875u      1.8611u    960.7485u     38.6914u  
+  195.00000n    959.2263u      1.8405u    961.0668u     38.6135u  
+  196.00000n    959.5652u      1.8199u    961.3851u     38.5356u  
+  197.00000n    959.9040u      1.7994u    961.7034u     38.4576u  
+  198.00000n    960.2428u      1.7788u    962.0217u     38.3797u  
+  199.00000n    960.5817u      1.7583u    962.3399u     38.3017u  
+  200.00000n    960.9205u      1.7377u    962.6582u     38.2238u  
+y
+x
+
+        time    current    
+                    d1     
+    0.           -1.6943u  
+    1.00000n     -1.6784u  
+    2.00000n     -1.6580u  
+    3.00000n     -1.6382u  
+    4.00000n     -1.6199u  
+    5.00000n     -1.6059u  
+    6.00000n     -1.5919u  
+    7.00000n     -1.5779u  
+    8.00000n     -1.5639u  
+    9.00000n     -1.5499u  
+   10.00000n     -1.5359u  
+   11.00000n     -1.5219u  
+   12.00000n     -1.5100u  
+   13.00000n     -1.5015u  
+   14.00000n     -1.4930u  
+   15.00000n     -1.4844u  
+   16.00000n     -1.4792u  
+   17.00000n     -1.4739u  
+   18.00000n     -1.4686u  
+   19.00000n     -1.4634u  
+   20.00000n     -1.4581u  
+   21.00000n     -1.4551u  
+   22.00000n     -1.4520u  
+   23.00000n     -1.4494u  
+   24.00000n     -1.4490u  
+   25.00000n     -1.4486u  
+   26.00000n     -1.4494u  
+   27.00000n     -1.4503u  
+   28.00000n     -1.4511u  
+   29.00000n     -1.4527u  
+   30.00000n     -1.4552u  
+   31.00000n     -1.4577u  
+   32.00000n     -1.4630u  
+   33.00000n     -1.4684u  
+   34.00000n     -1.4739u  
+   35.00000n     -1.4793u  
+   36.00000n     -1.4881u  
+   37.00000n     -1.4968u  
+   38.00000n     -1.5056u  
+   39.00000n     -1.5143u  
+   40.00000n     -1.5231u  
+   41.00000n     -1.5352u  
+   42.00000n     -1.5474u  
+   43.00000n     -1.5603u  
+   44.00000n     -1.5785u  
+   45.00000n     -1.5966u  
+   46.00000n     -1.6148u  
+   47.00000n     -1.6329u  
+   48.00000n     -1.6511u  
+   49.00000n     -1.6692u  
+   50.00000n     -1.6874u  
+   51.00000n     -1.7139u  
+   52.00000n     -1.7405u  
+   53.00000n     -1.7670u  
+   54.00000n     -1.7935u  
+   55.00000n     -1.8201u  
+   56.00000n     -1.8565u  
+   57.00000n     -1.8929u  
+   58.00000n     -1.9294u  
+   59.00000n     -1.9658u  
+   60.00000n     -2.0022u  
+   61.00000n     -2.0386u  
+   62.00000n     -2.0751u  
+   63.00000n     -2.1115u  
+   64.00000n     -2.1479u  
+   65.00000n     -2.1844u  
+   66.00000n     -2.2187u  
+   67.00000n     -2.2530u  
+   68.00000n     -2.2873u  
+   69.00000n     -2.3217u  
+   70.00000n     -2.3546u  
+   71.00000n     -2.3768u  
+   72.00000n     -2.3990u  
+   73.00000n     -2.4191u  
+   74.00000n     -2.4251u  
+   75.00000n     -2.4312u  
+   76.00000n     -2.4216u  
+   77.00000n     -2.4120u  
+   78.00000n     -2.4024u  
+   79.00000n     -2.3848u  
+   80.00000n     -2.3620u  
+   81.00000n     -2.3385u  
+   82.00000n     -2.3023u  
+   83.00000n     -2.2661u  
+   84.00000n     -2.2299u  
+   85.00000n     -2.1937u  
+   86.00000n     -2.1555u  
+   87.00000n     -2.1173u  
+   88.00000n     -2.0791u  
+   89.00000n     -2.0410u  
+   90.00000n     -2.0028u  
+   91.00000n     -1.9683u  
+   92.00000n     -1.9338u  
+   93.00000n     -1.9001u  
+   94.00000n     -1.8717u  
+   95.00000n     -1.8432u  
+   96.00000n     -1.8148u  
+   97.00000n     -1.7864u  
+   98.00000n     -1.7580u  
+   99.00000n     -1.7295u  
+  100.00000n     -1.7011u  
+  101.00000n     -1.6813u  
+  102.00000n     -1.6614u  
+  103.00000n     -1.6415u  
+  104.00000n     -1.6217u  
+  105.00000n     -1.6018u  
+  106.00000n     -1.5901u  
+  107.00000n     -1.5784u  
+  108.00000n     -1.5667u  
+  109.00000n     -1.5551u  
+  110.00000n     -1.5434u  
+  111.00000n     -1.5317u  
+  112.00000n     -1.5200u  
+  113.00000n     -1.5083u  
+  114.00000n     -1.4966u  
+  115.00000n     -1.4850u  
+  116.00000n     -1.4794u  
+  117.00000n     -1.4739u  
+  118.00000n     -1.4683u  
+  119.00000n     -1.4628u  
+  120.00000n     -1.4575u  
+  121.00000n     -1.4547u  
+  122.00000n     -1.4519u  
+  123.00000n     -1.4493u  
+  124.00000n     -1.4490u  
+  125.00000n     -1.4486u  
+  126.00000n     -1.4494u  
+  127.00000n     -1.4502u  
+  128.00000n     -1.4510u  
+  129.00000n     -1.4527u  
+  130.00000n     -1.4552u  
+  131.00000n     -1.4577u  
+  132.00000n     -1.4631u  
+  133.00000n     -1.4685u  
+  134.00000n     -1.4739u  
+  135.00000n     -1.4793u  
+  136.00000n     -1.4880u  
+  137.00000n     -1.4968u  
+  138.00000n     -1.5056u  
+  139.00000n     -1.5143u  
+  140.00000n     -1.5231u  
+  141.00000n     -1.5352u  
+  142.00000n     -1.5474u  
+  143.00000n     -1.5603u  
+  144.00000n     -1.5785u  
+  145.00000n     -1.5966u  
+  146.00000n     -1.6148u  
+  147.00000n     -1.6329u  
+  148.00000n     -1.6511u  
+  149.00000n     -1.6692u  
+  150.00000n     -1.6874u  
+  151.00000n     -1.7139u  
+  152.00000n     -1.7405u  
+  153.00000n     -1.7670u  
+  154.00000n     -1.7935u  
+  155.00000n     -1.8201u  
+  156.00000n     -1.8565u  
+  157.00000n     -1.8929u  
+  158.00000n     -1.9294u  
+  159.00000n     -1.9658u  
+  160.00000n     -2.0022u  
+  161.00000n     -2.0386u  
+  162.00000n     -2.0751u  
+  163.00000n     -2.1115u  
+  164.00000n     -2.1479u  
+  165.00000n     -2.1844u  
+  166.00000n     -2.2187u  
+  167.00000n     -2.2530u  
+  168.00000n     -2.2873u  
+  169.00000n     -2.3217u  
+  170.00000n     -2.3546u  
+  171.00000n     -2.3768u  
+  172.00000n     -2.3990u  
+  173.00000n     -2.4191u  
+  174.00000n     -2.4251u  
+  175.00000n     -2.4312u  
+  176.00000n     -2.4216u  
+  177.00000n     -2.4120u  
+  178.00000n     -2.4024u  
+  179.00000n     -2.3848u  
+  180.00000n     -2.3620u  
+  181.00000n     -2.3385u  
+  182.00000n     -2.3023u  
+  183.00000n     -2.2661u  
+  184.00000n     -2.2299u  
+  185.00000n     -2.1937u  
+  186.00000n     -2.1555u  
+  187.00000n     -2.1173u  
+  188.00000n     -2.0791u  
+  189.00000n     -2.0410u  
+  190.00000n     -2.0028u  
+  191.00000n     -1.9683u  
+  192.00000n     -1.9338u  
+  193.00000n     -1.9001u  
+  194.00000n     -1.8717u  
+  195.00000n     -1.8432u  
+  196.00000n     -1.8148u  
+  197.00000n     -1.7864u  
+  198.00000n     -1.7580u  
+  199.00000n     -1.7295u  
+  200.00000n     -1.7011u  
+y
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * diftest
+
+  ******  job statistics summary tnom=  25.000 temp=  27.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =       9 # elements   =      13
+  # resistors   =       3 # capacitors =       0 # inductors   =       0
+  # mutual_inds =       0 # vccs       =       0 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       3
+  # curr_srcs   =       1 # diodes     =       2 # bjts        =       0
+  # jfets       =       0 # mosfets    =       4 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.03           1          13
+  transient          0.26         201         101          48 rev=         0
+  readin             0.33
+  errchk             0.06
+  setup              0.10
+  output             0.00
+
+
+           total memory used          163  kbytes
+           total cpu time            0.94 seconds
+           total elapsed time        1.36 seconds
+           job started at     00:37:12 05/22/2012
+           job ended   at     00:37:13 05/22/2012
+
+
+  lic: Release hspice token(s) 

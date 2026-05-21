@@ -1,0 +1,57 @@
+***** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******
+ Input File: d:\synopsys\hspice\trytry\bjtamplifiertrans.sp
+ lic:
+ lic: FLEXlm: v8.5b
+ lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK
+ lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+ lic: Using FLEXlm license file:
+ lic: C:\flexlm\hspice.dat
+ lic: Checkout 1 hspice
+ lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9
+ lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 0050
+ lic:
+ init: begin read circuit files,  cpu clock=  2.89E-01
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\behave\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\AD\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\XILINX\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\TLINE\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\TI\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\SIGNET\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\PCI\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\LIN_TECH\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\FET\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\DIO\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\COMLINE\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\BURR_BRN\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\BJT\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\behave\
+       option search   = D:\synopsys\Hspice_D-2010.03-SP1\PARTS\AD\
+       option post     =     2.00
+       option runlvl
+       option list
+       option node
+       option post
+ init: end read circuit files,  cpu clock=  4.79E-01 memory=    152 kb
+ init: begin check errors,  cpu clock=  4.79E-01
+ init: end check errors,  cpu clock=  5.08E-01 memory=    153 kb
+ init: begin setup matrix, pivot=     0 cpu clock=  5.08E-01
+       establish matrix -- done,  cpu clock=  5.39E-01 memory=    158 kb
+       re-order matrix -- done,  cpu clock=  5.54E-01 memory=    160 kb
+ init: end setup matrix,  cpu clock=  5.68E-01 memory=    173 kb
+ dcop: begin dcop,  cpu clock=  5.83E-01
+ dcop: end dcop,  cpu clock=  5.93E-01 memory=    173 kb  tot_iter=      12
+ output: d:\synopsys\hspice\trytry\bjtamplifiertrans.tr0
+ sweep: tran tran0    begin, stop_t=  1.00E-06 #sweeps=1001 cpu clock=  6.27E-01
+ tran: time= 1.0000E-07 tot_iter=      44 conv_iter=      22 cpu clock= 6.40E-01
+ tran: time= 2.0000E-07 tot_iter=      84 conv_iter=      42 cpu clock= 6.52E-01
+ tran: time= 3.0000E-07 tot_iter=     124 conv_iter=      62 cpu clock= 6.68E-01
+ tran: time= 4.0000E-07 tot_iter=     164 conv_iter=      82 cpu clock= 6.81E-01
+ tran: time= 5.0000E-07 tot_iter=     204 conv_iter=     102 cpu clock= 6.99E-01
+ tran: time= 6.0000E-07 tot_iter=     244 conv_iter=     122 cpu clock= 7.12E-01
+ tran: time= 7.0000E-07 tot_iter=     284 conv_iter=     142 cpu clock= 7.29E-01
+ tran: time= 8.0000E-07 tot_iter=     324 conv_iter=     162 cpu clock= 7.46E-01
+ tran: time= 9.0000E-07 tot_iter=     364 conv_iter=     182 cpu clock= 7.60E-01
+ tran: time= 1.0000E-06 tot_iter=     404 conv_iter=     202 cpu clock= 7.73E-01
+ sweep: tran tran0    end,  cpu clock=  7.89E-01 memory=    175 kb
+>info:         ***** hspice job concluded
+ lic: Release hspice token(s)

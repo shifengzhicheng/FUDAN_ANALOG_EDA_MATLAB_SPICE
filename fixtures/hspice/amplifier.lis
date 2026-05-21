@@ -1,0 +1,648 @@
+ ****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+  Copyright (C) 2010 Synopsys, Inc. All Rights Reserved.                        
+  Unpublished-rights reserved under US copyright laws.
+  This program is protected by law and is subject to the 
+  terms and conditions of the license agreement from Synopsys.
+  Use of this program is your acceptance to be bound by the 
+  license agreement. HSPICE is the trademark of Synopsys, Inc.
+  Input File: d:\synopsys\hspice\trytry\amplifier.sp                            
+  lic:  
+  lic: FLEXlm: v8.5b 
+  lic: USER:   zrc                  HOSTNAME: LAPTOP-O4SR7NUK 
+  lic: HOSTID: "005056c00001 00ffd46088fe a87eea1f533c 005056c00008 a87eea1f5338
+  
+  lic: Using FLEXlm license file: 
+  lic: C:\flexlm\hspice.dat 
+  lic: Checkout 1 hspice 
+  lic: License/Maintenance for hspice will expire on 31-dec-2020/2007.9 
+  lic: NODE LOCKED license on hostid "005056c00001 00ffd46088fe a87eea1f533c 005
+ 0
+  lic:   
+ Init: read install configuration file: D:\synopsys\Hspice_D-2010.03-SP1\meta.cfg
+ scientific notation:
+ a=10**-18  f=10**-15  p=10**-12  n=10**-9  u=10**-6
+ m=10**-3   k=10**3    x=10**6    g=10**9 
+
+
+ circuit parameter definitions
+  parameter          =  value 
+
+
+
+
+
+ constants  - tnom         kt           vt           gapsi        ni
+            298.15000    4.1163e-21    25.69184m     1.11562    1.2565e+16 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * amplifier
+
+  ******  mos   model parameters tnom=  25.000 temp=  25.000 *****
+ ***************************************************************************
+ *** common model parameters  model name:   0:modp     model type:pmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto=-500.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 579.84m volts      gamma=   6.07  v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 1.0e+15 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   2.00               cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   1.15u meters 
+      cox=  30.00u f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj= 101.85u f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp=   1.50u a/v**2 
+ ***************************************************************************
+ *** common model parameters  model name:   0:modn     model type:nmos   ***
+ ***************************************************************************
+     names  values   units     names  values   units     names  values   units
+     -----  ------   -----     -----  ------   -----     -----  ------   -----
+
+   1*** geometry parameters ***
+       ld=   0.    meters      lmlt=   1.00                wd=   0.    meters 
+     wmlt=   1.00                xl=   0.    meters        xw=   0.    meters 
+     lref=   0.    meters      wref=   0.    meters      lref=   0.    meters 
+     wref=   0.    meters     xlref=   0.    meters     xwref=   0.    meters 
+     lmin=   0.    meters      wmin=   0.    meters      lmax=   0.    meters 
+     wmax=   0.    meters 
+
+   2*** threshold voltage parameters ***
+      vto= 500.00m volts        nss=   0.    1/cm**2      tpg=   1.00         
+      phi= 270.73m volts      gamma= 300.00m v**0.5      bulk=  gnd           
+    ngate=   0.    cm**3       nsub= 2.4e+12 1/cm**3   delvto=   0.    volts  
+
+   3*** gate overlap capacitance parameters ***
+     cgbo=   0.    f/meter     cgdo=   0.    f/meter     cgso=   0.    f/meter
+     meto=   0.    meters 
+
+   4*** gate capacitance parameters ***
+    capop=   2.00               cf1=   0.    volts        cf2= 100.00m volts  
+      cf3=   1.00  volts        cf4=  50.00               cf5= 666.67m        
+      cf6= 500.00               xqc= 500.00m              tox=   1.15u meters 
+      cox=  30.00u f/m**2 
+
+   5*** diffusion parasitic parameters ***
+      acm=   0.                  is=  10.00f amps          js=   0.    a/m**2 
+      jsw=   0.    amp/m        nds=   1.00               cbd=   0.    farad  
+      cbs=   0.    farad         cj=   5.03u f/m**2      cjsw=   0.    f/m    
+   cjgate=   0.    f/m           mj= 500.00m             mjsw= 330.00m        
+       pb= 800.00m volts        php= 800.00m volts         tt=   0.    secs   
+     hdif=   0.    meters      ldif=   0.    meters        rd=   0.    ohms   
+       rs=   0.    ohms         rsh=   0.    ohms/sq       fc=   0.           
+    alpha=   0.                 vcr=   0.    volts      iirat=   0.           
+      rdc=   0.    ohms         rsc=   0.    ohms           n=   1.00         
+     vnds=  -1.00  volts  
+
+   6*** temperature effect parameters ***
+     tlev=   0.               tlevc=   0.                  eg=   1.11  ev     
+     gap1= 702.00u ev/deg      gap2=   1.11k deg          xti=   0.           
+      bex=  -1.50               tcv=   0.    v/deg k      trd=   0.    /deg   
+      trs=   0.    /deg         cta=   0.    /deg         ctp=   0.    /deg   
+
+   7*** noise parameters ***
+       kf=   0.                  af=   1.00              nlev=   2.00         
+   gdsnoi=   1.00         
+
+   ***  level  1  model parameters  ***
+
+   lambda=  50.00m /v            kp=   4.50u a/v**2 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * amplifier
+
+  ******  circuit element summary tnom=  25.000 temp=  25.000 *****
+
+
+ **** resistors
+
+  
+ 
+                                       
+ element name        0:rin     0:rout  
+ node1               0:10      0:16    
+ node2               0:11      0:0     
+ model                                 
+ res eff           100.0000    1.0000k 
+ tc1                 0.        0.      
+ tc2                 0.        0.      
+ scale               1.0000    1.0000  
+ m                   1.0000    1.0000  
+ ac                100.0000    1.0000k 
+ temp               25.0000   25.0000  
+ l                   0.        0.      
+ w                   0.        0.      
+ cap                 0.        0.      
+ noise            1.000e+00 1.000e+00  
+
+
+ **** independent sources
+
+     name         node1        node2      dc volt    ac mag    ac phase    type
+  vdd  9                 0                    3.0000     0.         0.      dc   
+  vin  10                0                    1.0000     0.         0.      dc   
+  vb1  12                0                    1.0000     0.         0.      dc   
+
+
+ **** mosfets
+  
+ 
+                                                              
+ element name        0:m1       0:m2       0:m3       0:m4    
+ drain               0:13       0:16       0:16       0:14    
+ gate                0:13       0:12       0:12       0:11    
+ source              0:9        0:13       0:14       0:0     
+ bulk                0:9        0:13       0:0        0:0     
+ model               0:modp     0:modp     0:modn     0:modn  
+ w eff              30.0000u   60.0000u   20.0000u   10.0000u 
+ l eff             350.0000n  350.0000n  350.0000n  350.0000n 
+ rd eff              0.         0.         0.         0.      
+ rs eff              0.         0.         0.         0.      
+ cdsat              10.0000f   10.0000f   10.0000f   10.0000f 
+ cssat              10.0000f   10.0000f   10.0000f   10.0000f 
+ capbd               0.         0.         0.         0.      
+ capbs               0.         0.         0.         0.      
+ temp               25.0000    25.0000    25.0000    25.0000  
+ aic                                                          
+  
+ 
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * amplifier
+
+  ******  element node table
+                                                                                      
+ 0                rout             vdd              vin              vb1              
+                  m3:b             m4:s             m4:b                              
+ 9                vdd              m1:s             m1:b                              
+ 10               rin              vin                                                
+ 11               rin              m4:g                                               
+ 12               vb1              m2:g             m3:g                              
+ 13               m1:d             m1:g             m2:s             m2:b             
+ 14               m3:s             m4:d                                               
+ 16               rout             m2:d             m3:d                              
+ *****************************************************************
+ ******  option summary
+ ******
+ runlvl  = 3         bypass  = 2         
+ ******  
+ * amplifier
+
+  ******  dc transfer curves tnom=  25.000 temp=  25.000 *****
+x
+
+        volt    current      current    
+                   rout          m3     
+    0.           23.6196u     95.1870f  
+   10.00000m     23.6196u     95.1870f  
+   20.00000m     23.6196u     95.1870f  
+   30.00000m     23.6196u     95.1870f  
+   40.00000m     23.6196u     95.1870f  
+   50.00000m     23.6196u     95.1870f  
+   60.00000m     23.6196u     95.1870f  
+   70.00000m     23.6196u     95.1870f  
+   80.00000m     23.6196u     95.1870f  
+   90.00000m     23.6196u     95.1870f  
+  100.00000m     23.6196u     95.1870f  
+  110.00000m     23.6196u     95.1870f  
+  120.00000m     23.6196u     95.1870f  
+  130.00000m     23.6196u     95.1870f  
+  140.00000m     23.6196u     95.1870f  
+  150.00000m     23.6196u     95.1870f  
+  160.00000m     23.6196u     95.1870f  
+  170.00000m     23.6196u     95.1870f  
+  180.00000m     23.6196u     95.1870f  
+  190.00000m     23.6196u     95.1870f  
+  200.00000m     23.6196u     95.1870f  
+  210.00000m     23.6196u     95.1870f  
+  220.00000m     23.6196u     95.1870f  
+  230.00000m     23.6196u     95.1870f  
+  240.00000m     23.6196u     95.1870f  
+  250.00000m     23.6196u     95.1870f  
+  260.00000m     23.6196u     95.1870f  
+  270.00000m     23.6196u     95.1870f  
+  280.00000m     23.6196u     95.1870f  
+  290.00000m     23.6196u     95.1870f  
+  300.00000m     23.6196u     95.1870f  
+  310.00000m     23.6196u     95.1870f  
+  320.00000m     23.6196u     95.1870f  
+  330.00000m     23.6196u     95.1870f  
+  340.00000m     23.6196u     95.1870f  
+  350.00000m     23.6196u     95.1870f  
+  360.00000m     23.6196u     95.1870f  
+  370.00000m     23.6196u     95.1870f  
+  380.00000m     23.6196u     95.1870f  
+  390.00000m     23.6196u     95.1870f  
+  400.00000m     23.6196u     95.1870f  
+  410.00000m     23.6196u     95.1870f  
+  420.00000m     23.6196u     95.1870f  
+  430.00000m     23.6196u     95.1870f  
+  440.00000m     23.6196u     95.1870f  
+  450.00000m     23.6196u     95.1870f  
+  460.00000m     23.6196u     95.1870f  
+  470.00000m     23.6196u     95.1870f  
+  480.00000m     23.6196u     95.1870f  
+  490.00000m     23.6196u     95.1870f  
+  500.00000m     23.6196u     95.1870f  
+  510.00000m     23.6132u     95.1870f  
+  520.00000m     23.5939u     19.3113n  
+  530.00000m     23.5647u     51.4996n  
+  540.00000m     23.5356u     84.3894n  
+  550.00000m     23.5071u    112.8494n  
+  560.00000m     23.4793u    140.6530n  
+  570.00000m     23.4522u    167.8234n  
+  580.00000m     23.4256u    194.3832n  
+  590.00000m     23.3996u    220.3536n  
+  600.00000m     23.3742u    245.7548n  
+  610.00000m     23.3494u    270.6061n  
+  620.00000m     23.3251u    294.9259n  
+  630.00000m     23.3013u    318.7318n  
+  640.00000m     23.2780u    342.0406n  
+  650.00000m     23.2551u    364.8682n  
+  660.00000m     23.2328u    387.2300n  
+  670.00000m     23.2109u    409.1406n  
+  680.00000m     23.1894u    430.6140n  
+  690.00000m     23.1683u    451.6637n  
+  700.00000m     23.1477u    472.3024n  
+  710.00000m     23.1275u    492.5427n  
+  720.00000m     23.1076u    512.3961n  
+  730.00000m     23.0881u    531.8742n  
+  740.00000m     23.0690u    550.9878n  
+  750.00000m     23.0503u    569.7473n  
+  760.00000m     23.0319u    588.1629n  
+  770.00000m     23.0138u    606.2441n  
+  780.00000m     22.9960u    624.0003n  
+  790.00000m     22.9786u    641.4404n  
+  800.00000m     22.9615u    658.5731n  
+  810.00000m     22.9446u    675.4065n  
+  820.00000m     22.9281u    691.9488n  
+  830.00000m     22.9118u    708.2076n  
+  840.00000m     22.8959u    724.1903n  
+  850.00000m     22.8802u    739.9041n  
+  860.00000m     22.8647u    755.3559n  
+  870.00000m     22.8495u    770.5524n  
+  880.00000m     22.8346u    785.4999n  
+  890.00000m     22.8199u    800.2048n  
+  900.00000m     22.8054u    814.6730n  
+  910.00000m     22.7912u    828.9103n  
+  920.00000m     22.7772u    842.9224n  
+  930.00000m     22.7634u    856.7147n  
+  940.00000m     22.7498u    870.2924n  
+  950.00000m     22.7364u    883.6605n  
+  960.00000m     22.7233u    896.8241n  
+  970.00000m     22.7103u    909.7879n  
+  980.00000m     22.6975u    922.5565n  
+  990.00000m     22.6850u    935.1344n  
+    1.00000      22.6726u    947.5259n  
+    1.01000      22.6604u    959.7351n  
+    1.02000      22.6483u    971.7663n  
+    1.03000      22.6365u    983.6233n  
+    1.04000      22.6248u    995.3099n  
+    1.05000      22.6133u      1.0068u  
+    1.06000      22.6019u      1.0182u  
+    1.07000      22.5907u      1.0294u  
+    1.08000      22.5797u      1.0404u  
+    1.09000      22.5688u      1.0513u  
+    1.10000      22.5581u      1.0621u  
+    1.11000      22.5475u      1.0726u  
+    1.12000      22.5371u      1.0831u  
+    1.13000      22.5267u      1.0934u  
+    1.14000      22.5166u      1.1036u  
+    1.15000      22.5065u      1.1136u  
+    1.16000      22.4966u      1.1235u  
+    1.17000      22.4869u      1.1333u  
+    1.18000      22.4772u      1.1429u  
+    1.19000      22.4677u      1.1525u  
+    1.20000      22.4583u      1.1619u  
+    1.21000      22.4490u      1.1711u  
+    1.22000      22.4399u      1.1803u  
+    1.23000      22.4308u      1.1894u  
+    1.24000      22.4219u      1.1983u  
+    1.25000      22.4131u      1.2071u  
+    1.26000      22.4044u      1.2158u  
+    1.27000      22.3958u      1.2244u  
+    1.28000      22.3873u      1.2329u  
+    1.29000      22.3789u      1.2413u  
+    1.30000      22.3706u      1.2496u  
+    1.31000      22.3624u      1.2578u  
+    1.32000      22.3543u      1.2660u  
+    1.33000      22.3462u      1.2740u  
+    1.34000      22.3383u      1.2819u  
+    1.35000      22.3305u      1.2897u  
+    1.36000      22.3228u      1.2974u  
+    1.37000      22.3151u      1.3051u  
+    1.38000      22.3076u      1.3126u  
+    1.39000      22.3001u      1.3201u  
+    1.40000      22.2927u      1.3275u  
+    1.41000      22.2854u      1.3348u  
+    1.42000      22.2782u      1.3420u  
+    1.43000      22.2711u      1.3492u  
+    1.44000      22.2640u      1.3562u  
+    1.45000      22.2570u      1.3632u  
+    1.46000      22.2501u      1.3701u  
+    1.47000      22.2433u      1.3769u  
+    1.48000      22.2365u      1.3837u  
+    1.49000      22.2299u      1.3904u  
+    1.50000      22.2232u      1.3970u  
+    1.51000      22.2167u      1.4035u  
+    1.52000      22.2102u      1.4100u  
+    1.53000      22.2038u      1.4164u  
+    1.54000      22.1975u      1.4228u  
+    1.55000      22.1912u      1.4290u  
+    1.56000      22.1850u      1.4353u  
+    1.57000      22.1789u      1.4414u  
+    1.58000      22.1728u      1.4475u  
+    1.59000      22.1668u      1.4535u  
+    1.60000      22.1608u      1.4595u  
+    1.61000      22.1549u      1.4654u  
+    1.62000      22.1491u      1.4712u  
+    1.63000      22.1433u      1.4770u  
+    1.64000      22.1376u      1.4827u  
+    1.65000      22.1319u      1.4884u  
+    1.66000      22.1263u      1.4940u  
+    1.67000      22.1207u      1.4996u  
+    1.68000      22.1152u      1.5051u  
+    1.69000      22.1098u      1.5105u  
+    1.70000      22.1044u      1.5159u  
+    1.71000      22.0990u      1.5213u  
+    1.72000      22.0937u      1.5266u  
+    1.73000      22.0885u      1.5318u  
+    1.74000      22.0833u      1.5370u  
+    1.75000      22.0781u      1.5422u  
+    1.76000      22.0730u      1.5473u  
+    1.77000      22.0680u      1.5523u  
+    1.78000      22.0630u      1.5573u  
+    1.79000      22.0580u      1.5623u  
+    1.80000      22.0531u      1.5672u  
+    1.81000      22.0483u      1.5721u  
+    1.82000      22.0434u      1.5769u  
+    1.83000      22.0386u      1.5817u  
+    1.84000      22.0339u      1.5864u  
+    1.85000      22.0292u      1.5911u  
+    1.86000      22.0246u      1.5958u  
+    1.87000      22.0200u      1.6004u  
+    1.88000      22.0154u      1.6049u  
+    1.89000      22.0109u      1.6095u  
+    1.90000      22.0064u      1.6140u  
+    1.91000      22.0019u      1.6184u  
+    1.92000      21.9975u      1.6228u  
+    1.93000      21.9931u      1.6272u  
+    1.94000      21.9888u      1.6316u  
+    1.95000      21.9845u      1.6359u  
+    1.96000      21.9802u      1.6401u  
+    1.97000      21.9760u      1.6443u  
+    1.98000      21.9718u      1.6485u  
+    1.99000      21.9676u      1.6527u  
+    2.00000      21.9635u      1.6568u  
+    2.01000      21.9594u      1.6609u  
+    2.02000      21.9554u      1.6650u  
+    2.03000      21.9514u      1.6690u  
+    2.04000      21.9474u      1.6730u  
+    2.05000      21.9434u      1.6769u  
+    2.06000      21.9395u      1.6809u  
+    2.07000      21.9356u      1.6847u  
+    2.08000      21.9318u      1.6886u  
+    2.09000      21.9279u      1.6924u  
+    2.10000      21.9241u      1.6962u  
+    2.11000      21.9204u      1.7000u  
+    2.12000      21.9166u      1.7037u  
+    2.13000      21.9129u      1.7074u  
+    2.14000      21.9093u      1.7111u  
+    2.15000      21.9056u      1.7148u  
+    2.16000      21.9020u      1.7184u  
+    2.17000      21.8984u      1.7220u  
+    2.18000      21.8948u      1.7255u  
+    2.19000      21.8913u      1.7291u  
+    2.20000      21.8878u      1.7326u  
+    2.21000      21.8843u      1.7361u  
+    2.22000      21.8809u      1.7395u  
+    2.23000      21.8774u      1.7430u  
+    2.24000      21.8740u      1.7464u  
+    2.25000      21.8706u      1.7497u  
+    2.26000      21.8673u      1.7531u  
+    2.27000      21.8640u      1.7564u  
+    2.28000      21.8607u      1.7597u  
+    2.29000      21.8574u      1.7630u  
+    2.30000      21.8541u      1.7662u  
+    2.31000      21.8509u      1.7695u  
+    2.32000      21.8477u      1.7727u  
+    2.33000      21.8445u      1.7759u  
+    2.34000      21.8414u      1.7790u  
+    2.35000      21.8382u      1.7822u  
+    2.36000      21.8351u      1.7853u  
+    2.37000      21.8320u      1.7884u  
+    2.38000      21.8290u      1.7914u  
+    2.39000      21.8259u      1.7945u  
+    2.40000      21.8229u      1.7975u  
+    2.41000      21.8199u      1.8005u  
+    2.42000      21.8169u      1.8035u  
+    2.43000      21.8140u      1.8064u  
+    2.44000      21.8110u      1.8094u  
+    2.45000      21.8081u      1.8123u  
+    2.46000      21.8052u      1.8152u  
+    2.47000      21.8023u      1.8181u  
+    2.48000      21.7995u      1.8209u  
+    2.49000      21.7967u      1.8238u  
+    2.50000      21.7938u      1.8266u  
+    2.51000      21.7910u      1.8294u  
+    2.52000      21.7883u      1.8322u  
+    2.53000      21.7855u      1.8349u  
+    2.54000      21.7828u      1.8377u  
+    2.55000      21.7800u      1.8404u  
+    2.56000      21.7773u      1.8431u  
+    2.57000      21.7747u      1.8458u  
+    2.58000      21.7720u      1.8484u  
+    2.59000      21.7693u      1.8511u  
+    2.60000      21.7667u      1.8537u  
+    2.61000      21.7641u      1.8563u  
+    2.62000      21.7615u      1.8589u  
+    2.63000      21.7589u      1.8615u  
+    2.64000      21.7564u      1.8641u  
+    2.65000      21.7538u      1.8666u  
+    2.66000      21.7513u      1.8692u  
+    2.67000      21.7488u      1.8717u  
+    2.68000      21.7463u      1.8742u  
+    2.69000      21.7438u      1.8766u  
+    2.70000      21.7413u      1.8791u  
+    2.71000      21.7389u      1.8816u  
+    2.72000      21.7364u      1.8840u  
+    2.73000      21.7340u      1.8864u  
+    2.74000      21.7316u      1.8888u  
+    2.75000      21.7292u      1.8912u  
+    2.76000      21.7269u      1.8936u  
+    2.77000      21.7245u      1.8959u  
+    2.78000      21.7222u      1.8983u  
+    2.79000      21.7198u      1.9006u  
+    2.80000      21.7175u      1.9029u  
+    2.81000      21.7152u      1.9052u  
+    2.82000      21.7130u      1.9075u  
+    2.83000      21.7107u      1.9098u  
+    2.84000      21.7084u      1.9120u  
+    2.85000      21.7062u      1.9143u  
+    2.86000      21.7040u      1.9165u  
+    2.87000      21.7017u      1.9187u  
+    2.88000      21.6995u      1.9209u  
+    2.89000      21.6974u      1.9231u  
+    2.90000      21.6952u      1.9253u  
+    2.91000      21.6930u      1.9274u  
+    2.92000      21.6909u      1.9296u  
+    2.93000      21.6887u      1.9317u  
+    2.94000      21.6866u      1.9338u  
+    2.95000      21.6845u      1.9360u  
+    2.96000      21.6824u      1.9380u  
+    2.97000      21.6803u      1.9401u  
+    2.98000      21.6783u      1.9422u  
+    2.99000      21.6762u      1.9443u  
+    3.00000      21.6741u      1.9463u  
+y
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * amplifier
+
+  ******  operating point information tnom=  25.000 temp=  25.000 *****
+ ***** operating point status is all       simulation time is     0.     
+    node    =voltage      node    =voltage      node    =voltage
+
+ +0:9       =   3.0000  0:10      =   1.0000  0:11      =   1.0000 
+ +0:12      =   1.0000  0:13      =   1.9097  0:14      =  14.9503m
+ +0:16      =  22.6726m
+
+
+ ****  voltage sources
+
+ subckt                                   
+ element  0:vdd      0:vin      0:vb1     
+  volts      3.0000     1.0000     1.0000 
+  current  -23.6200u    0.         0.     
+  power     70.8600u    0.         0.     
+
+     total voltage source power dissipation=   70.8600u       watts
+
+
+
+ **** resistors
+
+ subckt                        
+ element  0:rin      0:rout    
+  r value  100.0000     1.0000k
+  v drop     0.        22.6726m
+  current    0.        22.6726u
+  power      0.       514.0460n
+
+
+
+ **** mosfets
+
+
+ subckt                                              
+ element  0:m1       0:m2       0:m3       0:m4      
+ model    0:modp     0:modp     0:modn     0:modn    
+ region     Saturati   Saturati     Linear     Linear
+  id       -23.6200u  -23.6200u  947.4308n  947.4308n
+  ibs        0.         0.      -149.5032a    0.     
+  ibd       10.9028f   18.8705f -226.7258a -149.5032a
+  vgs       -1.0903  -909.7219m  985.0497m    1.0000 
+  vds       -1.0903    -1.8870     7.7223m   14.9503m
+  vbs        0.         0.       -14.9503m    0.     
+  vth     -500.0000m -500.0000m  504.2520m  500.0000m
+  vdsat   -590.2781m -409.7219m    7.7223m   14.9503m
+  vod     -590.2781m -409.7219m  480.7976m  500.0000m
+  beta     135.5804u  281.4049u  257.2421u  128.6675u
+  gam eff    6.0732     6.0732   300.0000m  300.0000m
+  gm        80.0301u  115.2978u    1.9865u    1.9236u
+  gds        1.1199u    1.0792u  121.7423u   62.4575u
+  gmb      319.1450u  459.7857u  557.4906n  554.5515n
+  cdtot    4.579e-19    1.5851a  104.4315a   51.9650a
+  cgtot    218.7125a  445.0299a  211.8343a  105.8962a
+  cstot    210.0011a  420.0021a  105.5649a   53.0274a
+  cbtot      8.2535a   23.4427a    1.8379a  9.037e-19
+  cgs      210.0011a  420.0021a  105.5649a   53.0274a
+  cgd      4.579e-19    1.5851a  104.4315a   51.9650a
+
+
+
+
+          ***** job concluded
+1****** HSPICE -- D-2010.03-SP1 32-BIT (May 26 2010) winnt ******               
+ ******  
+ * amplifier
+
+  ******  job statistics summary tnom=  25.000 temp=  25.000 *****
+
+  ******  HSPICE Threads Information  ******
+
+  Command Line Threads Count                  :     1
+  Available CPU Count                         :    12
+  Actual Model Evaluation(Load) Threads Count :     1
+  Actual Solver Threads Count                 :     1
+
+
+  ******  Circuit Statistics  ******
+  # nodes       =       8 # elements   =       9
+  # resistors   =       2 # capacitors =       0 # inductors   =       0
+  # mutual_inds =       0 # vccs       =       0 # vcvs        =       0
+  # cccs        =       0 # ccvs       =       0 # volt_srcs   =       3
+  # curr_srcs   =       0 # diodes     =       0 # bjts        =       0
+  # jfets       =       0 # mosfets    =       4 # U elements  =       0
+  # T elements  =       0 # W elements =       0 # B elements  =       0
+  # S elements  =       0 # P elements =       0 # va device   =       0
+
+
+  ******  Runtime Statistics (seconds)  ******
+
+  analysis           time    # points   tot. iter  conv.iter
+  op point           0.02           1           7
+  dc sweep           0.02         301         609
+  readin             0.16
+  errchk             0.03
+  setup              0.06
+  output             0.00
+
+
+           total memory used          167  kbytes
+           total cpu time            0.35 seconds
+           total elapsed time        0.62 seconds
+           job started at     16:53:10 05/07/2011
+           job ended   at     16:53:11 05/07/2011
+
+
+  lic: Release hspice token(s) 
