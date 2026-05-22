@@ -1,9 +1,9 @@
 function [ResData, DeviceDatas] = ...
-    Trans(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, initialSolution, delta_t, totalTime)
-% TRANS Advance one fixed-step transient window.
-% This routine is used by shooting_method.  The companion RC/RL values are
-% fixed for the whole window; only the companion source terms and sinusoidal
-% sources change at each time point.
+    Trans(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, initialSolution, outputStep, totalTime)
+% TRANS Advance one fixed-output transient window for shooting.
+% Shooting uses the same trapezoidal companion update as TransTR_fix:
+% internally the circuit is advanced with a half output step and only every
+% outputStep sample is returned to callers.
 
 capacitorLine = CINFO('CLine');
 inductorLine = LINFO('LLine');
@@ -28,8 +28,14 @@ sinValueIndex = sinLine + (1:sinCount) - 1;
 currentDeviceValue = LinerNet('Value');
 currentDeviceValue = currentDeviceValue(:);
 
-capacitorResistance = CINFO('R') * delta_t;
-inductorResistance = LINFO('R') / delta_t;
+internalStep = 0.5 * outputStep;
+capacitorValue = CINFO('Value');
+inductorValue = LINFO('Value');
+capacitorValue = capacitorValue(:);
+inductorValue = inductorValue(:);
+
+capacitorResistance = CINFO('R') * internalStep;
+inductorResistance = LINFO('R') / internalStep;
 capacitorResistance = capacitorResistance(:);
 inductorResistance = inductorResistance(:);
 
@@ -37,44 +43,38 @@ currentDeviceValue(capacitorResistanceIndex) = capacitorResistance;
 currentDeviceValue(inductorResistanceIndex) = inductorResistance;
 LinerNet('Value') = currentDeviceValue;
 
-capacitorVoltage = currentDeviceValue(capacitorVoltageIndex);
-inductorCurrent = currentDeviceValue(inductorCurrentIndex);
-capacitorVoltage = capacitorVoltage(:);
-inductorCurrent = inductorCurrent(:);
-
-stepCount = round(totalTime / delta_t);
 currentSolution = initialSolution(:);
 
-ResData = zeros(numel(currentSolution), stepCount + 1);
-DeviceDatas = zeros(numel(currentDeviceValue), stepCount + 1);
+plotTimeCount = numel(0:outputStep:totalTime);
+ResData = zeros(numel(currentSolution), plotTimeCount);
+DeviceDatas = zeros(numel(currentDeviceValue), plotTimeCount);
 ResData(:, 1) = currentSolution;
 DeviceDatas(:, 1) = currentDeviceValue;
 
+companionCapacitorVoltage = currentDeviceValue(capacitorVoltageIndex);
+companionInductorCurrent = currentDeviceValue(inductorCurrentIndex);
+companionCapacitorVoltage = companionCapacitorVoltage(:);
+companionInductorCurrent = companionInductorCurrent(:);
+
+capacitorVoltage = branchVoltage(currentSolution, capacitorNodePairs);
+inductorVoltage = branchVoltage(currentSolution, inductorNodePairs);
+capacitorCurrent = (capacitorVoltage - companionCapacitorVoltage) ./ capacitorResistance;
+inductorCurrent = companionInductorCurrent + inductorVoltage ./ inductorResistance;
+
 currentTime = 0;
-for stepIndex = 2:(stepCount + 1)
-    currentTime = currentTime + delta_t;
+currentPlotTime = outputStep;
+plotIndex = 1;
 
-    % LC companion sources are derived from the previous converged solution.
-    % Node pairs already use the ground-inclusive indexing expected here.
-    previousInductorVoltage = [];
-    if ~isempty(inductorNodePairs)
-        previousInductorVoltage = currentSolution(inductorNodePairs(:, 1)) - currentSolution(inductorNodePairs(:, 2));
-    end
+while plotIndex < plotTimeCount
+    currentTime = currentTime + internalStep;
 
-    previousCapacitorVoltage = [];
-    if ~isempty(capacitorNodePairs)
-        previousCapacitorVoltage = currentSolution(capacitorNodePairs(:, 1)) - currentSolution(capacitorNodePairs(:, 2));
-    end
-
-    previousInductorCurrent = inductorCurrent + previousInductorVoltage ./ inductorResistance;
-    previousCapacitorCurrent = (previousCapacitorVoltage - capacitorVoltage) ./ capacitorResistance;
-
-    capacitorVoltage = previousCapacitorVoltage + capacitorResistance .* previousCapacitorCurrent;
-    inductorCurrent = previousInductorCurrent + previousInductorVoltage ./ inductorResistance;
+    % TR history sources are derived from the previous physical C/L state.
+    companionCapacitorVoltage = capacitorVoltage + capacitorResistance .* capacitorCurrent;
+    companionInductorCurrent = inductorCurrent + internalStep * 0.5 * (inductorVoltage ./ inductorValue);
 
     nextDeviceValue = currentDeviceValue;
-    nextDeviceValue(capacitorVoltageIndex) = capacitorVoltage;
-    nextDeviceValue(inductorCurrentIndex) = inductorCurrent;
+    nextDeviceValue(capacitorVoltageIndex) = companionCapacitorVoltage;
+    nextDeviceValue(inductorCurrentIndex) = companionInductorCurrent;
     nextDeviceValue(sinValueIndex) = Sin_Calculator(sinDcValues, sinAcValues, sinFrequency, currentTime, sinPhase).';
 
     LinerNet('Value') = nextDeviceValue;
@@ -84,7 +84,26 @@ for stepIndex = 2:(stepCount + 1)
     currentSolution = [0; nodeSolution];
     LinerNet('Value') = currentDeviceValue;
 
-    ResData(:, stepIndex) = currentSolution;
-    DeviceDatas(:, stepIndex) = currentDeviceValue;
+    capacitorVoltage = branchVoltage(currentSolution, capacitorNodePairs);
+    inductorVoltage = branchVoltage(currentSolution, inductorNodePairs);
+    capacitorCurrent = (capacitorVoltage - companionCapacitorVoltage) ./ capacitorResistance;
+    inductorCurrent = companionInductorCurrent + inductorVoltage ./ inductorResistance;
+
+    if abs(currentTime - currentPlotTime) <= internalStep / 2
+        plotIndex = plotIndex + 1;
+        ResData(:, plotIndex) = currentSolution;
+        DeviceDatas(:, plotIndex) = currentDeviceValue;
+        currentPlotTime = currentPlotTime + outputStep;
+    end
 end
+end
+
+function voltage = branchVoltage(solution, nodePairs)
+if isempty(nodePairs)
+    voltage = zeros(0, 1);
+    return;
+end
+
+voltage = solution(nodePairs(:, 1)) - solution(nodePairs(:, 2));
+voltage = voltage(:);
 end

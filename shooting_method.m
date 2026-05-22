@@ -8,7 +8,7 @@ function [ResData, DeviceValues, printTimePoint] = shooting_method( ...
 LinerNet('Value') = LinerNet('Value')';
 [CINFO, LINFO] = prepareCompanionInfo(CINFO, LINFO);
 
-[~, initialDeviceValue] = TranInit(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, Error, stepTime);
+[~, initialDeviceValue] = TranInit(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, Error, 0.5 * stepTime);
 period = sourceFundamentalPeriod(SinINFO('Freq'));
 printTimePoint = 0:stepTime:totalTime;
 stateInfo = buildShootingStateInfo(LinerNet, CINFO, LINFO);
@@ -182,6 +182,7 @@ end
 function [trial, metric] = evaluateShootingResidual( ...
         LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, baseDeviceValue, dynamicState, stateInfo, step, period, tolerance)
 startDeviceValue = applyDynamicState(baseDeviceValue, dynamicState, stateInfo);
+startDeviceValue = applyCompanionResistances(startDeviceValue, CINFO, LINFO, step);
 [startSolution, startDeviceValue] = solveConsistentInitialPoint( ...
     LinerNet, MOSINFO, DIODEINFO, BJTINFO, startDeviceValue, Error);
 
@@ -342,6 +343,25 @@ end
 
 inductorOffset = stateInfo.capacitorCount;
 deviceValue(stateInfo.inductorDeviceIndex) = dynamicState(inductorOffset + (1:stateInfo.inductorCount));
+end
+
+function deviceValue = applyCompanionResistances(deviceValue, CINFO, LINFO, outputStep)
+% Keep the shooting trial's DC point consistent with Trans.m, which uses a
+% half output step for the trapezoidal companion resistances.
+deviceValue = deviceValue(:);
+internalStep = 0.5 * outputStep;
+
+capacitorCount = numel(CINFO('Name'));
+inductorCount = numel(LINFO('Name'));
+capacitorResistanceIndex = CINFO('CLine') + 2 * (1:capacitorCount) - 2;
+inductorResistanceIndex = LINFO('LLine') + 2 * (1:inductorCount) - 1;
+
+if capacitorCount > 0
+    deviceValue(capacitorResistanceIndex) = CINFO('R') .* internalStep;
+end
+if inductorCount > 0
+    deviceValue(inductorResistanceIndex) = LINFO('R') ./ internalStep;
+end
 end
 
 function metric = dynamicResidualMetric(startState, endState, stateInfo, tolerance)
