@@ -51,7 +51,6 @@ while(plotCount < plotTimeNum)
     % 利用上轮电容电感的电流电压得到当前时刻伴随器件值 Δt可变RCL也要每轮更新
     VCp = VC;
     ILp = IL;   % 计算误差用，暂存
-        display(curTime)
     RC = delta_t ./ CValue;
     RL = LValue ./ delta_t;
 

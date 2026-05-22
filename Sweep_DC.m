@@ -19,7 +19,6 @@
 %}
 function [InData, Obj, ResPlotData] = Sweep_DC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error, SweepInfo, PLOT, Node_Map)
 [~, x_0, ~] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
-display(x_0);
 Name = LinerNet('Name');
 %% 读出线性网表信息
 %% 扫描信息
@@ -34,8 +33,8 @@ step = SweepInfo{3};
 InData = (start : step : stop);
 % 扫描次数
 sweepTimes = size(InData, 2);
-% 扫描器件的索引
-SweepInIndex = find(ismember(Name, SweepInName));
+% Use a logical mask because the swept source is assigned at every point.
+sweepInputMask = ismember(Name, SweepInName);
 % 初始化
 
 %% 开始遍历要求的扫描点 每轮循环是一次正常DC 在Values中是一列
@@ -45,7 +44,7 @@ x_res = zeros(size(x_0,1)+1,sweepTimes);
 for i = 1 : sweepTimes
     % 修改作扫描的值
     tValue = LinerNet('Value');
-    tValue(SweepInIndex) = InData(i);
+    tValue(sweepInputMask) = InData(i);
     LinerNet('Value') = tValue;
     % 把上次DC的Value结果当作下次DC计算的初始解加速收敛
     [DCres, ~, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
