@@ -1,82 +1,90 @@
-%% 文件作者：郑志宇
-% 文件重构自林与正同学的初版Trans，不考虑其他因素，直接进行瞬态仿真，主要是需要一个周期的图像
-%% 函数实现了根据初始解和步长计算出一个周期的瞬态结果
-function [ResData,DeviceDatas] = ...
-    Trans(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO, Error, curTimeResData, delta_t, T)
-%% 数据接口
-CLine = CINFO('CLine');
-LLine = LINFO('LLine');
-CNum = size(CINFO('Name'), 2);
-LNum = size(LINFO('Name'), 2);
-CNodeMat = CINFO('NodeMat');
-LNodeMat = LINFO('NodeMat');
-% 建立对SourceINFO的索引
-SINLine = SinINFO('SinLine');
-SINAcValues = SinINFO('AcValue');
-SINDcValues = SinINFO('DcValue');
-SINPhase = SinINFO('Phase');
-SINFreq = SinINFO('Freq');
-SINNum = size(SINAcValues, 2);
-%% 取出上次迭代时得到的所有器件的线性值
-DeviceValue = LinerNet('Value');
-RC = CINFO('R')*delta_t;
-RL = LINFO('R')/delta_t;
-DeviceValue(CLine + 2 * (1 : CNum) - 2) = RC;
-DeviceValue(LLine + 2 * (1 : LNum) - 1) = RL;
-%% 根据init的值以及DeviceValue生成电容与电感的伴随器件的值
-% 上一轮结束的时候产生的线性网表
-LVp=[];
-CVp=[];
-% 接着上一轮没有替换的给换完
-VC = DeviceValue(CLine + 2 * (1 : CNum) - 1);
-IL = DeviceValue(LLine + 2 * (1 : LNum) - 2);
-LinerNet('Value') = DeviceValue;
+function [ResData, DeviceDatas] = ...
+    Trans(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, initialSolution, delta_t, totalTime)
+% TRANS Advance one fixed-step transient window.
+% This routine is used by shooting_method.  The companion RC/RL values are
+% fixed for the whole window; only the companion source terms and sinusoidal
+% sources change at each time point.
 
-%% 这次取出来的所有迭代结果中器件的值以及所需要的返回解的结果
-TotalSize = round(T/delta_t);
+capacitorLine = CINFO('CLine');
+inductorLine = LINFO('LLine');
+capacitorCount = numel(CINFO('Name'));
+inductorCount = numel(LINFO('Name'));
+capacitorNodePairs = CINFO('NodeMat');
+inductorNodePairs = LINFO('NodeMat');
 
-DeviceDatas = [DeviceValue,zeros(size(DeviceValue,1),TotalSize)];
-ResData = [curTimeResData,zeros(size(curTimeResData,1),TotalSize)];
+sinLine = SinINFO('SinLine');
+sinAcValues = SinINFO('AcValue');
+sinDcValues = SinINFO('DcValue');
+sinPhase = SinINFO('Phase');
+sinFrequency = SinINFO('Freq');
+sinCount = numel(sinAcValues);
 
-%% 开始推进 - 固定推进时间步长delta_t情况 - 迭代次数确定
-% 因为固定时间步长伴随电阻器件值固定
-curTime = 0;    % 当前推进到的时间
-t = 1;
-while(t <= TotalSize)
-    curTime = curTime + delta_t;
-    t = t + 1;
-    % 因为原网表CL的端点在res靠前，索引不用变，伴随器件新增节点不关心
-    if(~isempty(LNodeMat))
-        LVp = curTimeResData(LNodeMat(:, 1)) - curTimeResData(LNodeMat(:, 2));
+capacitorResistanceIndex = capacitorLine + 2 * (1:capacitorCount) - 2;
+capacitorVoltageIndex = capacitorLine + 2 * (1:capacitorCount) - 1;
+inductorCurrentIndex = inductorLine + 2 * (1:inductorCount) - 2;
+inductorResistanceIndex = inductorLine + 2 * (1:inductorCount) - 1;
+sinValueIndex = sinLine + (1:sinCount) - 1;
+
+currentDeviceValue = LinerNet('Value');
+currentDeviceValue = currentDeviceValue(:);
+
+capacitorResistance = CINFO('R') * delta_t;
+inductorResistance = LINFO('R') / delta_t;
+capacitorResistance = capacitorResistance(:);
+inductorResistance = inductorResistance(:);
+
+currentDeviceValue(capacitorResistanceIndex) = capacitorResistance;
+currentDeviceValue(inductorResistanceIndex) = inductorResistance;
+LinerNet('Value') = currentDeviceValue;
+
+capacitorVoltage = currentDeviceValue(capacitorVoltageIndex);
+inductorCurrent = currentDeviceValue(inductorCurrentIndex);
+capacitorVoltage = capacitorVoltage(:);
+inductorCurrent = inductorCurrent(:);
+
+stepCount = round(totalTime / delta_t);
+currentSolution = initialSolution(:);
+
+ResData = zeros(numel(currentSolution), stepCount + 1);
+DeviceDatas = zeros(numel(currentDeviceValue), stepCount + 1);
+ResData(:, 1) = currentSolution;
+DeviceDatas(:, 1) = currentDeviceValue;
+
+currentTime = 0;
+for stepIndex = 2:(stepCount + 1)
+    currentTime = currentTime + delta_t;
+
+    % LC companion sources are derived from the previous converged solution.
+    % Node pairs already use the ground-inclusive indexing expected here.
+    previousInductorVoltage = [];
+    if ~isempty(inductorNodePairs)
+        previousInductorVoltage = currentSolution(inductorNodePairs(:, 1)) - currentSolution(inductorNodePairs(:, 2));
     end
-    if(~isempty(CNodeMat))
-        CVp = curTimeResData(CNodeMat(:, 1)) - curTimeResData(CNodeMat(:, 2));
+
+    previousCapacitorVoltage = [];
+    if ~isempty(capacitorNodePairs)
+        previousCapacitorVoltage = currentSolution(capacitorNodePairs(:, 1)) - currentSolution(capacitorNodePairs(:, 2));
     end
-    LIp = IL + LVp ./ RL;
-    CIp = (CVp - VC) ./ RC;
-    % 利用上轮电容电感的电流电压得到当前时刻伴随器件值
-    VC = CVp + RC .* CIp;
-    IL = LIp + LVp ./ RL;
-    % 当前时刻可变SIN电源值
-    SINV = Sin_Calculator(SINDcValues, SINAcValues, SINFreq, curTime, SINPhase); 
-    LinerValue = LinerNet('Value');
-    % LinerNet中C与L顺序不分类,要依据索引找对应伴随器件
-    % LinerNet中C伴随器件按R, V的顺序
-    LinerValue(CLine + 2 * (1 : CNum) - 1) = VC;
-    % LinerNet中L伴随器件按I, R的顺序
-    LinerValue(LLine + 2 * (1 : LNum) - 2) = IL;
-    % LinerNet中SINLine之后是SIN电源
-    LinerValue(SINLine + (1 : SINNum) - 1) = SINV;
-    LinerNet('Value') = LinerValue;
-    [curTimeRes, ~, Valuep] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
 
-    % tn非线性电路DC解结果作下轮tn+1非线性电路初始解 - 针对非线性器件 - 第一轮无此
-    LinerNet('Value') = Valuep;
-    % 当前结果作下一轮前值
-    curTimeResData = [0; curTimeRes];
+    previousInductorCurrent = inductorCurrent + previousInductorVoltage ./ inductorResistance;
+    previousCapacitorCurrent = (previousCapacitorVoltage - capacitorVoltage) ./ capacitorResistance;
 
-    % 记录当前响应
-    ResData(:,t) = curTimeResData;
-    DeviceDatas(:,t) = Valuep;
+    capacitorVoltage = previousCapacitorVoltage + capacitorResistance .* previousCapacitorCurrent;
+    inductorCurrent = previousInductorCurrent + previousInductorVoltage ./ inductorResistance;
+
+    nextDeviceValue = currentDeviceValue;
+    nextDeviceValue(capacitorVoltageIndex) = capacitorVoltage;
+    nextDeviceValue(inductorCurrentIndex) = inductorCurrent;
+    nextDeviceValue(sinValueIndex) = Sin_Calculator(sinDcValues, sinAcValues, sinFrequency, currentTime, sinPhase).';
+
+    LinerNet('Value') = nextDeviceValue;
+    [nodeSolution, ~, currentDeviceValue] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error);
+    currentDeviceValue = currentDeviceValue(:);
+
+    currentSolution = [0; nodeSolution];
+    LinerNet('Value') = currentDeviceValue;
+
+    ResData(:, stepIndex) = currentSolution;
+    DeviceDatas(:, stepIndex) = currentDeviceValue;
 end
 end

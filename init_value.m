@@ -264,6 +264,6 @@ function [x_0] = init_value(NodeInfo, DeviceInfo, Vdd, Vdd_node, Gnd_node)
     x_0(4) = 0.72;
     x_0(5) = 2;
     x_0(6) = 1.2;
-    fprintf("InitValue: \n\n");
-    disp(x_0);
+    % Keep initialization silent so batch regression output only reports
+    % testcase status and requested simulation results.
 end

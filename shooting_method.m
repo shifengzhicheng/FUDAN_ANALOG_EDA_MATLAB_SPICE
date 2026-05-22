@@ -1,6 +1,6 @@
 %% 文件作者：郑志宇
 %% shooting method求解电路稳态响应
-function [ResData,DeviceValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,Node_Map, Error, stepTime,TotalTime,PLOT)
+function [ResData,DeviceValues, printTimePoint] = shooting_method(LinerNet,MOSINFO,DIODEINFO,BJTINFO,CINFO,LINFO,SinINFO,~, Error, stepTime,TotalTime,~)
 %% 获取数据
 LinerNet('Value') = LinerNet('Value')';
 %% 首先处理一下L，C器件的一些生成参数
@@ -36,8 +36,16 @@ xT = ResData(:,end);
 CurError = norm(x0 - xT);
 delta_t = 5*stepTime;
 ErrorIt = 1e4*Error;
+maxShootingIterations = 500;
+shootingIteration = 0;
 %% 牛顿迭代法开始迭代
 while(CurError>ErrorIt)
+    shootingIteration = shootingIteration + 1;
+    if shootingIteration > maxShootingIterations
+        error('spice:shooting:NoConvergence', ...
+            'Shooting method did not converge after %d iterations; residual %.3g > %.3g.', ...
+            maxShootingIterations, CurError, ErrorIt);
+    end
     %% 利用某个关系来对搜索的步长与搜索起点进行调整
     %% 利用DeviceValues的末尾值更新LinerNet
     x0 = xT;
