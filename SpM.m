@@ -210,7 +210,8 @@ classdef SpM
             % 如果要删除的范围不在已存储的行列范围内, pass
             maxIndex = max(RowPos,ColPos);
             if maxIndex > obj.rows
-                disp("SpM RowPos Error.");
+                % Stamping code may delete an implicit zero before a row is
+                % expanded. Treat that as a no-op instead of logging noise.
                 return;
             end
             % 如果要删除的节点值为0，亦即SpM没有存储，pass
@@ -431,6 +432,30 @@ classdef SpM
         end
             
         %% 方法14: SpM打印存储信息. debug用的函数
+        %% Method 14: convert SpM directly to MATLAB's built-in sparse matrix.
+        function A = toSparse(obj)
+            if obj.NNZ == 0
+                A = sparse(obj.rows, obj.rows);
+                return;
+            end
+
+            rowIndex = zeros(obj.NNZ, 1);
+            cursor = 1;
+            for row = 1:obj.rows
+                rowLength = obj.RowLength(row);
+                if rowLength > 0
+                    range = cursor:(cursor + rowLength - 1);
+                    rowIndex(range) = row;
+                    cursor = cursor + rowLength;
+                end
+            end
+
+            colIndex = obj.ColIndex(1:obj.NNZ);
+            value = obj.Value(1:obj.NNZ);
+            valid = (colIndex >= 1) & (colIndex <= obj.rows);
+            A = sparse(rowIndex(valid), colIndex(valid), value(valid), obj.rows, obj.rows);
+        end
+
         function displayInfo(obj)
             disp("SpM infomation:\n\n");
             disp(obj.rows);

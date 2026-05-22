@@ -11,6 +11,11 @@ Value = LinerNet('Value');
 
 %% 生成线性元件矩阵G
 [G,~,B]=Gen_Matrix(Name,N1,N2,dependence,Value);
+if isa(G, 'SpM')
+    % PZ uses dense operations (det, eig, residue). Convert once at the
+    % analysis boundary instead of letting each operation fail on SpM.
+    G = full(toSparse(G));
+end
 
 %% 贴出LC矩阵C
 CValue = CINFO('Value');
