@@ -1,83 +1,85 @@
-%% 文件作者：郑志宇
-%% 这个函数将线性网表中的参数输出到器件节点的电流上去，一次性输出全部的电流
-function Current = getCurrentTrans(Device,port,LinerNet,x,Res)
+function Current = getCurrentTrans(Device, port, LinerNet, x, Res)
+% GETCURRENTTRANS Calculate one transient device terminal current.
+% The transient netlist replaces nonlinear and dynamic devices with
+% companion R/G/I/V elements.  This function maps a requested physical port
+% back to the signed sum of those companion currents.
+
 Name = LinerNet('Name');
 N1 = LinerNet('N1');
 N2 = LinerNet('N2');
 dependence = LinerNet('dependence');
 value = LinerNet('Value');
 freq = 0;
+
 switch Device(1)
     case 'M'
-        % 第一步找到含有M命名的所有线性器件
-        Mdevice = find(contains(Name,Device));
-        % 第二步计算这些器件的电流
+        Mdevice = find(contains(Name, Device));
         switch port
             case 'd'
-                Current = calcCurrent(Mdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Mdevice(2),Res,x,Name,N1,N2,dependence,value,freq)...
-                    + calcCurrent(Mdevice(3),Res,x,Name,N1,N2,dependence,value,freq)...
-                    - calcCurrent(Mdevice(7),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Mdevice(9),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = calcCurrent(Mdevice(1), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    + calcCurrent(Mdevice(2), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    + calcCurrent(Mdevice(3), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Mdevice(7), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    + calcCurrent(Mdevice(9), Res, x, Name, N1, N2, dependence, value, freq);
             case 'g'
-                  Current = calcCurrent(Mdevice(5),Res,x,Name,N1,N2,dependence,value,freq)...
-                    + calcCurrent(Mdevice(7),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = calcCurrent(Mdevice(5), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    + calcCurrent(Mdevice(7), Res, x, Name, N1, N2, dependence, value, freq);
             case 's'
-                Current = calcCurrent(Mdevice(11),Res,x,Name,N1,N2,dependence,value,freq)...
-                    - calcCurrent(Mdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    - calcCurrent(Mdevice(2),Res,x,Name,N1,N2,dependence,value,freq)...
-                    - calcCurrent(Mdevice(3),Res,x,Name,N1,N2,dependence,value,freq)...
-                    - calcCurrent(Mdevice(5),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = calcCurrent(Mdevice(11), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Mdevice(1), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Mdevice(2), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Mdevice(3), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Mdevice(5), Res, x, Name, N1, N2, dependence, value, freq);
         end
+
     case 'D'
-        % 第一步找到含有D命名的所有线性器件
-        Ddevice = find(contains(Name,Device));
-        % 第二步计算这些器件的电流
+        Ddevice = find(contains(Name, Device));
         switch port
             case '+'
-                Current = calcCurrent(Ddevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Ddevice(2),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = calcCurrent(Ddevice(1), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    + calcCurrent(Ddevice(2), Res, x, Name, N1, N2, dependence, value, freq);
             case '-'
-                Current = -calcCurrent(Ddevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Ddevice(2),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = -calcCurrent(Ddevice(1), Res, x, Name, N1, N2, dependence, value, freq) ...
+                    - calcCurrent(Ddevice(2), Res, x, Name, N1, N2, dependence, value, freq);
         end
+
     case 'Q'
-        % 第一步找到含有Q命名的所有线性器件
-        Qdevice = find(contains(Name,Device));
-        % 第二步计算这些器件的电流
-        % 对BJT，Qdevice(1)和Qdevice(2)分别是两个寄生电容的电流，方向均从基极流向另两端
+        emitterCurrent = currentByName(['R' Device '_E'], Res, x, Name, N1, N2, dependence, value, freq) ...
+            + currentByName(['G' Device '_E'], Res, x, Name, N1, N2, dependence, value, freq) ...
+            + currentByName(['I' Device '_E'], Res, x, Name, N1, N2, dependence, value, freq);
+        collectorCurrent = currentByName(['R' Device '_C'], Res, x, Name, N1, N2, dependence, value, freq) ...
+            + currentByName(['G' Device '_C'], Res, x, Name, N1, N2, dependence, value, freq) ...
+            + currentByName(['I' Device '_C'], Res, x, Name, N1, N2, dependence, value, freq);
+        cbeCurrent = currentByName(['RCe' Device], Res, x, Name, N1, N2, dependence, value, freq);
+        cbcCurrent = currentByName(['RCc' Device], Res, x, Name, N1, N2, dependence, value, freq);
+
+        % BJT nonlinear companions are positive E/C -> B.  Parasitic
+        % capacitance companions are positive B -> E/C.
         switch port
             case 'c'
-                Current = -calcCurrent(Qdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(2),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(6),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(7),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(8),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = collectorCurrent - cbcCurrent;
             case 'b'
-                Current = calcCurrent(Qdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(2),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(3),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(4),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(5),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(6),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(7),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(8),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = -emitterCurrent - collectorCurrent + cbeCurrent + cbcCurrent;
             case 'e'
-                Current = -calcCurrent(Qdevice(1),Res,x,Name,N1,N2,dependence,value,freq)...
-                    -calcCurrent(Qdevice(2),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(3),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(4),Res,x,Name,N1,N2,dependence,value,freq)...
-                    +calcCurrent(Qdevice(5),Res,x,Name,N1,N2,dependence,value,freq);
+                Current = emitterCurrent - cbeCurrent;
         end
-    case {'V','I','R','C','L','G','H','F','E'}
-        % 第一步找到含有此命名的所有线性器件
-        Mdevice = find(contains(Name,Device));
-        % 第二步计算这些器件的电流
+
+    case {'V', 'I', 'R', 'C', 'L', 'G', 'H', 'F', 'E'}
+        Mdevice = find(contains(Name, Device));
         switch port
             case '+'
-                Current = calcCurrent(Mdevice,Res,x,Name,N1,N2,dependence,value,freq);
+                Current = calcCurrent(Mdevice, Res, x, Name, N1, N2, dependence, value, freq);
             case '-'
-                Current = -calcCurrent(Mdevice,Res,x,Name,N1,N2,dependence,value,freq);
+                Current = -calcCurrent(Mdevice, Res, x, Name, N1, N2, dependence, value, freq);
         end
 end
+end
+
+function Current = currentByName(deviceName, Res, x, Name, N1, N2, dependence, value, freq)
+deviceIndex = find(strcmp(Name, deviceName), 1);
+if isempty(deviceIndex)
+    Current = zeros(1, size(Res, 2));
+    return;
+end
+Current = calcCurrent(deviceIndex, Res, x, Name, N1, N2, dependence, value, freq);
 end
