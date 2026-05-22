@@ -14,6 +14,23 @@ points, solver boundaries, and regression testing explicit.
   `testfile/*.sp` testcase.  Reference folders under `testfile/test_hspice`
   are intentionally skipped.
 
+## Local Outputs
+
+Generated artifacts are written under the ignored `local/` directory by
+default.  Each testcase gets its own directory:
+
+```text
+local/<case>/
+  logs/
+    backend_summary.txt
+    case.log
+  plots/
+    <signal>.png
+```
+
+Use `OutputRoot="some/path"` when calling `run_spice_case` or `run_all_cases`
+to place the same case-scoped layout somewhere else.
+
 ## Solver Boundaries
 
 - Netlist generation still uses the project-owned data structures and the
@@ -64,7 +81,8 @@ end
 - Keep comments around non-obvious numerical boundaries: companion models,
   ground-row handling, sparse/dense conversions, and convergence guards.
 - Avoid debug printing inside inner loops or testcase-wide utilities.  Batch
-  output should report testcase status and requested simulation results only.
+  output should report testcase status on the console and write detailed
+  per-case logs under `local/<case>/logs`.
 - Prefer focused commits with a reproducible MATLAB command in the commit or
   review notes.
 

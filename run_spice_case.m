@@ -6,7 +6,8 @@ arguments
     caseName {mustBeTextScalar}
     opts.EmitPlots (1,1) logical = false
     opts.FigureVisible {mustBeTextScalar} = "off"
-    opts.OutputDir {mustBeTextScalar} = "picture"
+    opts.OutputRoot {mustBeTextScalar} = "local"
+    opts.OutputDir {mustBeTextScalar} = ""
     opts.ErrorTolerance (1,1) double = 1e-6
     opts.TransientInitMethod {mustBeTextScalar} = "Poweron"
     opts.TransientMethod {mustBeTextScalar} = "BE"
@@ -15,8 +16,10 @@ end
 
 caseName = string(caseName);
 netlistPath = resolveNetlistPath(caseName);
+outputRoot = resolveOutputRoot(opts);
+outputPaths = case_output_paths(caseName, outputRoot);
 if opts.EmitPlots
-    ensureDirectory(opts.OutputDir);
+    ensureDirectory(outputPaths.plots);
 end
 
 % Keep the original parser and numerical kernels as-is; this wrapper only
@@ -47,6 +50,7 @@ result.netlistPath = netlistPath;
 result.operation = operation;
 result.elapsedSeconds = toc(timer);
 result.summary = sprintf('%s %s completed in %.3fs', caseName, operation, result.elapsedSeconds);
+result.outputPaths = outputPaths;
 end
 
 function result = runDcSweep(caseName, RCLINFO, SourceINFO, MOSINFO, DIODEINFO, BJTINFO, PLOT, SPICEOperation, opts)
@@ -204,11 +208,13 @@ if ~opts.EmitPlots
 end
 
 % Plotting is intentionally isolated so batch runs can disable all figure I/O.
+outputPaths = case_output_paths(caseName, resolveOutputRoot(opts));
+ensureDirectory(outputPaths.plots);
 figureHandle = figure('Name', char(titleText), 'Visible', char(opts.FigureVisible));
 cleanup = onCleanup(@() closeFigure(figureHandle));
 plot(x, y);
 title(titleText);
-outputPath = fullfile(char(opts.OutputDir), char(sanitizeFileName(caseName + "_" + string(signalName) + ".png")));
+outputPath = fullfile(char(outputPaths.plots), char(sanitizeFileName(string(signalName) + ".png")));
 saveas(figureHandle, outputPath);
 delete(cleanup);
 end
@@ -228,6 +234,15 @@ end
 function ensureDirectory(pathValue)
 if ~isfolder(pathValue)
     mkdir(pathValue);
+end
+end
+
+function outputRoot = resolveOutputRoot(opts)
+% OutputDir is kept as a compatibility alias, but generated artifacts are
+% still organized into case-scoped subdirectories below the chosen root.
+outputRoot = string(opts.OutputRoot);
+if strlength(string(opts.OutputDir)) > 0
+    outputRoot = string(opts.OutputDir);
 end
 end
 
