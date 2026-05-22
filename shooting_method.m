@@ -15,10 +15,9 @@ stateInfo = buildShootingStateInfo(LinerNet, CINFO, LINFO);
 
 tolerance = shootingTolerance(Error);
 coarseStep = 5 * stepTime;
-maxCoarseFixedPointIterations = 500;
-maxCoarseNewtonIterations = 4;
-maxFineFixedPointIterations = 20;
-maxFineNewtonIterations = 4;
+maxCoarseNewtonIterations = 8;
+maxFineNewtonIterations = 8;
+[maxCoarseFixedPointIterations, maxFineFixedPointIterations] = shootingFixedPointBudget(BJTINFO);
 
 startDynamicState = extractDynamicState(initialDeviceValue, stateInfo);
 if isempty(startDynamicState)
@@ -90,6 +89,18 @@ tolerance = struct( ...
     'currentRel', 1e-3);
 end
 
+function [coarseIterations, fineIterations] = shootingFixedPointBudget(BJTINFO)
+% BJT shooting cases are more sensitive to the coarse fixed-point prepass.
+% MOS-only cases can enter STM/Broyden Newton much earlier.
+if numel(BJTINFO('Name')) > 0
+    coarseIterations = 500;
+    fineIterations = 20;
+else
+    coarseIterations = 20;
+    fineIterations = 20;
+end
+end
+
 function stateInfo = buildShootingStateInfo(LinerNet, CINFO, LINFO)
 capacitorCount = numel(CINFO('Name'));
 inductorCount = numel(LINFO('Name'));
@@ -98,6 +109,7 @@ inductorDeviceIndex = (LINFO('LLine') + 2 * (1:inductorCount) - 2).';
 
 capacitorActive = true(capacitorCount, 1);
 activeCapacitorDeviceIndex = zeros(0, 1);
+activeCapacitorPosition = zeros(0, 1);
 capacitorGroupIndex = zeros(0, 1);
 capacitorGroupSign = zeros(0, 1);
 if capacitorCount > 0
@@ -106,6 +118,7 @@ if capacitorCount > 0
     capacitorActive = sourceComponent(capacitorNodePairs(:, 1)) ~= sourceComponent(capacitorNodePairs(:, 2));
     [capacitorGroupIndex, capacitorGroupSign] = capacitorStateGroups(capacitorNodePairs(capacitorActive, :));
     activeCapacitorDeviceIndex = capacitorDeviceIndex(capacitorActive);
+    activeCapacitorPosition = find(capacitorActive);
 end
 
 % Capacitors inside one ideal-voltage-source component have prescribed,
@@ -115,6 +128,7 @@ stateInfo = struct( ...
     'capacitorCount', max([0; capacitorGroupIndex]), ...
     'inductorCount', inductorCount, ...
     'capacitorDeviceIndex', activeCapacitorDeviceIndex, ...
+    'capacitorPosition', activeCapacitorPosition(:), ...
     'capacitorGroupIndex', capacitorGroupIndex, ...
     'capacitorGroupSign', capacitorGroupSign, ...
     'inductorDeviceIndex', inductorDeviceIndex, ...
@@ -180,14 +194,21 @@ end
 end
 
 function [trial, metric] = evaluateShootingResidual( ...
-        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, baseDeviceValue, dynamicState, stateInfo, step, period, tolerance)
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, baseDeviceValue, dynamicState, stateInfo, step, period, tolerance, varargin)
+trackTransition = ~isempty(varargin) && varargin{1};
 startDeviceValue = applyDynamicState(baseDeviceValue, dynamicState, stateInfo);
 startDeviceValue = applyCompanionResistances(startDeviceValue, CINFO, LINFO, step);
 [startSolution, startDeviceValue] = solveConsistentInitialPoint( ...
     LinerNet, MOSINFO, DIODEINFO, BJTINFO, startDeviceValue, Error);
 
-[~, ~, endSolution, endDeviceValue] = runShootingPeriod( ...
-    LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, startSolution, startDeviceValue, step, period);
+if trackTransition
+    [~, ~, endSolution, endDeviceValue, transitionMatrix] = runShootingPeriod( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, startSolution, startDeviceValue, step, period, stateInfo);
+else
+    [~, ~, endSolution, endDeviceValue] = runShootingPeriod( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, startSolution, startDeviceValue, step, period);
+    transitionMatrix = [];
+end
 
 endDynamicState = extractDynamicState(endDeviceValue, stateInfo);
 residual = endDynamicState - dynamicState;
@@ -201,6 +222,7 @@ trial = struct( ...
     'endDeviceValue', endDeviceValue, ...
     'endDynamicState', endDynamicState, ...
     'residual', residual, ...
+    'transitionMatrix', transitionMatrix, ...
     'metric', metric);
 end
 
@@ -221,9 +243,14 @@ function [trial, metric, iterationCount] = newtonShootingRefine( ...
         LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance, maxIterations)
 metric = trial.metric;
 iterationCount = 0;
+newtonModel = [];
 while ~metric.converged && iterationCount < maxIterations
-    [nextTrial, nextMetric, accepted] = newtonShootingStep( ...
-        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance);
+    if isempty(newtonModel)
+        newtonModel = buildNewtonModel( ...
+            LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance);
+    end
+    [nextTrial, nextMetric, accepted, newtonModel] = quasiNewtonShootingStep( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, newtonModel, stateInfo, step, period, tolerance);
     if ~accepted
         break;
     end
@@ -243,42 +270,83 @@ solution = [0; nodeSolution];
 deviceValue = solvedDeviceValue(:);
 end
 
-function [ResData, DeviceValues, endSolution, endDeviceValue] = runShootingPeriod( ...
-        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, solution, deviceValue, step, period)
+function [ResData, DeviceValues, endSolution, endDeviceValue, transitionMatrix] = runShootingPeriod( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, solution, deviceValue, step, period, stateInfo)
 LinerNet('Value') = deviceValue(:);
-[ResData, DeviceValues] = Trans(LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, solution(:), step, period);
+if nargin >= 13
+    [ResData, DeviceValues, transitionMatrix] = Trans( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, solution(:), step, period, stateInfo);
+else
+    [ResData, DeviceValues] = Trans( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, solution(:), step, period);
+    transitionMatrix = [];
+end
 endSolution = ResData(:, end);
 endDeviceValue = DeviceValues(:, end);
 end
 
-function [trial, metric, accepted] = newtonShootingStep( ...
-        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance)
-[jacobian, scaledResidual, stateScale] = finiteDifferenceJacobian( ...
-    LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance);
-scaledCorrection = solveNewtonCorrection(jacobian, scaledResidual);
+function [trial, metric, accepted, newtonModel] = quasiNewtonShootingStep( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, newtonModel, stateInfo, step, period, tolerance)
+scaledResidual = scaleResidual(trial.residual, newtonModel.residualScale);
+scaledCorrection = solveNewtonCorrection(newtonModel.jacobian, scaledResidual);
 if any(~isfinite(scaledCorrection))
     metric = trial.metric;
     accepted = false;
     return;
 end
 
-correction = stateScale .* scaledCorrection;
-[trial, metric, accepted] = dampedNewtonSearch( ...
+correction = newtonModel.stateScale .* scaledCorrection;
+[nextTrial, metric, accepted] = dampedNewtonSearch( ...
     LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, correction, stateInfo, step, period, tolerance);
+if ~accepted
+    return;
+end
+
+newtonModel = updateSecantNewtonModel(newtonModel, trial, nextTrial);
+trial = nextTrial;
 end
 
 function correction = solveNewtonCorrection(jacobian, scaledResidual)
-correction = -(jacobian \ scaledResidual);
+if rcond(jacobian) < 1e-12
+    correction = -(pinv(jacobian) * scaledResidual);
+else
+    correction = -(jacobian \ scaledResidual);
+end
 end
 
-function [jacobian, scaledResidual, stateScale] = finiteDifferenceJacobian( ...
+function newtonModel = buildNewtonModel( ...
         LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance)
+if ~isfield(trial, 'transitionMatrix') || isempty(trial.transitionMatrix)
+    [trial, ~] = evaluateShootingResidual( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, ...
+        trial.startDeviceValue, trial.startDynamicState, stateInfo, step, period, tolerance, true);
+end
+state = trial.startDynamicState;
+stateCount = numel(state);
+stateScale = dynamicStateCoordinateScale(state, stateInfo);
+residualScale = dynamicStateToleranceScale(trial.startDynamicState, trial.endDynamicState, stateInfo, tolerance);
+
+if isfield(trial, 'transitionMatrix') && ~isempty(trial.transitionMatrix)
+    rawJacobian = trial.transitionMatrix - eye(stateCount);
+    jacobian = scaleJacobian(rawJacobian, stateScale, residualScale);
+else
+    jacobian = finiteDifferenceResidualJacobian( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, ...
+        trial, stateInfo, step, period, tolerance, stateScale, residualScale);
+end
+
+newtonModel = struct( ...
+    'jacobian', jacobian, ...
+    'stateScale', stateScale, ...
+    'residualScale', residualScale, ...
+    'secantUpdates', 0);
+end
+
+function jacobian = finiteDifferenceResidualJacobian( ...
+        LinerNet, MOSINFO, DIODEINFO, BJTINFO, CINFO, LINFO, SinINFO, Error, trial, stateInfo, step, period, tolerance, stateScale, residualScale)
 state = trial.startDynamicState;
 stateCount = numel(state);
 jacobian = zeros(stateCount, stateCount);
-stateScale = dynamicStateCoordinateScale(state, stateInfo);
-residualScale = dynamicStateToleranceScale(trial.startDynamicState, trial.endDynamicState, stateInfo, tolerance);
-scaledResidual = trial.residual(:) ./ residualScale;
 
 for col = 1:stateCount
     perturbation = finiteDifferenceStep(state(col), stateScale(col));
@@ -296,6 +364,37 @@ for col = 1:stateCount
     rawColumn = (forwardTrial.residual - backwardTrial.residual) / (2 * perturbation);
     jacobian(:, col) = (rawColumn(:) .* stateScale(col)) ./ residualScale;
 end
+end
+
+function jacobian = scaleJacobian(rawJacobian, stateScale, residualScale)
+jacobian = (rawJacobian .* stateScale(:).') ./ residualScale(:);
+end
+
+function newtonModel = updateSecantNewtonModel(newtonModel, oldTrial, newTrial)
+oldScaledState = scaleState(oldTrial.startDynamicState, newtonModel.stateScale);
+newScaledState = scaleState(newTrial.startDynamicState, newtonModel.stateScale);
+stateStep = newScaledState - oldScaledState;
+if norm(stateStep) <= eps
+    return;
+end
+
+oldScaledResidual = scaleResidual(oldTrial.residual, newtonModel.residualScale);
+newScaledResidual = scaleResidual(newTrial.residual, newtonModel.residualScale);
+residualStep = newScaledResidual - oldScaledResidual;
+
+% Good Broyden update: enforce the latest secant equation without another
+% full finite-difference sweep around the accepted point.
+jacobianStepError = residualStep - newtonModel.jacobian * stateStep;
+newtonModel.jacobian = newtonModel.jacobian + (jacobianStepError * stateStep.') / (stateStep.' * stateStep);
+newtonModel.secantUpdates = newtonModel.secantUpdates + 1;
+end
+
+function scaledState = scaleState(state, stateScale)
+scaledState = state(:) ./ stateScale;
+end
+
+function scaledResidual = scaleResidual(residual, residualScale)
+scaledResidual = residual(:) ./ residualScale;
 end
 
 function [acceptedTrial, acceptedMetric, accepted] = dampedNewtonSearch( ...

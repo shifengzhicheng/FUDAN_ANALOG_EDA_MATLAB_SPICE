@@ -17,7 +17,7 @@
 %% calculateDC
 % 如果需要采用稀疏矩阵格式，将calculateDC中涉及矩阵求解的地方全部改成LU_solve实现
 % function [DCres, mosCurrents, diodeCurrents, x0, Value] = calculateDC(Name, N1, N2, dependence, Value, varargin)
-function [DCres, x0, Value] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error)
+function [DCres, x0, Value, linearizedA] = calculateDC(LinerNet, MOSINFO, DIODEINFO, BJTINFO, Error)
 
 %% 读取线性网表信息
 Name = LinerNet('Name');
@@ -52,6 +52,7 @@ BJTLine = BJTINFO('BJTLine');
 if isempty(MOSINFO) && isempty(DIODEINFO) && isempty(BJTINFO)
 %     z_res = A0 \ b0;
     z_res = LU_solve(A0,b0);
+    linearizedA = A0;
     % DCres = containers.Map({'x', 'MOS', 'Diode', 'BJT'}, {z_res, mosCurrents, diodeCurrents, bjtCurrents});
     DCres = z_res;
     return;
@@ -69,6 +70,7 @@ bjtNum = size(BJTtype,2);
 %% Gen_nextA生成下一轮A和b，在原MNA方程生成函数G_Matrix_Standard基础上修改
 % 默认初值已经在预处理时得到体现在输入的Name, N1, N2, dependence, Value中
 [A1, b1] = Gen_nextA(A0, b0, N1, N2, dependence, Value,MOSLine,mosNum,diodeLine,diodeNum,BJTLine,bjtNum);  % 用初始值得到的首轮A和b
+linearizedA = A1;
 
 % 计算得到本轮的x1结果 此处直接matlab\法 或 自写LU带入
 % zp = A1\b1;  % 用z(数字)表示x(字符)的结果 - 记上轮结果为x(z)p
@@ -131,7 +133,7 @@ end
 Nlimit = 500; %迭代上限，可能次数太多因为初始解不收敛
 for i = 1 : Nlimit
     %% 每轮迭代 - 内部过程封装成函数 - 包含非线性器件工作区判断、矩阵更新等功能
-    [zc, dependence, Value] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
+    [zc, dependence, Value, linearizedA] = Gen_nextRes(MOSMODEL, Mostype, MOSW, MOSL, mosNum, mosNodeMat, MOSLine, MOSID, ...
                                                diodeNum, diodeNodeMat, diodeLine, Is, ...
                                                BJTMODEL, Bjttype, BJTJunctionarea, bjtNum, bjtNodeMat, BJTLine, BJTID, ...
         A0, b0, N1, N2, dependence, Value, zp);
